@@ -21,9 +21,12 @@ SECRET_KEY = 'django-insecure-c3ej4k+=96tgk5%bzwlg22fe&mnt@m+3@e(kz!oeq%lix61)_j
 DEBUG = True
 
 USE_X_FORWARDED_HOST = True
+ALLOWED_HOSTS = [
+    '127.0.0.1',  # Local development
+    'localhost',   # Localhost
+    'techcampus-k4qi.onrender.com',  # Your deployed domain
+]
 
-
-ALLOWED_HOSTS = ['sirbramscampus.onrender.com', 'localhost', '127.0.0.1']
 
 PORT = os.getenv("PORT", "8000")
 
@@ -138,6 +141,6 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://sirbramscampus.onrender.com',
-    'http://sirbramscampus.onrender.com',  # Include both HTTP and HTTPS
+    'https://techcampus-k4qi.onrender.com',
+    'http://techcampus-k4qi.onrender.com',  # Include both HTTP and HTTPS
 ]
