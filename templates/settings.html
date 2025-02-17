@@ -56,10 +56,6 @@
         <form method="post" onsubmit="return validatePassword()">
             {% csrf_token %}
 
-
-
-            <form method="post">
-    {% csrf_token %}
     <div>
         <label for="current_password">Current Password:</label>
         <input type="password" id="current_password" name="current_password" required>
@@ -73,13 +69,8 @@
         <input type="password" id="confirm_password" name="confirm_password" required>
     </div>
     <button type="submit">Change Password</button>
-</form>
-{% if messages %}
-    <ul>
-        {% for message in messages %}
-            <li>{{ message }}</li>
-        {% endfor %}
-    </ul>
+   </form>
+        </div>
 
 
   <footer id="footer" class="footer " style="background-color: navy">
