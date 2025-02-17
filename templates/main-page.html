@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>SirBrams Tech Virtual Campus</title>
+
+    <style>
+        #title{
+           color: #B0B0B0;
+            font-weight: bolder;
+            font-size: 20px;
+            margin-left: 1px;
+        }
+        #title:hover{
+            color: white;
+
+        }
+
+
+         .login-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-options a {
+            display: block;
+            padding: 8px 12px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+
+
+        .login-dropdown:hover .dropdown-options {
+            display: block;
+        }
+
+
+        .dropdown-options a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+         .footer1 {
+      background-color: navy;
+      color: #fff;
+      padding: 20px 0;
+    }
+
+    .footer1 h4 {
+      color: white;
+      margin-bottom: 15px;
+    }
+
+    .footer1 .links a {
+      color: #fff;
+      text-decoration: none;
+      margin-right: 15px;
+      transition: color 0.3s;
+    }
+
+    .footer1 .links a:hover {
+      color: yellow;
+    }
+
+    .footer1 .social-icons a {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      background: #444;
+      margin-right: 10px;
+      color: #fff;
+      border-radius: 50%;
+      transition: background 0.3s;
+    }
+
+    .footer1 .social-icons a:hover {
+      background: #FFC107;
+      color: #333;
+    }
+    </style>
+{% load static %}
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="{% static 'https://fonts.googleapis.com' %}" rel="preconnect">
+  <link href=" https://fonts.gstatic.com " rel="preconnect' %}" crossorigin>
+  <link href="{% static 'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap' %}" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+    
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center sticky-top  " style="background-color: navy">
+    <div class="container position-relative d-flex align-items-center">
+
+      <a href="{% url 'index' %}" class="logo d-flex align-items-center me-auto">
+        <h1  id="title" class="{% url 'index' %} text-white" >SirBrams Tech Virtual Campus</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu  text-white">
+        <ul>
+          <li><a href="{% url 'index' %}" >Home</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+            <li><a href="{% url 'services' %}">Services</a></li>
+           <li><a href="{% url 'courses' %}">Courses</a></li>
+          <li><a href="{% url 'contact' %}">Contact</a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+
+
+       <div class="d-flex justify-content-end align-items-center">
+  <!-- Register -->
+  <a href="{% url 'register' %}" class="btn btn-outline-secondary btn-group-sm  ms-5 me-5" style="border-radius: 5px;">Register</a>
+
+   <!-- Login -->
+
+        <div class="login-dropdown">
+            <a href="#" class="btn btn-light btn-group-sm" style="border-radius: 5px;">Login</a>
+            <div class="dropdown-options">
+                <a href="{% url 'login' %}" class="btn btn-sm btn-secondary">Student</a>
+                <a href="{% url 'admin_login' %}" class="btn btn-sm btn-secondary">Mentor</a>
+            </div>
+        </div>
+       </div>
+    </div>
+   </header>
+
+  {% block body %}
+  	
+  {% endblock %}
+
+  <footer class="footer1">
+    <div class="container text-center">
+      <h4>SirBrams Tech Virtual Campus</h4>
+      <p>Your gateway to tech excellence.</p>
+      <div class="links">
+        <a href="{% url 'index' %}">Home</a>
+        <a href="{% url 'about' %}">About</a>
+        <a href="{% url 'services' %}">Services</a>
+        <a href="{% url 'contact' %}">Contact</a>
+      </div>
+      <div class="social-icons mt-3">
+        <a href="#"><i class="bi bi-facebook"></i></a>
+        <a href="#"><i class="bi bi-twitter"></i></a>
+        <a href="#"><i class="bi bi-instagram"></i></a>
+        <a href="#"><i class="bi bi-linkedin"></i></a>
+      </div>
+      <p class="mt-3">© 2024 SirBrams Tech Virtual Campus. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>

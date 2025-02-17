@@ -1,0 +1,73 @@
+{% extends 'main-page.html' %}
+{% load static %}
+
+{% block body %}
+
+
+<div class="container p-4 m-auto bg-info col-md-7 col-lg-4 mt-5" style="border-radius: 20px">
+    <!-- Login Form -->
+    <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+
+         {% if messages %}
+        <div>
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+<div class="container d-flex justify-content-center align-items-center mb-3">
+            <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
+        </div>
+
+        <h2 class="text-center">Student Login</h2><br>
+<div class="form-group">
+    <label for="text">Username:</label>
+    <input type="text" name="username" class="form-control" id="username" placeholder="Enter Username" required>
+</div>
+        <br>
+
+<!-- Password Input -->
+<div class="form-group">
+    <label for="password">Password:</label>
+    <div class="input-group">
+        <input type="password" name="password" class="form-control" id="password" placeholder="Enter password" required>
+        <div class="input-group-append">
+        </div>
+    </div>
+</div>
+        <br>
+        <div class="form-group d-flex justify-content-between">
+            <a href="{% url 'reset-request' %}" class="text-danger">Forgot Password?</a>
+            <a href="{% url 'register' %}" class="text-secondary">Register</a>
+        </div>
+        <br>
+        <!-- Login Button -->
+        <div class="d-grid pt-2">
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </div>
+        <br>
+    </form>
+</div><br><br>
+<script>
+    // Toggle password visibility
+    const passwordInput = document.getElementById("password");
+    const togglePassword = document.getElementById("togglePassword");
+
+    togglePassword.addEventListener("click", () => {
+        const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+        passwordInput.setAttribute("type", type);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        {% if messages %}
+        {% for message in messages %}
+            alert("{{ message }}");
+        {% endfor %}
+        {% endif %}
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "main-page.html" %}
+{% load static %}
+{% block body %}
+<div class="container p-4 m-auto bg-info col-md-6 col-lg-4 mt-5 mb-5" style="border-radius: 20px;">
+
+    <form method="POST" action="{% url 'admin_login' %}">
+        {% csrf_token %}
+        {% if messages %}
+        <div>
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+         <div class="container d-flex justify-content-center align-items-center mb-3">
+            <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
+        </div>
+        <br>
+        <h2 class="text-center">Mentor/Admin Login</h2>
+        <div class="form-group">
+            <label for="id_username">Username:</label>
+            <input type="text" name="username" id="id_username" class="form-control" required>
+        </div>
+        <br>
+        <div class="form-group">
+            <label for="id_password">Password:</label>
+            <input type="password" name="password" id="id_password" class="form-control" required>
+        </div>
+        <br>
+        <a class="text-danger" href='{% url 'admin-reset-request' %}'>Rest Password</a>
+           <div class="d-grid pt-2">
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </div>
+        <br>
+    </form>
+</div>
+{% endblock %}

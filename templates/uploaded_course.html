@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>SirBrams Tech Virtual Campus</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+    <style>
+        #title{
+           color: #B0B0B0;
+            font-weight: bolder;
+            font-size: 20px;
+            margin-left: 1px;
+        }
+        #title:hover{
+            color: white;
+
+        }
+        #navmen{
+            color: white;
+        }
+
+         .login-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-options {
+            display: none;
+            position: absolute;
+            top: 100%; /* Position below the button */
+            left: 0;
+            z-index: 1; /* Make sure it appears above other content */
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-options a {
+            display: block;
+            padding: 8px 12px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+
+        /* Show the dropdown when hovering over the parent button */
+        .login-dropdown:hover .dropdown-options {
+            display: block;
+        }
+
+        /* Add a hover effect for each option */
+        .dropdown-options a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+    </style>
+{% load static %}
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="{% static 'https://fonts.googleapis.com' %}" rel="preconnect">
+  <link href=" https://fonts.gstatic.com " rel="preconnect' %}" crossorigin>
+  <link href="{% static 'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap' %}" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center sticky-top  " style="background-color: navy">
+    <div class="container position-relative d-flex align-items-center">
+
+      <a href="{% url 'index' %}" class="logo d-flex align-items-center me-auto">
+        <h1  id="title" class=" text-white" >SirBrams Tech Virtual Campus</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu  text-white me-5">
+        <ul>
+
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+    </div>
+   </header>
+     <a href="{% url 'add_courses' %}" class="btn btn-outline-primary ms-3 mt-3" >
+        <i class="fas fa-arrow-left"></i> <<
+        </a>
+
+<div class="container mt-5">
+        <h2 class="text-center mb-4">Uploaded Courses</h2>
+
+
+        <div class="row">
+    {% for uploaded in uploads %}
+    <div class="col-md-4">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <!-- Video Section -->
+                {% if uploaded.video %}
+                <div class="mb-3">
+                    <video width="100%" controls>
+                        <source src="{{ uploaded.video.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                {% endif %}
+
+
+                <p class="card-text"><strong>Course_Name:</strong>{{uploaded.course_name }}</p>
+                <p class="card-text"><strong>Course_Code:</strong> {{ uploaded.course_code }}</p>
+                <p class="card-text"><strong>Instructor:</strong> {{ uploaded.instructor }}</p>
+                <p class="card-text"><small class="text-muted">Uploaded on: {{ uploaded.uploaded_at|date:"F j, Y, g:i a" }}</small></p>
+
+                {% if uploaded.file %}
+                <a href="{{ uploaded.file.url }}" class="btn btn-primary mb-2" download>Download Course Material</a>
+                {% endif %}
+
+                {% if uploaded.google_classroom_link %}
+                <a href="{{ uploaded.google_classroom_link }}" class="btn btn-info mb-2" target="_blank">Visit Google Classroom</a>
+                {% endif %}
+
+                {% if uploaded.zoom_link %}
+                <a href="{{ uploaded.zoom_link }}" class="btn btn " target="_blank" style="background-color: #8bb9fe">Join Zoom Class</a>
+                {% endif %}
+            </div>
+        </div>
+              <a href="#" class="btn btn-sm btn-danger" onclick="openDeleteModal('{% url 'delete_course' uploaded.id %}')">
+              <i class="fas fa-trash-alt"></i>Delete
+                 </a>
+
+    </div>
+    {% endfor %}
+</div>
+</div>
+ <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+        <div class="modal fade text-center text-white" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteConfirmLabel"><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="fw-bold text-danger">Are you sure you want to delete this student?</p>
+                    <p class="text-muted">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer me-2" >
+                    <button type="button" class="btn btn-secondary me-5" data-bs-dismiss="modal">Cancel</button>
+                    <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Yes, Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  <footer id="footer" class="footer " style="background-color: navy">
+
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="#">SirBrams Tech Virtual Campus</strong> <span>All Rights Reserved</span></p>
+      <div class="credits">
+      </div>
+    </div>
+
+  </footer>
+
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+ <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+  <!-- Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+  <script>
+       function openDeleteModal(deleteUrl) {
+            document.getElementById('confirmDeleteBtn').href = deleteUrl;
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            deleteModal.show();
+        }
+  </script>
+
+</body>
+
+</html>

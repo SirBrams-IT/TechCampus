@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>SirBrams Tech Virtual Campus</title>
+
+    {% load static %}
+    <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+    <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+    <style>
+
+        body {
+    padding-top: 70px; /* Adjust based on header height */
+}
+.table {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+
+    }
+
+    .message-cell {
+        max-width: 250px;
+        word-wrap: break-word;
+        white-space: pre-wrap; /* Ensures long text breaks properly */
+        text-align: left;
+    }
+
+    .message-content {
+        padding: 5px;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: pre-line;
+    }
+
+    .btn-danger {
+        padding: 5px 10px;
+        font-size: 14px;
+    }
+          .dropdown-options a {
+            display: block;
+            padding: 8px 12px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+
+        /* Show the dropdown when hovering over the parent button */
+        .login-dropdown:hover .dropdown-options {
+            display: block;
+        }
+
+        /* Add a hover effect for each option */
+        .dropdown-options a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        body {
+            background-color: #f8f9fa;
+        }
+        .header {
+            background-color: navy;
+        }
+        .table-container {
+            width: 100%;
+
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .table th {
+            background: navy;
+            color: white;
+            text-align: center;
+        }
+
+
+        .table th, .table td {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.table-responsive {
+    margin-left: 1%;
+    margin-right: 1%;
+}
+
+.img-thumbnail {
+    object-fit: cover;
+    border: 2px solid #ddd;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+}
+
+@media (max-width: 600px) {
+    .table-responsive {
+        margin-left: 1%;
+        margin-right: 1%;
+    }
+
+    .btn-sm {
+        font-size: 12px;
+        padding: 3px 8px;
+    }
+}
+
+    </style>
+    {% load static %}
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="{% static 'https://fonts.googleapis.com' %}" rel="preconnect">
+  <link href=" https://fonts.gstatic.com " rel="preconnect' %}" crossorigin>
+  <link href="{% static 'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap' %}" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Main CSS File -->
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+
+</head>
+
+<body class="index-page">
+    <header class="header py-3 text-white position-fixed top-0 start-0 w-100 shadow" style="background-color: navy">
+    <h1 class="text-white ps-5">SirBrams Tech Virtual Campus</h1>
+</header> <div class="mt-3 ">
+         <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary ms-3 mt-3 position-fixed" >
+        <i class="fas fa-arrow-left"></i>
+        </a>
+         <a href="{% url 'add_student' %}" class="btn btn-outline-secondary mt-3 position-fixed" style="margin-left: 90%">
+        <i class="  "></i> Add Student
+        </a>
+        </div>
+
+        <div class=" my-5 px-4">
+    <h2 class="text-center mb-4">Registered Students</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover align-middle">
+            <thead class="table-primary text-center">
+                <tr>
+                    <th>S/N</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Username</th>
+                    <th>Phone</th>
+                    <th>Id No</th>
+                    <th>DOB</th>
+                    <th>Gender</th>
+                    <th>Image</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for x in member %}
+                <tr>
+                    <td class="text-center bg-white ">{{ forloop.counter }}</td>
+                    <td>{{ x.name }}</td>
+                    <td>{{ x.email }}</td>
+                    <td>{{ x.username }}</td>
+                    <td>{{ x.phone }}</td>
+                    <td>{{ x.id_number }}</td>
+                    <td>{{ x.date_of_birth }}</td>
+                    <td>{{ x.gender }}</td>
+                    <td class="text-center">
+                        {% if x.profile_image %}
+                            <img src="{{ x.profile_image.url }}" class="rounded-circle img-thumbnail" width="50" height="50">
+                        {% else %}
+                            <img src="{% static 'assets/img/profile.jpeg' %}" class="rounded-circle img-thumbnail" width="50" height="50">
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="#" class="btn btn-sm btn-primary" onclick="showUpdateModal('{{ x.id }}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="#" class="btn btn-sm btn-danger" onclick="openDeleteModal('{% url 'delete_member' x.id %}')">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </a>
+                        </div>
+                        {% if x.is_deleted %}
+                            <div class="mt-2 text-center">
+                                <a href="{% url 'restore_member' x.id %}" class="btn btn-sm btn-success">Restore</a>
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center text-muted">No students found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+ <div class=" my-5 px-4 mt-5">
+    <h2 class="text-center">Messages</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover table-bordered">
+            <thead class="table-primary">
+                <tr>
+                    <th>S/N</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th style="width: 40%;">Message</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for info in contacts %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ info.name }}</td>
+                    <td>{{ info.email }}</td>
+                    <td class="message-cell">
+                        <div class="message-content">{{ info.message }}</div>
+                    </td>
+                    <td>
+                        <a href="#" class="btn btn-sm btn-danger" onclick="openDeleteModal('{% url 'delete_contact' info.id %}')">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No messages found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+     <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateModalLabel">Confirm Update</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center text-primary">
+                Are you sure you want to make changes?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a id="confirmUpdateBtn" href="#" class="btn btn-primary">Yes, Update</a>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade text-center text-white" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteConfirmLabel"><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="fw-bold text-danger">Are you sure you want to delete this student?</p>
+                    <p class="text-muted">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer me-2" >
+                    <button type="button" class="btn btn-secondary me-5" data-bs-dismiss="modal">Cancel</button>
+                    <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Yes, Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+  <footer id="footer" class="footer " style="background-color:navy;">
+
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="#">SirBrams Tech Virtual Campus</strong> <span>All Rights Reserved</span></p>
+      <div class="credits">
+      </div>
+    </div>
+
+  </footer>
+
+
+
+
+    <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script>
+        function openDeleteModal(deleteUrl) {
+            document.getElementById('confirmDeleteBtn').href = deleteUrl;
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            deleteModal.show();
+        }
+        function showUpdateModal(id) {
+            var updateUrl = "/updates/" + id;
+            document.getElementById("confirmUpdateBtn").href = updateUrl;
+            var modal = new bootstrap.Modal(document.getElementById("updateModal"));
+            modal.show();
+        }
+    </script>
+
+    </div>
+
+</body>
+</html>

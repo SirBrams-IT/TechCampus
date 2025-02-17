@@ -1,0 +1,6 @@
+<h2>Upload Assignment</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Upload Assignment</button>
+</form>

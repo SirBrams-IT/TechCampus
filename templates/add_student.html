@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>SirBrams Tech Virtual Campus</title>
+
+    <style>
+        #title{
+           color: #B0B0B0;
+            font-weight: bolder;
+            font-size: 20px;
+            margin-left: 1px;
+        }
+        #title:hover{
+            color: white;
+
+        }
+        #navmen{
+            color: white;
+        }
+
+         .login-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-options {
+            display: none;
+            position: absolute;
+            top: 100%; /* Position below the button */
+            left: 0;
+            z-index: 1; /* Make sure it appears above other content */
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-options a {
+            display: block;
+            padding: 8px 12px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+
+        /* Show the dropdown when hovering over the parent button */
+        .login-dropdown:hover .dropdown-options {
+            display: block;
+        }
+
+        /* Add a hover effect for each option */
+        .dropdown-options a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+    </style>
+{% load static %}
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="{% static 'https://fonts.googleapis.com' %}" rel="preconnect">
+  <link href=" https://fonts.gstatic.com " rel="preconnect' %}" crossorigin>
+  <link href="{% static 'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap' %}" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center sticky-top  " style="background-color: navy">
+    <div class="container position-relative d-flex align-items-center">
+
+      <a href="#" class="logo d-flex align-items-center me-auto">
+        <h1  id="title" class="{% url 'index' %} text-white" >SirBrams Tech Virtual Campus</h1>
+      </a>
+      <nav id="navmenu" class="navmenu  text-white me-5">
+        <ul>
+
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+    </div>
+   </header>
+      <a href="{% url 'records' %}" class="btn btn-outline-primary ms-3 mt-3 position-fixed" >
+        <i class="fas fa-arrow-left"></i> <<
+        </a>
+<div class="container p-4 m-auto bg-info col-md-9 col-lg-6 mt-4" style="border-radius: 20px;">
+    <form method="POST" id="register-form" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="container d-flex justify-content-center align-items-center mb-3">
+            <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
+        </div>
+
+        <legend class="text-center">ADD STUDENT!</legend><br>
+
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+
+        {{ form.as_p }}
+
+        <label class="form-label">Full Name:</label>
+        <input type="text" name="name" required class="form-control"><br>
+
+        <label for="email" class="form-label">Email:</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="student@gmail.com" required><br>
+
+        <label for="username" class="form-label">Username:</label>
+        <input type="text" class="form-control" id="username" name="username" placeholder="e.g.,sirbrams" required><br>
+
+        <label for="phone" class="form-label">Phone Number:</label>
+        <input type="tel" class="form-control" id="phone" name="phone" placeholder="e.g., +254710101010" required><br>
+
+        <label for="id_number" class="form-label">ID Number:</label>
+        <input type="number" class="form-control" id="id_number" name="id_number" placeholder="Enter your ID number" required><br>
+
+        <label for="date" class="form-label">Date of Birth:</label>
+        <input type="date" id="date" class="form-control" name="date" required><br>
+
+        <label class="form-label">Choose Gender:</label><br>
+        <input type="radio" id="male" name="gender" value="Male" required>
+        <label for="male">Male</label><br>
+        <input type="radio" id="female" name="gender" value="Female">
+        <label for="female">Female</label><br>
+        <input type="radio" id="other" name="gender" value="Other">
+        <label for="other">Other</label><br>
+        <small id="password-strength" class="text-danger"></small><br>
+
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-outline-secondary">Add Student!</button>
+        </div>
+
+    </form>
+</div><br><br>
+      <script>
+document.getElementById("register-form").addEventListener("submit", function (e) {
+    // Age validation
+    const birthDate = new Date(document.getElementById("date").value);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    if (age < 18 || age > 70) {
+        e.preventDefault();
+        alert("Eligible for persons between 18-70 years of Age!");
+        return;
+    }
+
+    // Phone number validation
+    const phone = document.getElementById("phone").value;
+    const phoneRegex = /^\+254\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+        e.preventDefault();
+        alert("Phone number must start with +254 and followed by 9 digits!");
+        return;
+    }
+
+    // ID number validation
+    const idNumber = document.getElementById("id_number").value;
+    if (!/^\d{7,8}$/.test(idNumber)) {
+        e.preventDefault();
+        alert("ID number must be 7 or 8 digits long!");
+        return;
+    }
+});
+
+const passwordInput = document.getElementById("password");
+    const passwordStrength = document.getElementById("password-strength");
+    passwordInput.addEventListener("input", () => {
+        const password = passwordInput.value;
+        let strength = "Weak";
+        let color = "red";
+        if (password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password)) {
+            strength = "Fair";
+            color = "orange";
+        }
+        if (password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            strength = "Strong(Recommended)";
+            color = "green";
+        }
+        passwordStrength.textContent = `Strength: ${strength}`;
+        passwordStrength.style.color = color;
+        passwordStrength.style.fontWeight = "bold";
+    });
+  </script>
+  <br>
+
+  <footer id="footer" class="footer " style="background-color:navy">
+
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="#">SirBrams Tech Virtual Campus</strong> <span>All Rights Reserved</span></p>
+      <div class="credits">
+      </div>
+    </div>
+
+  </footer>
+
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+ <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+  <!-- Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+
+
+</body>
+
+</html>

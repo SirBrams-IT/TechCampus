@@ -1,0 +1,96 @@
+{% extends 'main-page.html' %}
+{% load static %}
+{% block body %}
+	<!-- Map Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h3 class="text-center " style="color: cadetblue">Our Location</h3>
+        <p class="text-center text-muted">We are located in the heart of Nairobi, easily accessible by public and private transport.</p>
+        <div class="map-responsive ms-5 me-5">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3168.5473139517653!2d-122.08424968469748!3d37.42199997982452!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808fb0a528e9f77d%3A0x80b82f78a3d85c44!2sGoogleplex!5e0!3m2!1sen!2sus!4v1614720918745!5m2!1sen!2sus"
+                width="100%" height="350" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Section -->
+<section class="container my-5">
+    <h1 class="text-center " style="color: navy">Contact Us</h1>
+    <p class="text-center text-muted">
+        Welcome to <strong>SirBrams Tech Virtual Campus</strong>. For inquiries, feedback, or support, feel free to reach out using the form below or visit us at our office. Our support team is available 24/7 to assist you.
+    </p>
+
+    <div class="row bg-info">
+        <!-- Office Details and Contact Form in the Same Div -->
+        <div class="col-md-12">
+            <div class="row">
+                <!-- Our Office -->
+                <div class="col-md-6 mb-4 pt-2" >
+                    <h3 class="text-white">Our Office</h3>
+                    <p class="text-white">
+                        <strong>Address:</strong><br>
+                        123 Education Lane,<br>
+                        Nairobi, Kenya
+                    </p>
+                    <p class="text-white">
+                        <strong>Phone:</strong> <a href="tel:+254742524370" class="text-dark">+254 742 524 370</a><br>
+                        <strong>Email:</strong> <a href="mailto:support@sirbramstech.com" class="text-dark">support@sirbramstech.com</a>
+                    </p>
+                    <p class="text-white">
+                        <strong>Support Availability:</strong><br>
+                        24/7 support for all our users. Reach out anytime, and we'll be here to help!
+                    </p>
+                </div>
+
+                <div class="col-md-6">
+                    <h3 class="text-white">Get in Touch</h3>
+                    <form  method="POST" >
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Your Email</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email address" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Your Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter your phone number (optional)">
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Your Message</label>
+                            <textarea class="form-control" id="message"  name="message" rows="5" placeholder="Write your message here..." required></textarea>
+                        </div>
+                        <div class="d-flex pt-2">
+                        <button type="submit" class="btn btn-outline-primary container">Send Message</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Custom CSS -->
+<style>
+    .btn {
+        font-weight: bold;
+    }
+
+    .text-muted a {
+        color: navy;
+        text-decoration: none;
+    }
+
+    .text-muted a:hover {
+        text-decoration: underline;
+    }
+
+    .row {
+        margin-top: 20px;
+    }
+</style>
+
+
+{% endblock %}

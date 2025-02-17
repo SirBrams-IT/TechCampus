@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>SirBrams Tech Virtual Campus</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+    <style>
+        #title{
+           color: #B0B0B0;
+            font-weight: bolder;
+            font-size: 20px;
+            margin-left: 1px;
+        }
+        #title:hover{
+            color: white;
+
+        }
+        #navmen{
+            color: white;
+        }
+
+         .login-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-options {
+            display: none;
+            position: absolute;
+            top: 100%; /* Position below the button */
+            left: 0;
+            z-index: 1; /* Make sure it appears above other content */
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-options a {
+            display: block;
+            padding: 8px 12px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+
+        /* Show the dropdown when hovering over the parent button */
+        .login-dropdown:hover .dropdown-options {
+            display: block;
+        }
+
+        /* Add a hover effect for each option */
+        .dropdown-options a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        .profile-container {
+    text-align: center;
+}
+
+.profile-text {
+    margin: 0;
+    font-size: 14px;
+}
+
+.profile-icon {
+    cursor: pointer;
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    margin-top: 5px;
+}
+#current-time {
+            position: absolute;
+            top: 40px;
+            right: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: black;
+        }
+
+    </style>
+{% load static %}
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="{% static 'https://fonts.googleapis.com' %}" rel="preconnect">
+  <link href=" https://fonts.gstatic.com " rel="preconnect' %}" crossorigin>
+  <link href="{% static 'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap' %}" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center sticky-top  " style="background-color: navy">
+    <div class="container position-relative d-flex align-items-center">
+
+      <a href="#" class="logo d-flex align-items-center me-auto">
+        <h1  id="title" class=" text-white"  >SirBrams Tech Virtual Campus</h1>
+
+      </a>
+
+       <a class="me-5 text-white" href="{% url 'available_courses' %}">Courses</a>
+          <a class="text-white me-5" href="{% url 'my_course' %}">My Courses</a>
+
+      <nav id="navmenu" class="navmenu  text-white me-5">
+
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+  <div class="profile-container">
+    <img src="{% if studentinfo.profile_image %}{{ studentinfo.profile_image.url }}{% else %}{% static 'assets/img/profile.jpeg' %}{% endif %}"
+         alt="Profile"
+         class="profile-icon rounded-circle"
+         id="profileMenu"
+         data-bs-toggle="dropdown"
+         style="width: 50px; height: 50px; object-fit: cover;">
+
+    <p class="profile-text" id="greeting">{{ studentinfo.username }}</p>
+
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
+        <li><a class="dropdown-item" href="#student-info">Profile</a></li>
+        <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
+         <li>
+    <a class="dropdown-item text-danger" href="{% url 'logout_student' %}" style="font-size: 14px; padding: 10px 20px; transition: background-color 0.3s;" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+    </ul>
+</div>
+    </div>
+          <div class="text-white ms-auto" id="current-time" style="font-size: 18px;"></div>
+
+   </header>
+
+
+    <div class="row ">
+    <!-- Profile Section -->
+    <div class="col-md-3" style="; position: fixed ; ">
+        <div class="list-group mt-0 ms-0 bg-light">
+            <h2 style="padding-left: 10px"> Dashboard</h2><br>
+            <a href="#student-info" class="list-group-item list-group-item-action">Profile</a>
+            <a href="{% url 'available_courses' %}" class="list-group-item list-group-item-action">Courses</a>
+            <a href="{% url 'my_course' %}" class="list-group-item list-group-item-action">My Courses</a>
+            <a href="{% url 'student_assignments' %}" class="list-group-item list-group-item-action">Assignments</a>
+            <a href="{% url 'student_dashboard' %}" class="list-group-item list-group-item-action">Activities</a>
+            <a href="{% url 'student_dashboard' %}" class="list-group-item list-group-item-action">Chats</a>
+            <a href="#" class="list-group-item list-group-item-action">Settings</a>
+            <a class="dropdown-item text-danger" href="{% url 'logout_student' %}" style="font-size: 14px; padding: 10px 20px; transition: background-color 0.3s;" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a>
+
+        </div>
+    </div>
+
+    <!-- Main Content Section -->
+    <div class="col-md-8 mt-5 " style="margin-left: 25% " >
+        <div class="row">
+            <!-- Welcome Section -->
+            <div class="col-md-12">
+
+                <h2>
+
+                  Welcome to student Dashboard</h2> <br>
+            </div>
+
+
+
+            <div class="col-md-4 text-center">
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Courses</h5>
+                        <p class="card-text">Click to view available courses.</p>
+                        <a href="{% url 'available_courses' %}" class="btn btn-primary btn-sm">Go to Courses</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Assignments</h5>
+                        <p class="card-text">Track and submit your assignments.</p>
+                        <a href="{% url 'student_assignments' %}" class="btn btn-primary btn-sm">Go to Assignments</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Chats</h5>
+                        <p class="card-text">Communicate with your mentors and peers.</p>
+                        <a href="#" class="btn btn-primary btn-sm">Go to Chats</a>
+                    </div>
+                </div>
+            </div>
+             <div class="col-md-4 text-center">
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">My Courses</h5>
+                        <p class="card-text">Click to view your courses.</p>
+                        <a href="{% url 'my_course' %}" class="btn btn-primary btn-sm">Go to Courses</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Activities Section -->
+            <div class="col-md-12 mt-3">
+                <h5 class="text-center text-info">Upcoming Activities</h5>
+                <ul class="list-group">
+                    <li class="list-group-item">Assignment 1 due in 2 days</li>
+                    <li class="list-group-item">Live session on "Web Design Basics" tomorrow at 3 PM</li>
+                    <li class="list-group-item">Project submission deadline: Friday</li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<br>
+ <div class="mt-2" id="student-info" style="margin-left: 25% ;margin-right: 20px">
+    <h3 class="text-center text-info">Student Information</h3>
+    <table class="table table-bordered table-striped">
+        <thead class="bg-primary text-white">
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+           <tr>
+      <td>Profile</td>
+      <td>
+        {% if studentinfo.profile_image %}
+            <img src="{{ studentinfo.profile_image.url }}" alt="Profile Picture" class="img-fluid rectangle" style="width: 80px; height: 80px;">
+        {% else %}
+            <img src="{% static 'assets/img/profile.jpeg' %}' %}" alt="" class="img-fluid rounded-circle" style="width: 80px; height: 80px;">
+        {% endif %}
+    </td>
+    </tr>
+
+            <tr>
+                <td>Name</td>
+                <td>{{ studentinfo.name }}</td>
+            </tr>
+            <tr>
+                <td>Email</td>
+                <td>{{ studentinfo.email }}</td>
+            </tr>
+            <tr>
+                <td>Username</td>
+                <td>{{ studentinfo.username }}</td>
+            </tr>
+            <tr>
+                <td>Phone</td>
+                <td>{{ studentinfo.phone }}</td>
+            </tr>
+            <tr>
+                <td>ID Number</td>
+                <td>{{ studentinfo.id_number }}</td>
+            </tr>
+            <tr>
+                <td>Date of Birth</td>
+                <td>{{ studentinfo.date_of_birth }}</td>
+            </tr>
+            <tr>
+                <td>Gender</td>
+                <td>{{ studentinfo.gender }}</td>
+            </tr>
+
+        </tbody>
+
+    </table>
+<a  href="{% url 'edit_profile' studentinfo.id %} " class="btn btn-primary " style="margin-left: 50%">EDIT PROFILE</a>
+</div>
+
+	 <button class="btn btn-sm btn-danger" onclick="openDeleteModal('{% url 'delete_account' studentinfo.id %}')" style="margin-left: 80%">
+        <i class="fas fa-trash-alt"></i> Delete Account
+    </button>
+
+  <footer id="footer" class="footer " style="background-color: navy">
+
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="#">SirBrams Tech Virtual Campus</strong> <span>All Rights Reserved</span></p>
+      <div class="credits">
+      </div>
+    </div>
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center text-danger">
+                Are you sure you want to log out?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="{% url 'logout_student' %}" class="btn btn-danger">Yes, Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+      <div class="modal fade text-center text-white" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="fw-bold text-danger">Are you sure you want to delete your account?</p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer me-2">
+                <button type="button" class="btn btn-secondary me-5" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Yes, Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+  </footer>
+
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+ <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+  <!-- Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+
+<script>
+    function updateGreeting() {
+        let now = new Date();
+        let hours = now.getHours();
+        let greeting = "{{ studentinfo.username }}";
+
+        if (hours >= 5 && hours < 12) {
+            greeting = "Good morning! {{ studentinfo.username }}";
+        } else if (hours >= 12 && hours < 17) {
+            greeting = "Good afternoon! {{ studentinfo.username }}";
+        } else if (hours >= 17 && hours < 21) {
+            greeting = "Good evening! {{ studentinfo.username }}";
+        } else {
+            greeting = "Good night! {{ studentinfo.username }}";
+        }
+
+        document.getElementById("greeting").textContent = greeting;
+    }
+
+    updateGreeting(); // Call function on page load
+    setInterval(updateGreeting, 60000); // Update every minute
+     function updateCurrentTime() {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0'); // Adds leading zero if single digit
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+
+  const timeString = `${hours}:${minutes}:${seconds}`;
+
+  document.getElementById("current-time").textContent = timeString;
+}
+
+updateCurrentTime(); // Call function on page load
+setInterval(updateCurrentTime, 1000);
+
+   function openDeleteModal(deleteUrl) {
+    var userConfirmation = prompt("Type DELETE to confirm deletion:");
+
+    if (userConfirmation !== null && userConfirmation.toUpperCase() === "DELETE") {
+        document.getElementById('confirmDeleteBtn').href = deleteUrl;
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        deleteModal.show();
+    } else {
+        alert("Deletion cancelled or incorrect confirmation.");
+    }
+}
+
+
+</script>
+</body>
+
+</html>
+
+
+
+

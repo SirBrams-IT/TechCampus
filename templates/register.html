@@ -1,0 +1,138 @@
+{% extends 'main-page.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container p-4 m-auto bg-info col-md-9 col-lg-6 mt-4" style="border-radius: 20px;">
+    <form method="POST" id="register-form" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="container d-flex justify-content-center align-items-center mb-3">
+            <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
+        </div>
+
+        <legend class="text-center">CREATE AN ACCOUNT!</legend><br>
+
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+
+        {{ form.as_p }}
+
+        <label class="form-label">Full Name:</label>
+        <input type="text" name="name" required class="form-control"><br>
+
+        <label for="email" class="form-label">Email:</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="student@gmail.com" required><br>
+
+        <label for="username" class="form-label">Username:</label>
+        <input type="text" class="form-control" id="username" name="username" placeholder="e.g.,sirbrams" required><br>
+
+        <label for="phone" class="form-label">Phone Number:</label>
+        <input type="tel" class="form-control" id="phone" name="phone" placeholder="e.g., +254710101010" required><br>
+
+        <label for="id_number" class="form-label">ID Number:</label>
+        <input type="number" class="form-control" id="id_number" name="id_number" placeholder="Enter your ID number" required><br>
+
+        <label for="date" class="form-label">Date of Birth:</label>
+        <input type="date" id="date" class="form-control" name="date" required><br>
+
+        <label class="form-label">Choose Gender:</label><br>
+        <input type="radio" id="male" name="gender" value="Male" required>
+        <label for="male">Male</label><br>
+        <input type="radio" id="female" name="gender" value="Female">
+        <label for="female">Female</label><br>
+        <input type="radio" id="other" name="gender" value="Other">
+        <label for="other">Other</label><br>
+
+        <div>
+        <label for="profile_image">Profile Image:</label>
+        <input type="file" id="profile_image" name="profile_image" accept="image/*">
+       </div>
+
+        <label for="password" class="form-label">Password:</label>
+        <div class="input-group">
+            <input type="password" name="password" class="form-control" id="password" placeholder="Type password" required>
+        </div>
+        <small id="password-strength" class="text-danger"></small><br>
+
+        <label for="c_password" class="form-label">Confirm Password:</label>
+        <input type="password" id="c_password" name="c_password" class="form-control" placeholder="Confirm password" required><br>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-outline-secondary">Register</button>
+        </div>
+        <div class="d-flex justify-content-end mt-2">
+            <a href="{% url 'login' %}" class="text-white">Already have an account? Login</a>
+        </div>
+    </form>
+</div><br><br>
+      <script>
+document.getElementById("register-form").addEventListener("submit", function (e) {
+    // Age validation
+    const birthDate = new Date(document.getElementById("date").value);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    if (age < 18 || age > 70) {
+        e.preventDefault();
+        alert("Eligible for persons between 18-70 years of Age!");
+        return;
+    }
+
+    // Phone number validation
+    const phone = document.getElementById("phone").value;
+    const phoneRegex = /^\+254\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+        e.preventDefault();
+        alert("Phone number must start with +254 and followed by 9 digits!");
+        return;
+    }
+
+    // Password length validation
+    const password = document.getElementById("password").value;
+    if (password.length < 8 || password.length > 15) {
+        e.preventDefault();
+        alert("Password must be between 8 and 15 characters long!");
+        return;
+    }
+
+    // Password match validation
+    const confirmPassword = document.getElementById("c_password").value;
+    if (password !== confirmPassword) {
+        e.preventDefault();
+        alert("Passwords do not match!");
+        return;
+    }
+
+    // ID number validation
+    const idNumber = document.getElementById("id_number").value;
+    if (!/^\d{7,8}$/.test(idNumber)) {
+        e.preventDefault();
+        alert("ID number must be 7 or 8 digits long!");
+        return;
+    }
+});
+
+const passwordInput = document.getElementById("password");
+    const passwordStrength = document.getElementById("password-strength");
+    passwordInput.addEventListener("input", () => {
+        const password = passwordInput.value;
+        let strength = "Weak";
+        let color = "red";
+        if (password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password)) {
+            strength = "Fair";
+            color = "orange";
+        }
+        if (password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            strength = "Strong(Recommended)";
+            color = "green";
+        }
+        passwordStrength.textContent = `Strength: ${strength}`;
+        passwordStrength.style.color = color;
+        passwordStrength.style.fontWeight = "bold";
+    });
+  </script>
+{% endblock %}

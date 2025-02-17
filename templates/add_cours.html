@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>SirBrams Tech Virtual Campus</title>
+
+    <style>
+        #title{
+           color: #B0B0B0;
+            font-weight: bolder;
+            font-size: 20px;
+            margin-left: 1px;
+        }
+        #title:hover{
+            color: white;
+
+        }
+        #navmen{
+            color: white;
+        }
+
+         .login-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-options {
+            display: none;
+            position: absolute;
+            top: 100%; /* Position below the button */
+            left: 0;
+            z-index: 1; /* Make sure it appears above other content */
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-options a {
+            display: block;
+            padding: 8px 12px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+
+        /* Show the dropdown when hovering over the parent button */
+        .login-dropdown:hover .dropdown-options {
+            display: block;
+        }
+
+        /* Add a hover effect for each option */
+        .dropdown-options a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+
+    </style>
+{% load static %}
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="{% static 'https://fonts.googleapis.com' %}" rel="preconnect">
+  <link href=" https://fonts.gstatic.com " rel="preconnect' %}" crossorigin>
+  <link href="{% static 'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap' %}" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center sticky-top  " style="background-color: navy">
+    <div class="container position-relative d-flex align-items-center">
+
+       <a href="#" class="logo d-flex align-items-center me-auto">
+        <h1  id="title" class=" text-white" >SirBrams Tech Virtual Campus</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu  text-white me-5">
+        <ul>
+
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+    </div>
+   </header>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary ms-3 mt-3 position-fixed" >
+        <i class="fas fa-arrow-left"></i><<
+        </a>
+<div class="container mt-5" >
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0 text-center text-white">Add New Assignment</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+
+                <!-- Render Title -->
+                <div class="mb-3">
+                    <label for="id_title" class="form-label">Title</label>
+                    {{ form.title }}
+                    {% for error in form.title.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Render Description -->
+                <div class="mb-3">
+                    <label for="id_description" class="form-label">Description</label>
+                    {{ form.description }}
+                    {% for error in form.description.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Render File -->
+                <div class="mb-3">
+                    <label for="id_file" class="form-label">File</label>
+                    {{ form.file }}
+                    {% for error in form.file.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Render Due Date -->
+                <div class="mb-3">
+                    <label for="id_due_date" class="form-label">Due Date</label>
+                    {{ form.due_date }}
+                    {% for error in form.due_date.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Render Mentor -->
+                <div class="mb-3">
+                    <label for="id_mentor" class="form-label">Mentor</label>
+                    {{ form.mentor }}
+                    {% for error in form.mentor.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary w-100">Add Assignment</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+  <br><br><br><br>
+
+
+  <footer id="footer" class="footer " style="background-color:navy;">
+
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="{% url 'index' %}">SirBrams Tech Virtual Campus</strong> <span>All Rights Reserved</span></p>
+      <div class="credits">
+      </div>
+    </div>
+
+  </footer>
+
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+ <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+  <!-- Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+
+
+</body>
+
+</html>
+

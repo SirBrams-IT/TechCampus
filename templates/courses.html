@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>SirBrams Tech Virtual Campus</title>
+    <style>
+        #title{
+           color: #B0B0B0;
+            font-weight: bolder;
+            font-size: 20px;
+            margin-left: 1px;
+        }
+        #title:hover{
+            color: white;
+
+        }
+        #navmen{
+            color: white;
+        }
+
+         .login-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-options {
+            display: none;
+            position: absolute;
+            top: 100%; /* Position below the button */
+            left: 0;
+            z-index: 1; /* Make sure it appears above other content */
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-options a {
+            display: block;
+            padding: 8px 12px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+
+        /* Show the dropdown when hovering over the parent button */
+        .login-dropdown:hover .dropdown-options {
+            display: block;
+        }
+
+        /* Add a hover effect for each option */
+        .dropdown-options a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+    </style>
+{% load static %}
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="{% static 'https://fonts.googleapis.com' %}" rel="preconnect">
+  <link href=" https://fonts.gstatic.com " rel="preconnect' %}" crossorigin>
+  <link href="{% static 'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap' %}" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center sticky-top  " style="background-color: navy">
+    <div class="container position-relative d-flex align-items-center">
+
+      <a href="{% url 'index' %}" class="logo d-flex align-items-center me-auto">
+        <h1  id="title" class="{% url 'index' %}" >SirBrams Tech Virtual Campus</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu  text-white me-5">
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+         <a href="{% url 'student_dashboard' %}" class="me-5">Home</a>
+        <a href="{% url 'my_course' %}">My Courses</a>
+
+
+    </div>
+   </header>
+<div class="container mt-5">
+    <h1 class="text-center text-primary mb-4">Our Courses</h1>
+
+    <!-- Premium Courses Section -->
+    <div class="card mb-5 shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h2 class="card-title mb-0">Premium Courses</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- IT Support -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-info">
+
+                        <div class="card-body">
+                            <h5 class="card-title text-info">IT Support</h5>
+                            <img src="{% static 'assets/img/it.png' %}" class="card-img-top" alt="IT Support">
+                            <p><strong>Price:</strong> Ksh 1200</p>
+                            <p><strong>Duration:</strong> 4 weeks</p>
+                            <p><strong>Instructor:</strong> John Wafula</p>
+                            <a href="{% url 'payment' %}" class="btn btn-info w-100">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Excel -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-primary">
+                        <img src="{% static 'assets/img/advance.jpeg' %}" class="card-img-top" alt="Android Development">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Advanced Excel</h5>
+                            <p><strong>Price:</strong> Ksh 1250</p>
+                            <p><strong>Duration:</strong> 4 weeks</p>
+                            <p><strong>Instructor:</strong> Alex Kimathi</p>
+                            <a href="{% url 'payment' %}" class="btn btn-info w-100">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Graphic Design -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-danger">
+                        <img src="{% static 'assets/img/graphic.png' %}" class="card-img-top" alt="Graphic Design">
+                        <div class="card-body">
+                            <h5 class="card-title text-danger">Graphic Design</h5>
+                            <p><strong>Price:</strong> Ksh 2000</p>
+                            <p><strong>Duration:</strong> 6 weeks</p>
+                            <p><strong>Instructor:</strong> Esther Kimutai</p>
+                            <a href="{% url 'payment' %}" class="btn btn-info w-100">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- CCTV Installation -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-success">
+                        <img src="{% static 'assets/img/cctv.jpeg' %}" class="card-img-top" alt="CCTV Installation">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">CCTV Installation</h5>
+                            <p><strong>Price:</strong> Ksh 2000</p>
+                            <p><strong>Duration:</strong> 3 weeks</p>
+                            <p><strong>Instructor:</strong> Mark masika</p>
+                            <a href="{% url 'payment' %}" class="btn btn-info w-100">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Management System -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-warning">
+                        <img src="{% static 'assets/img/project.jpeg' %}" class="card-img-top" alt="Project Management System">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning">Project Management System</h5>
+                            <p><strong>Price:</strong> Ksh 3000</p>
+                            <p><strong>Duration:</strong> 5 weeks</p>
+                            <p><strong>Instructor:</strong> Sarah Esther</p>
+                            <a href="{% url 'payment' %}" class="btn btn-info w-100">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Web Development -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-primary">
+                        <img src="{% static 'assets/img/web.jpeg' %}" class="card-img-top" alt="Web Development">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Web Development</h5>
+                            <p><strong>Price:</strong> Ksh 1150</p>
+                            <p><strong>Duration:</strong> 3 weeks</p>
+                            <p><strong>Instructor:</strong> Anaclet Situma</p>
+                            <a href="{% url 'payment' %}" class="btn btn-info w-100">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Cybersecurity -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-danger">
+                        <img src="{% static 'assets/img/cyber.jpeg' %}" class="card-img-top" alt="Cybersecurity">
+                        <div class="card-body">
+                            <h5 class="card-title text-danger">Cybersecurity</h5>
+                            <p><strong>Price:</strong> Ksh 1500</p>
+                            <p><strong>Duration:</strong> 6 weeks</p>
+                            <p><strong>Instructor:</strong> Marion Kariuki</p>
+                            <a href="{% url 'payment' %}" class="btn btn-info w-100">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+                   <!-- Artificial Intelligence -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-primary">
+                                   <img src="{% static 'assets/img/ai.jpeg' %}" class="card-img-top" alt="AI">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Artificial Intelligence(AI)</h5>
+                            <p><strong>Price:</strong> Ksh 1500</p>
+                            <p><strong>Duration:</strong> 6 weeks</p>
+                            <p><strong>Instructor:</strong> SirBrams B.</p>
+                            <a href="{% url 'payment' %}" class="btn btn-info w-100">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Cloud Computing -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-dark">
+                        <img src="{% static 'assets/img/cloud.jpeg' %}" class="card-img-top" alt="Cloud Computing">
+                        <div class="card-body">
+                            <h5 class="card-title text-dark">Cloud Computing</h5>
+                            <p><strong>Price:</strong> Ksh 2500</p>
+                            <p><strong>Duration:</strong> 6 weeks</p>
+                            <p><strong>Instructor:</strong> Sophia Odour</p>
+                            <a href="{% url 'payment' %}" class="btn btn-info w-100">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Free Courses Section -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h2 class="card-title mb-0">Free Courses</h2>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Basic Networking
+                    <a href="#" class="btn btn-outline-primary btn-sm">Free</a>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Introduction to Computers
+                    <a href="#" class="btn btn-outline-primary btn-sm">Free</a>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Digital Marketing
+                    <a href="#" class="btn btn-outline-primary btn-sm">Free</a>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Time Management Skills
+                    <a href="#" class="btn btn-outline-primary btn-sm">Free</a>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Career Planning Basics
+                    <a href="#" class="btn btn-outline-primary btn-sm">Free</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div> <br><br><br>
+
+<!-- Custom CSS -->
+<style>
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Arial', sans-serif;
+    }
+
+    h1 {
+        font-weight: bold;
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+
+    .card-body h5 {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .list-group-item {
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .btn {
+        font-weight: bold;
+    }
+</style>
+
+ <footer id="footer" class="footer " style="background-color:#c6acae">
+
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="{% url 'index' %}">SirBrams Tech Virtual Campus</strong> <span>All Rights Reserved</span></p>
+      <div class="credits">
+      </div>
+    </div>
+
+  </footer>
+
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+ <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+  <!-- Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+
+
+</body>
+
+</html>
+
+
+
+

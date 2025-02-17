@@ -1,0 +1,141 @@
+/* Branding container */
+.branding {
+  padding: 10px 0;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: navy;
+}
+
+/* Logo styling */
+.logo img {
+  max-height: 50px;
+  border-radius: 5px;
+}
+
+/* Navigation menu links */
+.navmen a {
+  margin: 0 15px;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease-in-out;
+}
+
+.navmen a:hover {
+  color: lightblue;
+}
+
+/* Dropdown menu */
+.dropdown ul {
+  display: none;
+  position: absolute;
+  background: #333;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 5px;
+  list-style: none;
+}
+
+.dropdown:hover ul {
+  display: block;
+}
+
+.dropdown ul li {
+  margin: 5px 0;
+}
+
+.dropdown ul li a {
+  color: white;
+  text-decoration: none;
+  padding: 5px;
+  display: block;
+}
+
+.dropdown ul li a:hover {
+  color: lightblue;
+  background: #444;
+  border-radius: 3px;
+}
+
+/* Deep Dropdown */
+.dropdown ul ul {
+  left: 100%;
+  top: 0;
+  margin-left: 5px;
+}
+
+/* Search bar */
+#search {
+  border: 1px solid #28a745;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 14px;
+  transition: all 0.3s ease-in-out;
+}
+
+#search:focus {
+  outline: none;
+  border-color: #1e7e34;
+  box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+}
+
+/* Buttons */
+.btn-success {
+  background-color: #28a745;
+  border: none;
+  font-weight: bold;
+  padding: 5px 15px;
+  border-radius: 5px;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-outline-primary {
+  border: 2px solid #007bff;
+  color: #007bff;
+  font-weight: bold;
+  padding: 5px 15px;
+  border-radius: 5px;
+}
+
+.btn-outline-primary:hover {
+  background-color: white;
+  color: white;
+}
+
+/* Mobile navigation toggle */
+.mobile-nav-toggle {
+  font-size: 1.5rem;
+  color: white;
+  cursor: pointer;
+  display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navmen {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    background: navy;
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 100%;
+    padding: 10px;
+    z-index: 1000;
+  }
+
+  .navmen a {
+    margin: 10px 0;
+  }
+
+  .navmen.show {
+    display: flex;
+  }
+
+  .mobile-nav-toggle {
+    display: block;
+  }
+}

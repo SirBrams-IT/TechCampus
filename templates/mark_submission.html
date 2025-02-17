@@ -1,0 +1,6 @@
+<h2>Mark Submission for {{ submission.student.username }}</h2>
+<form method="post">
+    {% csrf_token %}
+    <input type="number" name="grade" value="{{ submission.grade }}" placeholder="Enter Grade" required>
+    <button type="submit">Submit Grade</button>
+</form>

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title> Student-Dashboard SirBrmas Tech Virtual Campus</title>
+ <style>
+        #title{
+           color: white;
+            font-weight: bolder;
+            font-size: 20px;
+            margin-left: 1px;
+        }
+        #title:hover{
+            color: gray;
+
+        }
+        form{
+            border-radius: 20px;
+        }
+
+
+        .dropdown-options a {
+            display: block;
+            padding: 8px 12px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+
+
+
+        .dropdown-options a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+          form label {
+    font-weight: 600;
+    font-size: 20px;
+    color: gray;
+    margin-bottom: 10px;
+    margin-left: 8px;
+    display: block;
+    }
+
+    form input,
+    form select,
+    form textarea {
+    width: 96%;
+    padding: 10px;
+    margin-left: 10px;
+    font-size: 18px;
+    color: #555;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: all 0.3s ease-in-out;
+    }
+
+
+    form input:focus,
+    form select:focus,
+    form textarea:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+    }
+
+
+    form button[type="submit"] {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    }
+
+    form button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+
+    form legend {
+    font-size: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+    text-align: center;
+    margin-bottom: 15px;
+    }
+
+
+    .alert {
+    font-size: 14px;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    }
+    .alert-info {
+    background-color: #e9f7fd;
+    color: #31708f;
+    border: 1px solid #bce8f1;
+    }
+    </style>
+{% load static %}
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="{% static 'https://fonts.googleapis.com' %}" rel="preconnect">
+  <link href=" https://fonts.gstatic.com " rel="preconnect' %}" crossorigin>
+  <link href="{% static 'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap' %}" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center sticky-top  " style="background-color: navy">
+    <div class="container position-relative d-flex align-items-center">
+
+      <a href="#" class="logo d-flex align-items-center me-auto">
+        <h1  id="title" class="{% url 'index' %}" >SirBrams Tech Virtual Campus</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu  text-white me-5">
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+    </div>
+   </header>
+
+  <br><br>
+
+<div class="container p-4 m-auto col-md-9 col-lg-6 mt-4">
+    {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+    {% endfor %}
+
+    <form method="POST" action="{% url 'edit_profile' profile.id %}" enctype="multipart/form-data" class="bg-info">
+        {% csrf_token %}
+
+        <div class="mb-4 d-flex justify-content-center align-items-center">
+            <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
+        </div>
+
+        <h2 class="text-center text-white">Update Your Profile</h2>
+
+        <div class="mb-3">
+            <label>{{ form.name.label }}</label>
+            {{ form.name }}
+        </div>
+        <div class="mb-3">
+            <label>{{ form.email.label }}</label>
+            {{ form.email }}
+        </div>
+        <div class="mb-3">
+            <label>{{ form.username.label }}</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="text-danger">{{ form.username.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            <label>{{ form.phone.label }}</label>
+            {{ form.phone }}
+        </div>
+        <div class="mb-3">
+            <label>{{ form.id_number.label }}</label>
+            {{ form.id_number }}
+        </div>
+        <div class="mb-3">
+            <label>{{ form.date_of_birth.label }}</label>
+            {{ form.date_of_birth }}
+        </div>
+        <div class="mb-3">
+            <label>{{ form.gender.label }}</label>
+            {{ form.gender }}
+        </div>
+        <div class="mb-3">
+            <label>{{ form.password.label }}</label>
+            {{ form.password }}
+        </div>
+
+        <div>
+            <label for="profile_image">{{ form.profile_image.label }}</label>
+            <input id="profileImageInput" type="file" name="profile_image" style="display: none;" onchange="previewImage(event)">
+            <button type="submit" style="display: none;">Upload</button>
+        </div>
+
+        <div class="text-center">
+            <img id="profileImagePreview"
+                 src="{% if profile.profile_image %}{{ profile.profile_image.url }}{% else %}{% static 'assets/img/profile.jpeg' %}{% endif %}"
+                 alt="Profile Image"
+                 class="rectangle"
+                 style="width: 100px; height: 100px; object-fit: cover; cursor: pointer;"
+                 onclick="document.getElementById('profileImageInput').click();">
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+        </div>
+    </form>
+</div>
+
+ <footer id="footer" class="footer " style="background-color:navy">
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="#">SirBrams Tech Virtual Campus</strong> <span>All Rights Reserved</span></p>
+      <div class="credits">
+      </div>
+    </div>
+
+
+  </footer>
+
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+ <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+  <!-- Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+
+
+
+<script>
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function() {
+            var output = document.getElementById('profileImagePreview');
+            output.src = reader.result;  // Preview the selected image
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+{% extends 'main-page.html' %}
+{% load static %}
+{% block body %}
+<style>
+    /* General Styles */
+    #carousel {
+        box-shadow: 10px 8px 8px 10px #0a53be;
+    }
+    #h {
+        font-weight: bolder;
+    }
+    .mission-vision {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .mission-vision:hover {
+        transform: scale(1.03);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    #about {
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        background: linear-gradient(45deg, #0a53be, #007bff);
+        transition: background 0.3s ease, transform 0.3s ease;
+    }
+    #about:hover {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        transform: scale(1.02);
+    }
+    .section-title {
+        font-weight: bold;
+        color: #0a53be;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Team Section */
+    .team-card {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .team-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .team-card img {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .team-card img:hover {
+        transform: scale(1.1);
+    }
+    .team-card h5 {
+        margin-top: 10px;
+        color: #0a53be;
+    }
+    .team-card p {
+        color: #555;
+    }
+</style>
+
+<!-- About Section -->
+<div class="container mt-5">
+    <div id="about" class="">
+        <h2 class="text-white text-center">About SirBrams Tech Virtual Campus</h2>
+        <p>
+            At SirBrams Tech Virtual Campus, we are driven by the passion to make tech education accessible, affordable, and engaging. Our virtual campus serves as a bridge between budding tech enthusiasts and industry-grade skills, enabling our students to stay ahead in a rapidly evolving digital world.
+            <br><br>
+            We offer a range of courses that focus on practical skills development, including IT fundamentals, advanced software development, cybersecurity, graphic design, and more. With experienced instructors and a supportive community, we ensure a hands-on learning experience tailored to individual progress.
+        </p>
+    </div>
+
+    <!-- Mission and Vision Section -->
+    <div class="row mission-vision mt-4 bg-primary text-white">
+        <div class="col-md-6 bg-white text-black p-4">
+            <h3 class="text-warning text-center">Our Mission</h3>
+            <p>
+                To empower individuals with essential tech skills, fostering personal and professional growth through an inclusive, collaborative, and innovation-driven learning environment.
+                <br><br>
+                We aim to close the skills gap by providing affordable, high-quality education to students from all backgrounds. We believe in equipping our learners with the confidence and tools needed to excel in tech careers globally.
+            </p>
+        </div>
+        <div class="col-md-6 bg-white text-black p-4" style="box-shadow: 2px 0 3px 2px black">
+            <h3 class="text-warning text-center">Our Vision</h3>
+            <p>
+                To become a global leader in tech education, recognized for our dedication to innovation, quality, and community. Our vision is to establish a worldwide network of tech professionals trained to adapt to and shape the future of digital transformation.
+                <br><br>
+                We envision a future where SirBrams Tech Virtual Campus is synonymous with excellence in virtual learning, fostering not only career readiness but also a passion for continuous learning and innovation in technology.
+            </p>
+        </div>
+    </div>
+
+    <!-- Team Section -->
+    <div class="mt-4">
+
+        <div class="row bg-primary">
+            <h4 class=" text-center text-white">Meet Our Esteemed Team of Professionals</h4>
+            <div class="col-md-4 text-center team-card">
+                <img src="{% static 'assets/img/brams.jpeg' %}" alt="Team Member" class="rounded-circle mb-3" style="width: 150px; height: 150px;">
+                <h5>Bramuel SirBrams</h5>
+                <p>Founder & CEO</p>
+            </div>
+            <div class="col-md-4 text-center team-card">
+                <img src="{% static 'assets/img/jane.jpeg' %}" alt="Team Member" class="rounded-circle mb-3" style="width: 150px; height: 150px;">
+                <h5>Jane Machora</h5>
+                <p>Lead Instructor, Graphic Design</p>
+            </div>
+            <div class="col-md-4 text-center team-card">
+                <img src="{% static 'assets/img/mark.jpeg' %}" alt="Team Member" class="rounded-circle mb-3" style="width: 150px; height: 150px;">
+                <h5>John Mark</h5>
+                <p>IT & Support Specialist</p>
+            </div>
+        </div>
+    </div>
+</div>
+   <br>
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends 'main-page.html' %}
+{% load static %}
+{% block body %}
+
+    <div class="container my-5" style="background-color: white; box-shadow: 2px 2px 2px 4px navy;">
+        <h1 class="text-center text-info">Our Services</h1>
+        <p class="text-center text-muted">
+            At SirBrams Tech Virtual Campus, we are committed to providing top-notch online education and skill-building services. Whether you are looking to enhance your career or start a new journey in the tech world, we have the right courses for you. Explore our offerings below and find the best fit for your learning needs.
+        </p>
+    </div>
+    <section class="container my-5">
+
+        <div class="row mt-5">
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-lg service-card">
+                    <img src="{% static 'assets/img/it.png' %}" class="card-img-top" alt="IT Support">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">IT Support</h5>
+                        <p class="card-text">Our IT Support courses cover essential skills such as troubleshooting, network setup, and hardware maintenance. Perfect for those aiming to work in tech support or system administration.</p>
+                        <a href="{% url 'courses' %}" class="btn btn-primary learn-more">Learn More</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-lg service-card">
+                    <img src="{% static 'assets/img/cyber.jpeg' %}" class="card-img-top" alt="Cybersecurity">
+                    <div class="card-body">
+                        <h5 class="card-title text-info bg-transparent">Cybersecurity</h5>
+                        <p class="card-text text-dark">Gain expertise in protecting systems and networks from cyber threats. Our Cybersecurity program includes ethical hacking, risk management, and network defense techniques.</p>
+                        <a href="{% url 'courses' %}" class="btn btn-primary learn-more">Learn More</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-lg service-card">
+                    <img src="{% static 'assets/img/web.jpeg' %}" class="card-img-top" alt="Web Development">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">Web Development</h5>
+                        <p class="card-text">Master the art of web development with our comprehensive courses covering HTML, CSS, JavaScript, and modern web frameworks. Start building responsive and dynamic websites.</p>
+                        <a href="{% url 'courses' %}" class="btn btn-primary learn-more">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-lg service-card">
+                    <img src="{% static 'assets/img/graphic.png' %}" class="card-img-top" alt="Graphic Design">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Graphic Design</h5>
+                        <p class="card-text">Explore the world of graphic design with courses that teach you the tools and techniques for creating beautiful visuals using Adobe Photoshop, Illustrator, and more.</p>
+                        <a href="{% url 'courses' %}" class="btn btn-primary learn-more">Learn More</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-lg service-card">
+                    <img src="{% static 'assets/img/advance.jpeg' %}" class="card-img-top" alt="Android Development">
+                    <div class="card-body">
+                        <h5 class="card-title text-dark">Advance Excel</h5>
+                        <p class="card-text">Learn how to build Android applications from scratch, covering both frontend and backend development, along with advanced features for mobile apps.</p>
+                        <a href="{% url 'courses' %}" class="btn btn-primary learn-more">Learn More</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-lg service-card">
+                    <img src="{% static 'assets/img/cloud.jpeg' %}" class="card-img-top" alt="Cloud Computing">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">Cloud Computing</h5>
+                        <p class="card-text">Delve into the world of cloud services, including cloud storage, computing infrastructure, and how to deploy applications in cloud environments like AWS, Azure, and Google Cloud.</p>
+                        <a href="{% url 'courses' %}" class="btn btn-primary learn-more">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+
+            <div class="col-md-4 mb-4 bg-primary">
+                <div class="card shadow-lg service-card">
+                    <img src="{% static 'assets/img/ai.jpeg' %}" class="card-img-top" alt="AI">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">Artificial Intelligence (AI)</h5>
+                        <p class="card-text">Gain insights into the world of AI and machine learning, learning to create intelligent systems that can solve complex problems across various industries.</p>
+                        <a href="{% url 'courses' %}" class="btn btn-primary learn-more">Learn More</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-lg service-card">
+                    <img src="{% static 'assets/img/cctv.jpeg' %}" class="card-img-top" alt="CCTV Installation">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">CCTV Installation</h5>
+                        <p class="card-text">Learn how to install and manage CCTV systems for both home and business security. Our courses cover hardware setup, monitoring, and network configurations.</p>
+                        <a href="{% url 'courses' %}" class="btn btn-primary learn-more">Learn More</a>
+                    </div>
+                </div>
+            </div>
+
+             <div class="col-md-4 mb-4">
+                 <div class="card shadow-lg service-card">
+                    <img src="{% static 'assets/img/project.jpeg' %}" class="card-img-top" alt="Project Management System">
+                    <div class="card-body">
+                        <h5 class="card-title text-danger">Project Management System</h5>
+                        <p class="card-text">Our course on project management will equip you with the skills to manage projects efficiently using modern project management tools and methodologies.</p>
+                        <a href="{% url 'courses' %}" class="btn btn-primary learn-more">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <p class="text-muted">All our services are designed to empower you with the skills needed to succeed in the tech world. Start your learning journey with us today!</p>
+            <a href="{% url 'register' %}" class="btn btn-info">Enroll Now</a>
+        </div>
+    </section>
+
+    <style>
+        section {
+            background-color: #f4f4f4;
+        }
+
+        .service-card {
+    background-color: #f9f9f9;
+    transition: transform 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.service-card img {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.service-card .card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.row .col-md-4 {
+    display: flex;
+    align-items: stretch;
+}
+
+    </style>
+{% endblock %}
