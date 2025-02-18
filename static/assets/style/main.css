@@ -1,5 +1,29 @@
+#header1{
+  transition: all 0.5s;
+  z-index: 997;
+  height: 60px;
+  box-shadow: 1px 2px 2px 2px gold;
+  background-color: navy;
+  padding-left: 20px;
 
+}
 
+#titles{
+
+    font-size: 20px;
+    font-weight: bolder;
+    text-decoration: none;
+    margin-right: 20px;
+
+}
+
+.toggle-sidebar-btn {
+  font-size: 22px;
+  cursor: pointer;
+  color: white;
+  font-weight: bolder;
+
+}
 .navbar-nav li a.active {
     color: #f8d210;
     font-weight: bold;
@@ -15,19 +39,22 @@
     font-size: 14px;
     font-weight: 500;
     transition: all 0.3s ease-in-out;
+
 }
 
 .navbar-nav li a:hover {
-    color: #f8d210;
+    color: gold;
     transform: translateY(-2px);
 }
 
 #loginDropdown {
     width: 100%;
+
 }
 
 #loginDropdown + .dropdown-menu {
     width: 100%;
+
 }
 
 .dropdown-menu-end {
@@ -37,10 +64,77 @@
 .nav-item:hover .dropdown-menu-end {
     display: block;
     min-width: 100%;
-    border-radius: 5px;
+    border-radius: 10px;
 }
 
-/* Footer Styling */
+
+
+.carousel-item .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  z-index: 2;
+}
+
+.carousel-item .overlay .content {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px 40px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 1s ease-in-out;
+}
+
+
+.carousel-item .overlay .content h2 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: #007bff;
+}
+
+.carousel-item .overlay .content p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.carousel-item .overlay .content .btn {
+  padding: 10px 25px;
+  font-size: 1rem;
+  border-radius: 5px;
+  background-color: #007bff;
+  border: none;
+  color: #fff;
+}
+
+
+
+        .dropdown-options a {
+            display: block;
+            padding: 8px 12px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+
+
+
+        .dropdown-options a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        .profile-container {
+    text-align: center;
+}
+
 .footer1 {
     background-color: navy; /* Dark background */
     color: #ecf0f1; /* Light text */
@@ -91,75 +185,4 @@
     margin-top: 20px;
     border-top: 1px solid white; /* Add a line above the copyright */
     padding-top: 10px;
-}
-
-/* Media Queries for responsiveness */
-@media (max-width: 768px) {
-    .footer1 .links a {
-        display: block;
-        margin-bottom: 10px;
-    }
-
-    .footer1 .social-icons a {
-        font-size: 1.2rem;
-        margin: 0 8px;
-    }
-}
-
-.carousel-item .overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  z-index: 2;
-}
-
-/* Content styles */
-.carousel-item .overlay .content {
-  background: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
-  padding: 20px 40px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Shadow effect */
-  animation: fadeIn 1s ease-in-out;
-}
-
-/* Headings and paragraph styling */
-.carousel-item .overlay .content h2 {
-  font-size: 2rem;
-  margin-bottom: 15px;
-  color: #007bff; /* Bootstrap primary color */
-}
-
-.carousel-item .overlay .content p {
-  font-size: 1.1rem;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.carousel-item .overlay .content .btn {
-  padding: 10px 25px;
-  font-size: 1rem;
-  border-radius: 5px;
-  background-color: #007bff;
-  border: none;
-  color: #fff;
-}
-
-/* Animation for smooth content display */
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }

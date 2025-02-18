@@ -7,6 +7,8 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.http import HttpResponse
 from requests.auth import HTTPBasicAuth
+from urllib3 import request
+
 from TechApp.credentials import MpesaAccessToken, LipanaMpesaPpassword
 from django.shortcuts import  redirect,render, get_object_or_404
 from django.contrib.auth import logout
@@ -250,8 +252,8 @@ def reset_request(request):
             subject = "Password Reset OTP"
             message = f"""
                 Hi {user.username}, your password reset OTP is: {user.otp_code}
-                It expires in 3 minutes. Click below to reset your password:
-                http://127.0.0.1:8000/reset-password/{user.username}
+                It expires in 3 minutes. Click below link to reset your password:
+                https://techcampus-k4qi.onrender.com/reset-password/{user.username}
             """
             sender = "wekesabramuel00@gmail.com"
             receiver = [user.email]
@@ -784,3 +786,7 @@ def settings_view(request):
         return redirect("settings")
 
     return render(request, "settings.html")
+
+
+def user_profile(request):
+    return render(request,'user-profile.html')

@@ -1,7 +1,7 @@
 {% extends 'main-page.html' %}
 {% load static %}
 
-{% block body %}
+{% block body %}<br><br>
 <div class="container p-4 m-auto bg-info col-md-9 col-lg-6 mt-4" style="border-radius: 20px;">
     <form method="POST" id="register-form" enctype="multipart/form-data">
         {% csrf_token %}
@@ -53,7 +53,7 @@
         <div class="input-group">
             <input type="password" name="password" class="form-control" id="password" placeholder="Type password" required>
         </div>
-        <small id="password-strength" class="text-danger"></small><br>
+        <small id="password-strength" ></small><br>
 
         <label for="c_password" class="form-label">Confirm Password:</label>
         <input type="password" id="c_password" name="c_password" class="form-control" placeholder="Confirm password" required><br>
@@ -91,21 +91,6 @@ document.getElementById("register-form").addEventListener("submit", function (e)
         return;
     }
 
-    // Password length validation
-    const password = document.getElementById("password").value;
-    if (password.length < 8 || password.length > 15) {
-        e.preventDefault();
-        alert("Password must be between 8 and 15 characters long!");
-        return;
-    }
-
-    // Password match validation
-    const confirmPassword = document.getElementById("c_password").value;
-    if (password !== confirmPassword) {
-        e.preventDefault();
-        alert("Passwords do not match!");
-        return;
-    }
 
     // ID number validation
     const idNumber = document.getElementById("id_number").value;
@@ -115,24 +100,48 @@ document.getElementById("register-form").addEventListener("submit", function (e)
         return;
     }
 });
-
 const passwordInput = document.getElementById("password");
-    const passwordStrength = document.getElementById("password-strength");
-    passwordInput.addEventListener("input", () => {
-        const password = passwordInput.value;
-        let strength = "Weak";
-        let color = "red";
-        if (password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password)) {
-            strength = "Fair";
-            color = "orange";
-        }
-        if (password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-            strength = "Strong(Recommended)";
-            color = "green";
-        }
-        passwordStrength.textContent = `Strength: ${strength}`;
-        passwordStrength.style.color = color;
-        passwordStrength.style.fontWeight = "bold";
-    });
+const confirmPasswordInput = document.getElementById("c_password");
+const passwordStrength = document.getElementById("password-strength");
+const form = document.querySelector("form"); // Select the form
+
+passwordInput.addEventListener("input", () => {
+    const password = passwordInput.value;
+    let message = "";
+    let color = "red";
+    let isValid = false;
+
+    if (password.length < 8) {
+        message = "Weak!";
+        color = "red";
+    } else if (/[a-zA-Z]/.test(password) && /\d/.test(password) && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        message = "Fair ";
+        color = "orange";
+        isValid = true;
+    }
+    if (password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        message = "Strong (Recommended)";
+        color = "green";
+        isValid = true;
+    }
+
+    passwordStrength.textContent = message;
+    passwordStrength.style.color = color;
+    passwordStrength.style.fontWeight = "bold";
+
+    passwordInput.dataset.valid = isValid; // Store validation status in data attribute
+});
+
+// Prevent form submission if the password is weak
+form.addEventListener("submit", (event) => {
+    if (passwordInput.dataset.valid !== "true") {
+        event.preventDefault();
+        alert("Password is too weak! Use at least 8 characters with numbers and symbols.");
+    } else if (passwordInput.value !== confirmPasswordInput.value) {
+        event.preventDefault();
+        alert("Passwords do not match!");
+    }
+});
+
   </script>
 {% endblock %}

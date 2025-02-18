@@ -50,6 +50,7 @@ urlpatterns = [
     path('admin_reset_request/', views.admin_reset_request, name='admin-reset-request'),
     path('admin_reset_password/<str:username>/', views.admin_reset_password, name='admin-reset-password'),
     path('admin_resend_reset_otp/', views.admin_resend_reset_otp, name='admin-resend-reset-otp'),
+    path('user-profile/',views.user_profile, name='user-profile')
     ]
 
 
