@@ -125,6 +125,63 @@
             margin: 2px 0;
         }
 
+      form label {
+    font-weight: 600;
+    font-size: 20px;
+    color: gray;
+    margin-bottom: 10px;
+    margin-left: 8px;
+    display: block;
+    }
+
+    form input,
+    form select,
+    form textarea {
+    width: 96%;
+    padding: 10px;
+    margin-left: 10px;
+    font-size: 18px;
+    color: #555;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: all 0.3s ease-in-out;
+    }
+
+
+    form input:focus,
+    form select:focus,
+    form textarea:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+    }
+
+
+    form button[type="submit"] {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    }
+
+    form button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+
+    form legend {
+    font-size: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+    text-align: center;
+    margin-bottom: 15px;
+    }
 
 
         .dropdown-options a:hover {
@@ -186,3 +243,24 @@
     border-top: 1px solid white; /* Add a line above the copyright */
     padding-top: 10px;
 }
+
+/* Professional Dashboard Cards */
+.dashboard-card {
+    background: #f8f9fa;
+    border: none;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Upcoming Activities */
+.upcoming-activities .list-group-item {
+    border-left: 5px solid #007bff;
+    font-weight: 500;
+}
+
+
+

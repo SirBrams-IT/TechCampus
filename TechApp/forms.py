@@ -18,19 +18,36 @@ class FileUploadForm(forms.ModelForm):
             'google_classroom_link': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enter Google Classroom Link'}),
         }
 
+
 class StudentForm(forms.ModelForm):
     class Meta:
         model = Member
-        fields = ['name', 'email', 'username', 'phone', 'id_number', 'date_of_birth', 'gender', 'profile_image']
+        exclude=['password','confirm_password']
 
-    def __init__(self, *args, **kwargs):
-        super(StudentForm, self).__init__(*args, **kwargs)
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if Member.objects.filter(email=email).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError("This email is already in use.")
+        return email
 
-        # Make specific fields read-only
-        self.fields['id_number'].widget.attrs['readonly'] = True
-        self.fields['email'].widget.attrs['readonly'] = True
-        self.fields['phone'].widget.attrs['readonly'] = True
-        self.fields['username'].widget.attrs['readonly'] = True
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if Member.objects.filter(username=username).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if Member.objects.filter(phone=phone).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError("This phone number is already registered.")
+        return phone
+
+    def clean_id_number(self):
+        id_number = self.cleaned_data.get('id_number')
+        if Member.objects.filter(id_number=id_number).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError("This ID number is already in use.")
+        return id_number
+
 
 class AssignmentForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):

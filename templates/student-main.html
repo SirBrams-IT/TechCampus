@@ -24,7 +24,7 @@
   <link href="{% static 'asset/vendor/quill/quill.bubble.css' %}" rel="stylesheet">
   <link href="{% static 'asset/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
   <link href="{% static 'asset/vendor/simple-datatables/style.css' %}" rel="stylesheet">
-    <link rel="stylesheet" href="">
+
   <link href="{% static 'asset/css/style.css' %}" rel="stylesheet">
 
 
@@ -60,9 +60,8 @@
         <li class="nav-item dropdown pe-3 profile-container">
     <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
         <!-- Profile Image -->
-        <img src="{% if studentinfo.profile_image and studentinfo.profile_image.url %}{{ studentinfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
-     alt="Profile"
-     class="rounded-circle profile-img">
+        <img src="{% if studentinfo.profile_image %}{{ studentinfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
+            alt="Profile" class="rounded-circle profile-img">
         <span class="d-md-block dropdown-toggle ps-2 me-3" id="greeting">{{ studentinfo.username }}</span>
     </a>
 
@@ -82,7 +81,7 @@
         <li><hr class="dropdown-divider"></li>
 
         <li>
-            <a class="dropdown-item d-flex align-items-center" href="{% url 'user-profile' studentinfo.id  %}">
+            <a class="dropdown-item d-flex align-items-center" href="{% url 'user-profile' studentinfo.id %}">
                 <i class="bi bi-gear"></i>
                 <span>Account Settings</span>
             </a>
@@ -102,7 +101,6 @@
     </nav>
 
   </header>
-
   <aside id="sidebar" class="sidebar">
 
     <ul class="sidebar-nav" id="sidebar-nav">
@@ -122,7 +120,7 @@
 </li>
 
 <li class="nav-item">
-    <a class="nav-link collapsed" href="{% url 'available_courses' studentinfo.id %}">
+    <a class="nav-link collapsed" href="{% url 'available_courses' studentinfo.id%}">
         <i class="bi bi-book"></i><span>Courses</span>
     </a>
 </li>
@@ -159,130 +157,10 @@
 </li>
     </ul>
   </aside><!-- End Sidebar-->
+    {% block body %}
 
-  <main id="main" class="main">
+    {% endblock %}
 
-    <div class="pagetitle">
-      <h1> Hello <b class="text-warning">{{ studentinfo.name|title }}</b>, Welcome to Student Dashboard <span class="ms-5 bg-black text-white" id="current-time"></span></h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
-          <li class="breadcrumb-item active"> Student Dashboard </li>
-
-
-
-
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-     <div class="container mt-4">
-    <!-- Dashboard Cards -->
-    <div class="row justify-content-center">
-        <div class="col-md-3">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <i class="bi bi-book display-6 text-primary"></i>
-                    <h5 class="card-title mt-2">Courses</h5>
-                    <p class="card-text">Explore available courses and enroll.</p>
-                    <a href="{% url 'available_courses' studentinfo.id %}" class="btn btn-primary btn-sm">View Courses</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <i class="bi bi-pencil-square display-6 text-danger"></i>
-                    <h5 class="card-title mt-2">Assignments</h5>
-                    <p class="card-text">Track and submit your assignments.</p>
-                    <a href="{% url 'student_assignments' %}" class="btn btn-danger btn-sm">View Assignments</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <i class="bi bi-chat-dots display-6 text-info"></i>
-                    <h5 class="card-title mt-2">Chats</h5>
-                    <p class="card-text">Communicate with mentors and peers.</p>
-                    <a href="#" class="btn btn-info btn-sm">Go to Chats</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <i class="bi bi-person-badge display-6 text-success"></i>
-                    <h5 class="card-title mt-2">My Courses</h5>
-                    <p class="card-text">View your enrolled courses.</p>
-                    <a href="{% url 'my_course' studentinfo.id %}" class="btn btn-success btn-sm">View My Courses</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Upcoming Activities -->
-    <div class="mt-4">
-        <h5 class="text-center text-primary">Upcoming Activities</h5>
-        <ul class="list-group upcoming-activities">
-            <li class="list-group-item"><i class="bi bi-clock text-warning"></i> Assignment 1 due in 2 days</li>
-            <li class="list-group-item"><i class="bi bi-calendar-event text-info"></i> Live session: "Web Design Basics" tomorrow at 3 PM</li>
-            <li class="list-group-item"><i class="bi bi-flag text-danger"></i> Project submission deadline: Friday</li>
-        </ul>
-    </div>
-
-    <!-- Student Profile -->
-    <div class="mt-4 profile-section">
-        <h3 class="text-center text-dark">Student Information</h3>
-        <table class="table table-bordered table-hover">
-            <thead class="bg-primary text-white ">
-                <tr class="">
-                    <th>Field</th>
-                    <th>Details</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-
-                </tr>
-                <tr><td>Name</td><td>{{ studentinfo.name }}</td></tr>
-                <tr><td>Email</td><td>{{ studentinfo.email }}</td></tr>
-                <tr><td>Username</td><td>{{ studentinfo.username }}</td></tr>
-                <tr><td>Phone</td><td>{{ studentinfo.phone }}</td></tr>
-                <tr><td>ID Number</td><td>{{ studentinfo.id_number }}</td></tr>
-                <tr><td>Date of Birth</td><td>{{ studentinfo.date_of_birth }}</td></tr>
-                <tr><td>Gender</td><td>{{ studentinfo.gender }}</td></tr>
-            </tbody>
-        </table>
-        <div class="text-center">
-            <a href="{% url 'edit_profile' studentinfo.id %}" class="btn btn-primary">Edit Profile</a>
-            <button class="btn btn-danger" onclick="openDeleteModal('{% url 'delete_account' studentinfo.id %}')">
-                <i class="fas fa-trash-alt"></i> Delete Account
-            </button>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center text-danger">
-                Are you sure you want to log out?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a href="{% url 'logout_student' %}" class="btn btn-danger">Yes, Logout</a>
-            </div>
-        </div>
-    </div>
-</div>
       <div class="modal fade text-center text-white" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -320,6 +198,7 @@
   <script src="{% static 'asset/vendor/simple-datatables/simple-datatables.js' %}"></script>
   <script src="{% static 'asset/vendor/tinymce/tinymce.min.js' %}"></script>
   <script src="{% static 'asset/vendor/php-email-form/validate.js' %}"></script>
+
 
   <!-- Template Main JS File -->
   <script src="{% static 'asset/js/main.js' %}"></script>
@@ -373,6 +252,110 @@ setInterval(updateCurrentTime, 1000);
     }
 }
 
+
+ document.addEventListener("DOMContentLoaded", () => {
+                  echarts.init(document.querySelector("#trafficChart")).setOption({
+                    tooltip: {
+                      trigger: 'item'
+                    },
+                    legend: {
+                      top: '5%',
+                      left: 'center'
+                    },
+                    series: [{
+                      name: 'Access From',
+                      type: 'pie',
+                      radius: ['40%', '70%'],
+                      avoidLabelOverlap: false,
+                      label: {
+                        show: false,
+                        position: 'center'
+                      },
+                      emphasis: {
+                        label: {
+                          show: true,
+                          fontSize: '18',
+                          fontWeight: 'bold'
+                        }
+                      },
+                      labelLine: {
+                        show: false
+                      },
+                      data: [{
+                          value: 1048,
+                          name: 'Search Engine'
+                        },
+                        {
+                          value: 735,
+                          name: 'Direct'
+                        },
+                        {
+                          value: 580,
+                          name: 'Email'
+                        },
+                        {
+                          value: 484,
+                          name: 'Union Ads'
+                        },
+                        {
+                          value: 300,
+                          name: 'Video Ads'
+                        }
+                      ]
+                    }]
+                  });
+                });
+
+       document.addEventListener("DOMContentLoaded", () => {
+                      new ApexCharts(document.querySelector("#reportsChart"), {
+                        series: [{
+                          name: 'Sales',
+                          data: [31, 40, 28, 51, 42, 82, 56],
+                        }, {
+                          name: 'Revenue',
+                          data: [11, 32, 45, 32, 34, 52, 41]
+                        }, {
+                          name: 'Customers',
+                          data: [15, 11, 32, 18, 9, 24, 11]
+                        }],
+                        chart: {
+                          height: 350,
+                          type: 'area',
+                          toolbar: {
+                            show: false
+                          },
+                        },
+                        markers: {
+                          size: 4
+                        },
+                        colors: ['#4154f1', '#2eca6a', '#ff771d'],
+                        fill: {
+                          type: "gradient",
+                          gradient: {
+                            shadeIntensity: 1,
+                            opacityFrom: 0.3,
+                            opacityTo: 0.4,
+                            stops: [0, 90, 100]
+                          }
+                        },
+                        dataLabels: {
+                          enabled: false
+                        },
+                        stroke: {
+                          curve: 'smooth',
+                          width: 2
+                        },
+                        xaxis: {
+                          type: 'datetime',
+                          categories: ["2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", "2018-09-19T06:30:00.000Z"]
+                        },
+                        tooltip: {
+                          x: {
+                            format: 'dd/MM/yy HH:mm'
+                          },
+                        }
+                      }).render();
+                    });
   </script>
 </body>
 

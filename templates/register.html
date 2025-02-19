@@ -1,8 +1,8 @@
 {% extends 'main-page.html' %}
 {% load static %}
 
-{% block body %}<br><br>
-<div class="container p-4 m-auto bg-info col-md-9 col-lg-6 mt-4" style="border-radius: 20px;">
+{% block body %}
+<div class="container p-4 m-auto bg-info col-md-9 col-lg-6 " style="border-radius: 20px;">
     <form method="POST" id="register-form" enctype="multipart/form-data">
         {% csrf_token %}
 

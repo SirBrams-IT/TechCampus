@@ -227,8 +227,13 @@ def logout_mentor(request):
 def courses(request):
         return render(request, 'login.html')
 
-def available_courses(request):
-    return render(request,'available_courses.html')
+def available_courses(request,user_id):
+    studentinfo = get_object_or_404(Member, id=user_id)
+    return render(request,'available_courses.html',{'studentinfo':studentinfo})
+
+def payment(request,user_id):
+    studentinfo = get_object_or_404(Member, id=user_id)
+    return render(request, 'payment.html',{'studentinfo':studentinfo})
 
 def main(request):
     return render(request, 'main.html')
@@ -337,8 +342,7 @@ def resend_reset_otp(request):
     return render(request, "resend_reset_otp.html")
 
 
-def payment(request):
-    return render(request, 'payment.html')
+
 
 def token(request):
     consumer_key = 'RPxUwLYGGMVJRkWofm0K09qnWfH60pwxg2kSVFmFERrQEow5'
@@ -597,24 +601,31 @@ def contacts(request):
        return render(request,'contact.html')
 
 
-def edit_profile(request, id):
-    profile = get_object_or_404(Member, id=id)
+def edit_profile(request, user_id):
+    studentinfo=Member.objects.get(id=user_id)
+
+
     if request.method == 'POST':
-        form = StudentForm(request.POST, request.FILES, instance=profile)
+        # Include request.FILES for file uploads
+        form = StudentForm(request.POST, request.FILES, instance=studentinfo)
         if form.is_valid():
             form.save()
             messages.success(request, "Profile updated successfully!")
-            return redirect('student_dashboard')
+            return redirect('student_dashboard')  # Ensure this URL name exists in urls.py
         else:
-            print(form.errors)
             messages.error(request, "Please correct the errors below.")
     else:
-        form = StudentForm(instance=profile)
-    return render(request, 'edit_profile.html', {'form': form, 'profile': profile})
+        form = StudentForm(instance=studentinfo)
 
-def my_course(request):
+    return render(request, 'edit_profile.html', {'form': form,  'studentinfo':studentinfo})
+
+
+def my_course(request,user_id):
     coursez = FileModel.objects.all()
-    return render(request, 'mycourse.html', {'coursez':coursez})
+    studentinfo = get_object_or_404(Member, id=user_id)
+
+    return render(request, 'mycourse.html', {'coursez':coursez,'studentinfo':studentinfo})
+
 
 def uploaded_course(request):
     uploads = FileModel.objects.all()
@@ -788,5 +799,18 @@ def settings_view(request):
     return render(request, "settings.html")
 
 
-def user_profile(request):
-    return render(request,'user-profile.html')
+def user_profile(request, user_id):
+    studentinfo = get_object_or_404(Member, id=user_id)
+    return render(request, 'user-profile.html', {'studentinfo': studentinfo})
+
+def student_main(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('/login')  # Redirect to login if user ID is missing
+
+    try:
+        studentinfo = Member.objects.get(id=user_id)
+    except Member.DoesNotExist:
+        return redirect('/login')  # Redirect if the user does not exist
+
+    return render(request, 'student-main.html', {'studentinfo': studentinfo})
