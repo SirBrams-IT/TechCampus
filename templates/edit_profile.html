@@ -2,11 +2,11 @@
 {% load static %}
 
 {% block body %}<br><br><br>br
-<div class="container mt-4" style="width:50%; margin-left: 40% ;" >
-    <div class="card shadow p-4" >
+
+    <div class="card shadow p-4 container" style="max-width: 550px" >
 
 
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data ">
             {% csrf_token %}
 
             <!-- Messages -->
@@ -36,31 +36,31 @@
             <table class="table table-borderless" >
                 <tbody>
                     <tr>
-                        <td class="text-end fw-bold align-middle"><label for="{{ form.name.id_for_label }}">Full Name:</label></td>
-                        <td><input type="text" name="name" class="form-control w-100" value="{{ form.instance.name }}"></td>
+                        <td class="text-end fw-bold "><label for="{{ form.name.id_for_label }}">Full Name:</label></td>
+                        <td><input type="text" name="name" class="form-control w-70" value="{{ form.instance.name }}"></td>
                     </tr>
                     <tr>
-                        <td class="text-end fw-bold align-middle"><label for="{{ form.email.id_for_label }}">Email:</label></td>
-                        <td><input type="email" name="email" class="form-control w-100" value="{{ form.instance.email }}"></td>
+                        <td class="text-end fw-bold "><label for="{{ form.email.id_for_label }}">Email:</label></td>
+                        <td><input type="email" name="email" class="form-control w-70" value="{{ form.instance.email }}"></td>
                     </tr>
                     <tr>
-                        <td class="text-end fw-bold align-middle"><label for="{{ form.username.id_for_label }}">Username:</label></td>
-                        <td><input type="text" name="username" class="form-control w-100" value="{{ form.instance.username }}"></td>
+                        <td class="text-end fw-bold "><label for="{{ form.username.id_for_label }}">Username:</label></td>
+                        <td><input type="text" name="username" class="form-control w-70" value="{{ form.instance.username }}"></td>
                     </tr>
                     <tr>
-                        <td class="text-end fw-bold align-middle"><label for="{{ form.phone.id_for_label }}">Phone:</label></td>
-                        <td><input type="text" name="phone" class="form-control w-100" value="{{ form.instance.phone }}"></td>
+                        <td class="text-end fw-bold "><label for="{{ form.phone.id_for_label }}">Phone:</label></td>
+                        <td><input type="text" name="phone" class="form-control w-70" value="{{ form.instance.phone }}"></td>
                     </tr>
                     <tr>
-                        <td class="text-end fw-bold align-middle"><label for="{{ form.id_number.id_for_label }}">ID Number:</label></td>
-                        <td><input type="text" name="id_number" class="form-control w-100" value="{{ form.instance.id_number }}"></td>
+                        <td class="text-end fw-bold "><label for="{{ form.id_number.id_for_label }}">ID Number:</label></td>
+                        <td><input type="text" name="id_number" class="form-control w-70" value="{{ form.instance.id_number }}"></td>
                     </tr>
                     <tr>
-                        <td class="text-end fw-bold align-middle"><label for="{{ form.date_of_birth.id_for_label }}">Date of Birth:</label></td>
-                        <td><input type="date" name="date_of_birth" class="form-control w-100" value="{{ form.instance.date_of_birth|date:'Y-m-d' }}"></td>
+                        <td class="text-end fw-bold "><label for="{{ form.date_of_birth.id_for_label }}">Date of Birth:</label></td>
+                        <td><input type="date" name="date_of_birth" class="form-control w-70" value="{{ form.instance.date_of_birth|date:'Y-m-d' }}"></td>
                     </tr>
                     <tr>
-                        <td class="text-end fw-bold align-middle"><label for="{{ form.gender.id_for_label }}">Gender:</label></td>
+                        <td class="text-end fw-bold "><label for="{{ form.gender.id_for_label }}">Gender:</label></td>
                         <td>{{ form.gender }}</td>
                     </tr>
                 </tbody>
