@@ -25,6 +25,7 @@ class Member(models.Model):
     otp_code = models.CharField(max_length=6, blank=True, null=True)
     otp_expires_at = models.DateTimeField(blank=True, null=True)
 
+
     def generate_otp(self):
         """Generate a new OTP and set expiration time."""
         self.otp_code = str(random.randint(100000, 999999))

@@ -5,7 +5,7 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 from django.core.mail import send_mail
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from requests.auth import HTTPBasicAuth
 from urllib3 import request
 
@@ -194,30 +194,33 @@ def logout_student(request):
 
 def admin_login(request):
     if request.method == "POST":
+        username = request.POST.get('username')
+        password = request.POST.get('password')
 
-        if AdminLogin.objects.filter(username=request.POST.get('username'), password=request.POST.get('password')).exists():
+        if AdminLogin.objects.filter(username=username, password=password).exists():
+            admininfo = AdminLogin.objects.filter(username=username).first()
 
-            admininfo = AdminLogin.objects.filter(username=request.POST.get('username')).first()
-            return render(request, 'admin_dashboard.html', {'admininfo': admininfo})
+            request.session['username'] = username
+            request.session['admin_id'] = admininfo.id
+
+            return redirect('admin_dashboard')
         else:
-
             return render(request, 'mentor_login.html', {'error': 'Invalid username or password'})
 
     return render(request, 'mentor_login.html')
 
 def admin_dashboard(request):
+    member = Member.objects.all()
     username = request.session.get('username')
-
     if not username:
-        return redirect('admin_login')  # Redirect to login if session is missing
-
+        return redirect('admin_login')
     try:
         admininfo = AdminLogin.objects.get(username=username)
     except AdminLogin.DoesNotExist:
         messages.error(request, "User not found.")
         return redirect('admin_login')
-
-    return render(request, 'admin_dashboard.html', {'admininfo': admininfo})
+    contacts = Contact.objects.all()
+    return render(request, 'admin_dashboard.html', {'admininfo': admininfo, 'contacts': contacts,'member':member})
 
 def logout_mentor(request):
     logout(request)
@@ -356,30 +359,32 @@ def token(request):
 
     return render(request, 'token.html', {"token":validated_mpesa_access_token})
 
-def add_student(request):
+def add_student(request, user_id):
+    admininfo = get_object_or_404(AdminLogin, id=user_id)  # Fetch the admin info
+
     if request.method == 'POST':
         # Extracting form data
-        name = request.POST['name']
-        email = request.POST['email']
-        username = request.POST['username']
-        phone = request.POST['phone']
-        id_number = request.POST['id_number']
-        date_of_birth = request.POST['date']
-        gender = request.POST['gender']
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        username = request.POST.get('username')
+        phone = request.POST.get('phone')
+        id_number = request.POST.get('id_number')
+        date_of_birth = request.POST.get('date')
+        gender = request.POST.get('gender')
 
         # Validation for unique fields
         if Member.objects.filter(email=email).exists():
             messages.error(request, "Email is already taken.")
-            return redirect('/add_student')
+            return redirect('add_student', user_id=user_id)
         elif Member.objects.filter(username=username).exists():
             messages.error(request, "Username is already taken.")
-            return redirect('/add_student')
+            return redirect('add_student', user_id=user_id)
         elif Member.objects.filter(phone=phone).exists():
             messages.error(request, "Phone number is already taken.")
-            return redirect('/add_student')
+            return redirect('add_student', user_id=user_id)
         elif Member.objects.filter(id_number=id_number).exists():
             messages.error(request, "ID number is already taken.")
-            return redirect('/add_student')
+            return redirect('add_student', user_id=user_id)
 
         # Default password setup (hashed)
         default_password = "student1234"
@@ -394,16 +399,14 @@ def add_student(request):
             id_number=id_number,
             date_of_birth=date_of_birth,
             gender=gender,
-            password=hashed_password,  # Save hashed password
+            password=hashed_password,
         )
         student.save()
 
         messages.success(request, "Student added successfully with default password: student1234")
-        return redirect('/records')
+        return redirect('admin_dashboard')  # Pass user_id to the 'records' URL
 
-    return render(request, 'add_student.html')
-
-
+    return render(request, 'add_student.html', {'admininfo': admininfo})
 
 def delete_account_view(request, id):
     studentinfo = get_object_or_404(Member, id=id)
@@ -447,24 +450,24 @@ def stk(request):
     return render(request, 'payment.html')
 
 
-def records(request):
+def records(request, user_id):
     allmembers = Member.objects.all()
-    contacts=Contact.objects.all()
+    admininfo = get_object_or_404(AdminLogin, id=user_id)
+    return render(request,'records.html',{'member':allmembers,'admininfo':admininfo})
 
-    return render(request,'records.html',{'member':allmembers,'contacts':contacts})
+def add_courses(request, user_id):
+    admininfo = get_object_or_404(AdminLogin, id=user_id)  # Use get_object_or_404 for better error handling
 
-
-def add_courses(request):
     if request.method == 'POST':
         form = FileUploadForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "File uploaded successfully!")
-            return redirect('/uploaded_course')
+            return redirect('uploaded_course')  # Ensure 'uploaded_course' is a valid URL name
     else:
         form = FileUploadForm()
-    return render(request, 'add_courses.html', {'form': form})
 
+    return render(request, 'add_courses.html', {'form': form, 'admininfo': admininfo})
 
 def add_cours(request):
     if request.method == "POST":
@@ -546,26 +549,28 @@ def student_assignments(request):
         'submission_form': SubmissionForm(),
     })
 
+
 def updates(request, id):
     updatestudent = get_object_or_404(Member, id=id)
-
     if request.method == 'POST':
         form = StudentForm(request.POST, request.FILES, instance=updatestudent)
         if form.is_valid():
             form.save()
             messages.success(request, "Student information updated successfully!")
-            return redirect('records')  # Use named URL instead of raw path
+            return redirect('admin_dashboard')
         else:
             messages.error(request, "Please correct the errors below.")
     else:
         form = StudentForm(instance=updatestudent)
 
-    return render(request, 'update.html', {'form': form, 'member_u': updatestudent})
+    return render(request, 'admin_dashboard.html', {'form': form, 'member_u': updatestudent})
 
-def delete_member(request, id):
-    member= Member.objects.get(id = id)
+
+
+def delete_member(request,id):
+    member= Member.objects.get(id  = id )
     member.delete()
-    return redirect('/records')
+    return redirect('admin_dashboard')
 
 def records_view(request):
     members = Member.objects.filter(is_deleted=True)
@@ -579,7 +584,7 @@ def restore_member(request, id):
 def delete_contact(request, id):
     contacts = get_object_or_404(Contact, id=id)
     contacts.delete()
-    return redirect('/records')
+    return redirect('admin_dashboard')
 
 def delete_course(request,id):
     allcourses=FileModel.objects.get(id=id)
@@ -595,7 +600,7 @@ def contacts(request):
            message = request.POST['message']
        )
        mycontact.save()
-       return redirect('/contact')
+       return redirect('/index')
 
    else:
        return render(request,'contact.html')
@@ -627,27 +632,28 @@ def my_course(request,user_id):
     return render(request, 'mycourse.html', {'coursez':coursez,'studentinfo':studentinfo})
 
 
-def uploaded_course(request):
+def uploaded_course(request,user_id):
+    admininfo = get_object_or_404(AdminLogin, id=user_id)
     uploads = FileModel.objects.all()
-    return render(request, 'uploaded_course.html', {'uploads': uploads})
+    return render(request, 'uploaded_course.html', {'uploads': uploads, 'admininfo':admininfo})
 
-def profile_update(request, id):
-    profile_update = get_object_or_404(AdminLogin, id=id)
+def profile_update(request, user_id):
+    admininfo = get_object_or_404(AdminLogin, id=user_id)
 
     if request.method == 'POST':
-        form = AdminForm(request.POST, request.FILES, instance=profile_update)
+        form = AdminForm(request.POST, request.FILES, instance=admininfo)
         if form.is_valid():
             form.save()
             messages.success(request, "Profile updated successfully!")
-            request.session['username'] = profile_update.username
+            request.session['username'] = admininfo.username
 
             return redirect('admin_dashboard')
         else:
             messages.error(request, "Please correct the errors below.")
     else:
-        form = AdminForm(instance=profile_update)
+        form = AdminForm(instance=admininfo)
 
-    return render(request, 'profile_update.html', {'form': form, 'profile_update': profile_update})
+    return render(request, 'profile_update.html', {'form': form, 'admininfo': admininfo})
 
 def generate_pdf(request):
     members = Member.objects.all()
@@ -803,14 +809,71 @@ def user_profile(request, user_id):
     studentinfo = get_object_or_404(Member, id=user_id)
     return render(request, 'user-profile.html', {'studentinfo': studentinfo})
 
+
+def users_profile(request, user_id):
+    admininfo = get_object_or_404(AdminLogin, id=user_id)
+    return render(request, 'users-profile.html', {'admininfo': admininfo})
+
 def student_main(request):
     user_id = request.session.get('user_id')
     if not user_id:
-        return redirect('/login')  # Redirect to login if user ID is missing
+        return redirect('/login')
 
     try:
         studentinfo = Member.objects.get(id=user_id)
     except Member.DoesNotExist:
-        return redirect('/login')  # Redirect if the user does not exist
+        return redirect('/login')
 
     return render(request, 'student-main.html', {'studentinfo': studentinfo})
+
+
+def admin_main(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('/mentor_login')
+
+    try:
+        admininfo = AdminLogin.objects.get(id=user_id)
+    except AdminLogin.DoesNotExist:
+        return redirect('/mentor_login')
+
+    return render(request, 'admin_main.html', {'admininfo': admininfo})
+
+
+def edit_student(request):
+    if request.method == "POST":
+        student_id = request.POST.get("student_id")
+        student = get_object_or_404(Member, id=student_id)
+
+        new_name = request.POST.get("name")
+        new_email = request.POST.get("email")
+        new_username = request.POST.get("username")
+        new_phone = request.POST.get("phone")
+        new_id_number = request.POST.get("id_number")
+        new_dob = request.POST.get("date_of_birth")
+        new_gender = request.POST.get("gender")
+
+        if Member.objects.filter(email=new_email).exclude(id=student.id).exists():
+            return JsonResponse({"error": "Email is already taken by another student."})
+
+        if Member.objects.filter(username=new_username).exclude(id=student.id).exists():
+            return JsonResponse({"error": "Username is already taken by another student."})
+
+        if Member.objects.filter(phone=new_phone).exclude(id=student.id).exists():
+            return JsonResponse({"error": "Phone number is already taken by another student."})
+
+        if Member.objects.filter(id_number=new_id_number).exclude(id=student.id).exists():
+            return JsonResponse({"error": "ID number is already taken by another student."})
+
+        student.name = new_name
+        student.email = new_email
+        student.username = new_username
+        student.phone = new_phone
+        student.id_number = new_id_number
+        student.date_of_birth = new_dob
+        student.gender = new_gender
+        student.save()
+
+        return JsonResponse({"success": "Student information updated successfully!"})
+
+    return JsonResponse({"error": "Invalid request."})

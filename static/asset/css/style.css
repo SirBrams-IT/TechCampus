@@ -587,7 +587,7 @@ h6 {
   top: 60px;
   left: 0;
   bottom: 0;
-  width: 150px;
+  width: 200px;
   z-index: 996;
   transition: all 0.3s;
   padding: 10px;
@@ -989,9 +989,6 @@ h6 {
   color: #6980aa;
 }
 
-/*--------------------------------------------------------------
-# Contact
---------------------------------------------------------------*/
 .contact .info-box {
   padding: 28px 30px;
 }

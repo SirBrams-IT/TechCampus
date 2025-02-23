@@ -36,13 +36,24 @@
         <label for="date" class="form-label">Date of Birth:</label>
         <input type="date" id="date" class="form-control" name="date" required><br>
 
-        <label class="form-label">Choose Gender:</label><br>
-        <input type="radio" id="male" name="gender" value="Male" required>
-        <label for="male">Male</label><br>
-        <input type="radio" id="female" name="gender" value="Female">
-        <label for="female">Female</label><br>
-        <input type="radio" id="other" name="gender" value="Other">
-        <label for="other">Other</label><br>
+        <div class="mb-3">
+    <label class="form-label">Choose Gender:</label>
+    <div class="d-flex gap-3">
+        <div class="form-check">
+            <input type="radio" id="male" name="gender" value="Male" class="form-check-input" required>
+            <label for="male" class="form-check-label">Male</label>
+        </div>
+        <div class="form-check">
+            <input type="radio" id="female" name="gender" value="Female" class="form-check-input">
+            <label for="female" class="form-check-label">Female</label>
+        </div>
+        <div class="form-check">
+            <input type="radio" id="other" name="gender" value="Other" class="form-check-input">
+            <label for="other" class="form-check-label">Other</label>
+        </div>
+    </div>
+</div>
+
 
         <div>
         <label for="profile_image">Profile Image:</label>

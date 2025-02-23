@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>SirBrams Tech Virtual Campus</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+    {% load static %}
+
+
+  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'asset/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/quill/quill.snow.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/quill/quill.bubble.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/simple-datatables/style.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="">
+  <link href="{% static 'asset/css/style.css' %}" rel="stylesheet">
+
+
+</head>
+
+<body>
+
+ <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy">
+    <i class="bi bi-list toggle-sidebar-btn " style="margin-left: 40px"></i>
+    <div class="d-flex  ">
+        <a href="#" class="logo d-flex align-items-center">
+            <span class=" d-lg-block text-uppercase text-white me-3" style="margin-left: 50px">STVC</span>
+        </a>
+    </div>
+
+
+    <div class="search-bar">
+      <form class="search-form d-flex align-items-center" method="POST" action="#">
+        <input type="text" name="query" placeholder="Search" title="Enter search keyword">
+        <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+      </form>
+    </div>
+
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+
+        <li class="nav-item d-block d-lg-none d-none">
+          <a class="nav-link nav-icon search-bar-toggle " href="#">
+            <i class="bi bi-search"></i>
+          </a>
+        </li>
+
+        <li class="nav-item dropdown pe-3 profile-container" style="margin-left: 50px">
+    <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+        <!-- Profile Image -->
+        <img src="{% if admininfo.profile_image and admininfo.profile_image.url %}{{ admininfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
+     alt="Profile"
+     class="rounded-circle profile-img">
+        <span class="d-md-block dropdown-toggle ps-2 me-3" id="greeting">{{ admininfo.username }}</span>
+    </a>
+
+    <!-- Dropdown Menu -->
+    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+        <li class="dropdown-header">
+            <span class="text-warning">Hello, {{ admininfo.username }}!</span>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+
+        <li>
+            <a class="dropdown-item d-flex align-items-center" href="{% url 'users-profile' admininfo.id %}">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+            </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+
+        <li>
+            <a class="dropdown-item d-flex align-items-center" href="{% url 'users-profile' admininfo.id  %}">
+                <i class="bi bi-gear"></i>
+                <span>Account Settings</span>
+            </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+
+        <li>
+            <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Sign Out</span>
+            </a>
+        </li>
+    </ul>
+</li>
+
+      </ul>
+    </nav>
+
+  </header>
+
+  <aside id="sidebar" class="sidebar">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+
+      <li class="nav-item">
+        <a class="nav-link " href="{% url 'admin_dashboard' %}">
+          <i class="bi bi-grid"></i>
+          <span>  Dashboard</span>
+        </a>
+      </li>
+
+<li class="nav-item">
+    <a class="nav-link collapsed profile-link" href="{% url 'users-profile' admininfo.id %}">
+        <i class="bi bi-person-bounding-box"></i>
+        <span>My Profile</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link collapsed" href="{% url 'add_courses' admininfo.id %}">
+        <i class="bi bi-book"></i><span>Courses</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link collapsed" href="{% url 'add_student' admininfo.id %}">
+        <i class="bi bi-mortarboard"></i><span>Add  Students</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link collapsed" href="#">
+        <i class="bi bi-pencil-square"></i><span>Assignments</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link collapsed" href="#">
+        <i class="bi bi-list-check"></i><span>Activities</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link collapsed" href="#">
+        <i class="bi bi-chat-dots"></i><span>Messages</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link collapsed" href="#">
+        <i class="bi bi-envelope"></i>
+        <span>Reports</span>
+    </a>
+</li>
+     <li class="nav-item">
+    <a class="nav-link collapsed" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
+        <i class="bi bi-envelope"></i>
+        <span>Signout</span>
+    </a>
+</li>
+    </ul>
+  </aside>
+
+ {% block content %}
+
+ {% endblock %}
+
+  <div style="background-color: navy">
+      <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center text-danger">
+                Are you sure you want to log out?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="{% url 'logout_mentor' %}" class="btn btn-danger">Yes, Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+      <div class="modal fade text-center text-white" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="fw-bold text-danger">Are you sure you want to delete contact messages?</p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer me-2">
+                <button type="button" class="btn btn-secondary me-5" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Yes, Delete</a>
+            </div>
+        </div>
+    </div>
+    </div>
+   <footer class=" text-white text-center py-3 mt-4 ">
+    <p class="mb-0">&copy; <span id="year"></span> SirBrams Tech Virtual Campus. All Rights Reserved.</p>
+ </footer>
+ </div>
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'asset/vendor/apexcharts/apexcharts.min.js' %}"></script>
+  <script src="{% static 'asset/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'asset/vendor/chart.js/chart.umd.js' %}"></script>
+  <script src="{% static 'asset/vendor/echarts/echarts.min.js' %}"></script>
+  <script src="{% static 'asset/vendor/quill/quill.js' %}"></script>
+  <script src="{% static 'asset/vendor/simple-datatables/simple-datatables.js' %}"></script>
+  <script src="{% static 'asset/vendor/tinymce/tinymce.min.js' %}"></script>
+  <script src="{% static 'asset/vendor/php-email-form/validate.js' %}"></script>
+
+  <!-- Template Main JS File -->
+  <script src="{% static 'asset/js/main.js' %}"></script>
+  <script>
+
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+    function updateGreeting() {
+        let now = new Date();
+        let hours = now.getHours();
+        let greeting = "{{ studentinfo.username }}";
+
+        if (hours >= 5 && hours < 12) {
+            greeting = "Good morning! {{ admininfo.username }}";
+        } else if (hours >= 12 && hours < 17) {
+            greeting = "Good afternoon! {{ admininfo.username }}";
+        } else if (hours >= 17 && hours < 21) {
+            greeting = "Good evening! {{ admininfo.username }}";
+        } else {
+            greeting = "Good night! {{ admininfo.username }}";
+        }
+
+        document.getElementById("greeting").textContent = greeting;
+    }
+
+    updateGreeting(); // Call function on page load
+    setInterval(updateGreeting, 60000); // Update every minute
+     function updateCurrentTime() {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0'); // Adds leading zero if single digit
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+
+  const timeString = `${hours}:${minutes}:${seconds}`;
+
+  document.getElementById("current-time").textContent = timeString;
+}
+
+updateCurrentTime(); // Call function on page load
+setInterval(updateCurrentTime, 1000);
+
+       function openDeleteModal(deleteUrl) {
+            document.getElementById('confirmDeleteBtn').href = deleteUrl;
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            deleteModal.show();
+        }
+        function showUpdateModal(id) {
+            var updateUrl = "/updates/" + id;
+            document.getElementById("confirmUpdateBtn").href = updateUrl;
+            var modal = new bootstrap.Modal(document.getElementById("updateModal"));
+            modal.show();
+        }
+
+
+
+             function populateEditForm(id, name, email, username, phone, id_number, date_of_birth, gender) {
+        document.getElementById("student_id").value = id;
+        document.getElementById("student_name").value = name;
+        document.getElementById("student_email").value = email;
+        document.getElementById("student_username").value = username;
+        document.getElementById("student_phone").value = phone;
+        document.getElementById("student_id_number").value = id_number;
+        document.getElementById("student_dob").value = date_of_birth;
+        document.getElementById("student_gender").value = gender;
+
+        document.getElementById("editStudentForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent default form submission
+
+    let form = this;
+    let formData = new FormData(form);
+
+    fetch("{% url 'edit_student' %}", {
+        method: "POST",
+        body: formData,
+        headers: {
+            "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            // Show error message inside modal
+            let errorDiv = document.getElementById("editStudentError");
+            errorDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        } else if (data.success) {
+            // Reload the page after a short delay for changes to reflect
+            window.location.reload();
+        }
+    })
+    .catch(error => console.error("Error:", error));
+});
+    }
+  </script>
+</body>
+
+</html>
