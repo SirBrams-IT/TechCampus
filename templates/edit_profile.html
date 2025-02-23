@@ -6,8 +6,8 @@
     <div class="card shadow p-4 container" style="max-width: 550px" >
 
 
-        <form method="POST" enctype="multipart/form-data ">
-            {% csrf_token %}
+        <form method="POST" enctype="multipart/form-data">
+           {% csrf_token %}
 
             <!-- Messages -->
             {% for message in messages %}
@@ -15,21 +15,24 @@
             {% endfor %}
 
          <!-- Profile Image Upload -->
+        <h2 class=" mt-3">Edit Profile</h2>
 <div class="mb-4 text-center position-relative">
-    <input id="profileImageInput" type="file" name="profile_image" class="d-none" onchange="previewImage(event)">
-    <div class="position-relative d-inline-block">
-        <img id="profileImagePreview"
-             src="{% if form.instance.profile_image %}{{ form.instance.profile_image.url }}{% else %}{% static 'assets/img/profile.jpeg' %}{% endif %}"
-             alt="Profile Image"
-             class="border border-primary p-1 rounded-circle"
-             style="width: 120px; height: 120px; object-fit: cover; cursor: pointer;"
-             onclick="document.getElementById('profileImageInput').click();"
-             data-bs-toggle="tooltip" data-bs-placement="top" title="Click to change">
-        <div class="position-absolute top-50 start-50 translate-middle text-white bg-dark bg-opacity-50 rounded p-1 small d-none" id="hoverText">
-            Click to change
+
+            <div>
+            <label for="profile_image">{{ form.profile_image.label }}</label>
+            <input id="profileImageInput" type="file" name="profile_image" style="display: none;" onchange="previewImage(event)">
+            <button type="submit" style="display: none;">Upload</button>
         </div>
-    </div>
-    <h2 class="text-center mt-3">Edit Profile</h2>
+
+        <div class="text-center">
+            <img id="profileImagePreview"
+                 src="{% if studentinfo.profile_image %}{{ studentinfo.profile_image.url }}{% else %}{% static 'assets/img/profile.jpeg' %}{% endif %}"
+                 alt="Profile Image"
+                 class="rectangle"
+                 style="width: 100px; height: 100px; object-fit: cover; cursor: pointer;"
+                 onclick="document.getElementById('profileImageInput').click();">
+        </div>
+
 </div>
 
             <!-- Form Table -->
@@ -76,37 +79,18 @@
 
 <!-- JavaScript for Image Preview -->
 <script>
-    function previewImage(event) {
-        const reader = new FileReader();
+        function previewImage(event) {
+        var input = event.target;
+            var reader = new FileReader();
+
         reader.onload = function() {
-            const preview = document.getElementById('profileImagePreview');
-            preview.src = reader.result;
+            var imgElement = document.getElementById('profileImagePreview');
+            imgElement.src = reader.result;
         };
-        reader.readAsDataURL(event.target.files[0]);
-    }
 
-     document.addEventListener("DOMContentLoaded", function() {
-        var imgPreview = document.getElementById('profileImagePreview');
-        var hoverText = document.getElementById('hoverText');
-
-        imgPreview.addEventListener('mouseenter', function() {
-            hoverText.classList.remove('d-none');
-        });
-
-        imgPreview.addEventListener('mouseleave', function() {
-            hoverText.classList.add('d-none');
-        });
-
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
-    });
-
-    function previewImage(event) {
-        const reader = new FileReader();
-        reader.onload = function() {
-            document.getElementById('profileImagePreview').src = reader.result;
-        };
-        reader.readAsDataURL(event.target.files[0]);
+        if (input.files && input.files[0]) {
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 </script>
 

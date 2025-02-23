@@ -159,8 +159,8 @@
 </li>
      <li class="nav-item">
     <a class="nav-link collapsed" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
-        <i class="bi bi-envelope"></i>
-        <span>Signout</span>
+        <i class="bi bi-box-arrow-left "></i>
+        <span class="text-danger">Signout</span>
     </a>
 </li>
     </ul>
@@ -249,7 +249,7 @@
                             <td>{{ x.id_number }}</td>
                             <td>{{ x.date_of_birth }}</td>
                             <td>{{ x.gender }}</td>
-                            <td class="text-center">
+                            <td class="text-center" style="max-height: 60px">
                                 {% if x.profile_image %}
                                     <img src="{{ x.profile_image.url }}" class="rounded-circle img-thumbnail">
                                 {% else %}

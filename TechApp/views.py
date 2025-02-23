@@ -54,21 +54,21 @@ def register(request):
         # Validate uniqueness
         if Member.objects.filter(email=email).exists():
             messages.error(request, "Email is already taken.")
-            return redirect('/register')
+            return redirect('register')
         if Member.objects.filter(username=username).exists():
             messages.error(request, "Username is already taken.")
-            return redirect('/register')
+            return redirect('register')
         if Member.objects.filter(phone=phone).exists():
             messages.error(request, "Phone number is already taken.")
-            return redirect('/register')
+            return redirect('register')
         if Member.objects.filter(id_number=id_number).exists():
             messages.error(request, "ID number is already taken.")
-            return redirect('/register')
+            return redirect('register')
 
         # Validate password match
         if password != confirm_password:
             messages.error(request, "Passwords do not match.")
-            return redirect('/register')
+            return redirect('register')
 
         # Create user
         new_user = Member(

@@ -108,6 +108,7 @@
 }
 
 .carousel-item .overlay .content p {
+  top: 150px;
   font-size: 1.1rem;
   margin-bottom: 20px;
   color: #333;

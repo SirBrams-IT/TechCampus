@@ -22,6 +22,7 @@ class FileUploadForm(forms.ModelForm):
 class StudentForm(forms.ModelForm):
     class Meta:
         model = Member
+        fields= '__all__'
         exclude=['password','confirm_password']
 
     def clean_email(self):
