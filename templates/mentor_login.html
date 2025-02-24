@@ -5,16 +5,32 @@
 
     <form method="POST" action="{% url 'admin_login' %}">
         {% csrf_token %}
-        {% if messages %}
-        <div>
-            {% for message in messages %}
-            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+
+ {% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'error' %}
+            <!-- Error message -->
+            <div id="error-message" class="alert alert-danger">
                 {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              <div class="progress mt-2">
+                    <div id="progress-bar" class="progress-bar bg-danger" style="width: 0%;"></div>
+                </div>
             </div>
-            {% endfor %}
-        </div>
+
+        {% elif message.tags == 'success' %}
+            <div id="logout-container" class="alert alert-danger">
+                {{ message }}
+                <div class="progress mt-2">
+                    <div id="progress-bar" class="progress-bar bg-danger" style="width: 0%;"></div>
+                </div>
+            </div>
+
         {% endif %}
+    {% endfor %}
+{% endif %}
+
+
+
          <div class="container d-flex justify-content-center align-items-center mb-3">
             <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
         </div>
@@ -34,7 +50,31 @@
            <div class="d-grid pt-2">
             <button type="submit" class="btn btn-primary btn-block">Login</button>
         </div>
+
         <br>
+
     </form>
 </div>
+    <script>
+
+               setTimeout(function() {
+                    var errorDiv = document.getElementById("error-message");
+                    if (errorDiv) {
+                        errorDiv.style.display = "none";
+                    }
+                }, 5000);
+
+                let progressBar = document.getElementById("progress-bar");
+                let logoutDiv = document.getElementById("logout-container");
+                let width = 0;
+                let interval = setInterval(function() {
+                    if (width >= 100) {
+                        clearInterval(interval);
+                        logoutDiv.style.display = "none";  // Hide logout message after 5s
+                    } else {
+                        width++;
+                        progressBar.style.width = width + "%";
+                    }
+                }, 50);
+            </script>
 {% endblock %}

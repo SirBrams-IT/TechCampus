@@ -13,17 +13,11 @@
     font-size: 16px;
     font-weight: bolder;
     text-decoration: none;
-    margin-right: 20px;
+
 
 }
 
-.toggle-sidebar-btn {
-  font-size: 16px;
-  cursor: pointer;
-  color: white;
-  font-weight: bolder;
 
-}
 .navbar-nav li a.active {
     color: #f8d210;
     font-weight: bold;
@@ -61,69 +55,47 @@
     display: none;
 }
 
-.nav-item:hover .dropdown-menu-end {
-    display: block;
-    min-width: 100%;
-    border-radius: 10px;
-}
 
-.carousel-inner {
-    max-height: 120vh;
-    overflow: hidden;
-}
+        .carousel {
+            height: 700px;
+        }
 
-.carousel-item img {
-    object-fit: cover;
-    height: 80vh; /* Ensures images do not stretch beyond the container */
-}
+        .carousel-inner, .carousel-item, .carousel-item img {
+            height: 100%;
+        }
 
+        .carousel-item img {
+            width: 100%;
+            object-fit: cover; /* Ensures the image covers the entire area without distortion */
+        }
 
-.carousel-item .overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-  display: grid;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  z-index: 2;
-}
+        /* Overlay Positioning */
+        .carousel-item {
+            position: relative;
+        }
 
-.carousel-item .overlay .content {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 20px 40px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-  animation: fadeIn 1s ease-in-out;
-}
+        .overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
 
+        .overlay .content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-.carousel-item .overlay .content h2 {
-  font-size: 2rem;
-  margin-bottom: 15px;
-  color: #007bff;
-}
+        .toggle-sidebar-btn {
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
 
-.carousel-item .overlay .content p {
-  top: 150px;
-  font-size: 1.1rem;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.carousel-item .overlay .content .btn {
-  padding: 10px 25px;
-  font-size: 1rem;
-  border-radius: 5px;
-  background-color: #007bff;
-  border: none;
-  color: #fff;
-}
-
-
+        }
 
         .dropdown-options a {
             display: block;

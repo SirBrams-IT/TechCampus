@@ -178,89 +178,117 @@
 
      <div class="container mt-4">
     <!-- Dashboard Cards -->
-    <div class="row justify-content-center">
-        <div class="col-md-3">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <i class="bi bi-book display-6 text-primary"></i>
-                    <h5 class="card-title mt-2">Courses</h5>
-                    <p class="card-text">Explore available courses and enroll.</p>
-                    <a href="{% url 'available_courses' studentinfo.id %}" class="btn btn-primary btn-sm">View Courses</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <i class="bi bi-pencil-square display-6 text-danger"></i>
-                    <h5 class="card-title mt-2">Assignments</h5>
-                    <p class="card-text">Track and submit your assignments.</p>
-                    <a href="{% url 'student_assignments' %}" class="btn btn-danger btn-sm">View Assignments</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <i class="bi bi-chat-dots display-6 text-info"></i>
-                    <h5 class="card-title mt-2">Chats</h5>
-                    <p class="card-text">Communicate with mentors and peers.</p>
-                    <a href="#" class="btn btn-info btn-sm">Go to Chats</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <i class="bi bi-person-badge display-6 text-success"></i>
-                    <h5 class="card-title mt-2">My Courses</h5>
-                    <p class="card-text">View your enrolled courses.</p>
-                    <a href="{% url 'my_course' studentinfo.id %}" class="btn btn-success btn-sm">View My Courses</a>
-                </div>
+<div class="row justify-content-center">
+    <!-- Existing Cards -->
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body text-center">
+                <i class="bi bi-book display-6 text-primary"></i>
+                <h5 class="card-title mt-2">Courses</h5>
+                <p class="card-text">Explore available courses and enroll.</p>
+                <a href="{% url 'available_courses' studentinfo.id %}" class="btn btn-primary btn-sm">View Courses</a>
             </div>
         </div>
     </div>
 
-    <!-- Upcoming Activities -->
-    <div class="mt-4">
-        <h5 class="text-center text-primary">Upcoming Activities</h5>
-        <ul class="list-group upcoming-activities">
-            <li class="list-group-item"><i class="bi bi-clock text-warning"></i> Assignment 1 due in 2 days</li>
-            <li class="list-group-item"><i class="bi bi-calendar-event text-info"></i> Live session: "Web Design Basics" tomorrow at 3 PM</li>
-            <li class="list-group-item"><i class="bi bi-flag text-danger"></i> Project submission deadline: Friday</li>
-        </ul>
+    <!-- New Card for Learning Progress -->
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up display-6 text-success"></i>
+                <h5 class="card-title mt-2">Learning Progress</h5>
+                <p class="card-text">Your current progress: {{ student.learning_percentage }}%</p>
+                <a href="#" class="btn btn-success btn-sm">View Progress</a>
+            </div>
+        </div>
     </div>
 
-    <!-- Student Profile -->
-    <div class="mt-4 profile-section">
-        <h3 class="text-center text-dark">Student Information</h3>
-        <table class="table table-bordered table-hover">
-            <thead class="bg-primary text-white ">
-                <tr class="">
-                    <th>Field</th>
-                    <th>Details</th>
-                </tr>
-            </thead>
-            <tbody>
-
-                <tr><td>Name</td><td>{{ studentinfo.name }}</td></tr>
-                <tr><td>Email</td><td>{{ studentinfo.email }}</td></tr>
-                <tr><td>Username</td><td>{{ studentinfo.username }}</td></tr>
-                <tr><td>Phone</td><td>{{ studentinfo.phone }}</td></tr>
-                <tr><td>ID Number</td><td>{{ studentinfo.id_number }}</td></tr>
-                <tr><td>Date of Birth</td><td>{{ studentinfo.date_of_birth }}</td></tr>
-                <tr><td>Gender</td><td>{{ studentinfo.gender }}</td></tr>
-            </tbody>
-        </table>
-        <div class="text-center">
-            <a href="{% url 'edit_profile' studentinfo.id %}" class="btn btn-primary">Edit Profile</a>
-            <button class="btn btn-danger" onclick="openDeleteModal('{% url 'delete_account' studentinfo.id %}')">
-                <i class="fas fa-trash-alt"></i> Delete Account
-            </button>
+    <!-- Other Cards -->
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body text-center">
+                <i class="bi bi-pencil-square display-6 text-danger"></i>
+                <h5 class="card-title mt-2">Assignments</h5>
+                <p class="card-text">Track and submit your assignments.</p>
+                <a href="{% url 'student_assignments' %}" class="btn btn-danger btn-sm">View Assignments</a>
+            </div>
         </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card dashboard-card">
+            <div class="card-body text-center">
+                <i class="bi bi-chat-dots display-6 text-info"></i>
+                <h5 class="card-title mt-2">Chats</h5>
+                <p class="card-text">Communicate with mentors and peers.</p>
+                <a href="#" class="btn btn-info btn-sm">Go to Chats</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+ <!-- Upcoming Activities -->
+<div class="mt-4">
+    <h5 class="text-center text-primary">Upcoming Activities</h5>
+    <ul class="list-group upcoming-activities">
+        <li class="list-group-item"><i class="bi bi-clock text-warning"></i> Assignment 1 due in 2 days</li>
+        <li class="list-group-item"><i class="bi bi-calendar-event text-info"></i> Live session: "Web Design Basics" tomorrow at 3 PM</li>
+        <li class="list-group-item"><i class="bi bi-flag text-danger"></i> Project submission deadline: Friday</li>
+        {% if mentor %}
+        <li class="list-group-item"><i class="bi bi-person text-success"></i> Mentor meeting with {{ mentor.member.name }} on Friday at 10 AM</li>
+        {% endif %}
+    </ul>
+</div>
+
+   <!-- Student Profile -->
+<div class="mt-4 profile-section">
+    <h3 class="text-center text-dark">Student Information</h3>
+    <table class="table table-bordered table-hover">
+        <thead class="bg-primary text-white">
+            <tr>
+                <th>Field</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Name</td><td>{{ studentinfo.name }}</td></tr>
+            <tr><td>Email</td><td>{{ studentinfo.email }}</td></tr>
+            <tr><td>Username</td><td>{{ studentinfo.username }}</td></tr>
+            <tr><td>Phone</td><td>{{ studentinfo.phone }}</td></tr>
+            <tr><td>ID Number</td><td>{{ studentinfo.id_number }}</td></tr>
+            <tr><td>Date of Birth</td><td>{{ studentinfo.date_of_birth }}</td></tr>
+            <tr><td>Gender</td><td>{{ studentinfo.gender }}</td></tr>
+            <!-- Add Student Progress -->
+            <tr><td>Learning Progress</td><td>{{ student.learning_percentage }}%</td></tr>
+        </tbody>
+    </table>
+
+    <!-- Mentor Information -->
+    {% if mentor %}
+    <h3 class="text-center text-dark mt-4">Mentor Information</h3>
+    <table class="table table-bordered table-hover">
+        <thead class="bg-primary text-white">
+            <tr>
+                <th>Field</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Name</td><td>{{ mentor.member.name }}</td></tr>
+            <tr><td>Email</td><td>{{ mentor.member.email }}</td></tr>
+            <tr><td>Expertise</td><td>{{ mentor.expertise }}</td></tr>
+            <tr><td>Years of Experience</td><td>{{ mentor.years_of_experience }}</td></tr>
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-center text-danger mt-4">No mentor assigned.</p>
+    {% endif %}
+
+    <div class="text-center">
+        <a href="{% url 'edit_profile' studentinfo.id %}" class="btn btn-primary">Edit Profile</a>
+        <button class="btn btn-danger" onclick="openDeleteModal('{% url 'delete_account' studentinfo.id %}')">
+            <i class="fas fa-trash-alt"></i> Delete Account
+        </button>
     </div>
 </div>
 

@@ -2,26 +2,20 @@ import json
 from datetime import timezone
 import requests
 from django.contrib.auth.hashers import check_password
-from django.contrib.auth.hashers import make_password
-from django.utils import timezone
 from django.core.mail import send_mail
 from django.http import HttpResponse, JsonResponse
 from requests.auth import HTTPBasicAuth
-from urllib3 import request
-
+from django.contrib.auth import authenticate, login as auth_login
 from TechApp.credentials import MpesaAccessToken, LipanaMpesaPpassword
 from django.shortcuts import  redirect,render, get_object_or_404
-from django.contrib.auth import logout
+from django.contrib.auth import logout, authenticate
 from django.contrib import messages
 from TechApp.forms import FileUploadForm, StudentForm, AssignmentForm,SubmissionForm,AdminForm
-from TechApp.models import Member, Contact, FileModel, AdminLogin,Assignment,Submission
+from TechApp.models import Member, Contact, FileModel, AdminLogin, Assignment, Submission, Student, Mentor
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
 import random
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 
@@ -172,7 +166,6 @@ def login(request):
 
     return render(request, 'login.html')
 
-
 def student_dashboard(request):
     username = request.session.get('username')
 
@@ -203,11 +196,21 @@ def admin_login(request):
             request.session['username'] = username
             request.session['admin_id'] = admininfo.id
 
-            return redirect('admin_dashboard')
-        else:
-            return render(request, 'mentor_login.html', {'error': 'Invalid username or password'})
+            messages.success(request, "Login successful! Welcome to the admin dashboard.")  # Set success message
+            return redirect('admin_dashboard')  # Redirect with message
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            if user.is_superuser:
+                auth_login(request, user)
+
+                messages.success(request, "Login successful! Redirecting to admin panel.")  # Set success message
+                return redirect('/admin/')  # Redirect with message
+
+        messages.error(request, "Invalid username or password")  # Error message for incorrect login
 
     return render(request, 'mentor_login.html')
+
 
 def admin_dashboard(request):
     member = Member.objects.all()
@@ -219,8 +222,26 @@ def admin_dashboard(request):
     except AdminLogin.DoesNotExist:
         messages.error(request, "User not found.")
         return redirect('admin_login')
+
     contacts = Contact.objects.all()
-    return render(request, 'admin_dashboard.html', {'admininfo': admininfo, 'contacts': contacts,'member':member})
+    students = Student.objects.all()  # Fetch all students with their progress
+
+    # Add progress statistics
+    total_students = students.count()
+    excellent_students = students.filter(learning_percentage__gte=80).count()
+    average_students = students.filter(learning_percentage__gte=50, learning_percentage__lt=80).count()
+    needs_improvement_students = students.filter(learning_percentage__lt=50).count()
+
+    return render(request, 'admin_dashboard.html', {
+        'admininfo': admininfo,
+        'contacts': contacts,
+        'member': member,
+        'students': students,  # Pass students to the template
+        'total_students': total_students,  # Total number of students
+        'excellent_students': excellent_students,  # Students with ≥ 80% progress
+        'average_students': average_students,  # Students with 50% - 79% progress
+        'needs_improvement_students': needs_improvement_students,  # Students with < 50% progress
+    })
 
 def logout_mentor(request):
     logout(request)
@@ -342,7 +363,7 @@ def resend_reset_otp(request):
             messages.error(request, "Email does not exist.")
             return redirect("resend-reset-otp")
 
-    return render(request, "resend_reset_otp.html")
+    return render(request, "resent_reset_otp.html")
 
 
 
@@ -442,7 +463,7 @@ def stk(request):
         # Check the response status for success or failure
         if response.status_code == 200:
             # Redirect to payment page with a success message
-            return redirect('/available_courses?status=success')
+            return redirect('/courses?status=success')
         else:
             # Redirect to payment page with a failure message
             return redirect('/payment?status=failure')
@@ -463,7 +484,7 @@ def add_courses(request, user_id):
         if form.is_valid():
             form.save()
             messages.success(request, "File uploaded successfully!")
-            return redirect('uploaded_course')  # Ensure 'uploaded_course' is a valid URL name
+            return redirect('add_courses')  # Ensure 'uploaded_course' is a valid URL name
     else:
         form = FileUploadForm()
 

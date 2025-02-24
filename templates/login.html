@@ -69,5 +69,26 @@
         {% endfor %}
         {% endif %}
     });
+
+     setTimeout(function() {
+      var successDiv = document.getElementById("success-message");
+         if (successDiv) {
+           successDiv.style.display = "none";
+                    }
+                }, 5000);
+
+                let progressBar = document.getElementById("progress-bar");
+                let logoutDiv = document.getElementById("logout-container");
+                let width = 0;
+                let interval = setInterval(function() {
+                    if (width >= 100) {
+                        clearInterval(interval);
+                        logoutDiv.style.display = "none";  // Hide logout message after 5s
+                    } else {
+                        width++;
+                        progressBar.style.width = width + "%";
+                    }
+                }, 50);
+
 </script>
 {% endblock %}

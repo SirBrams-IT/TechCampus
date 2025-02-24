@@ -32,11 +32,13 @@
 
 <body>
 
- <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy">
-    <i class="bi bi-list toggle-sidebar-btn " style="margin-left: 40px"></i>
+
+
+ <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy ; max-height: 100px">
+    <i class="bi bi-list toggle-sidebar-btn " style="margin-left: 60px"></i>
     <div class="d-flex  ">
         <a href="#" class="logo d-flex align-items-center">
-            <span class=" d-lg-block text-uppercase text-white " style="margin-left: 50px">STVC</span>
+            <span class=" d-lg-block text-uppercase text-white " style="margin-left: 30px">STVC</span>
         </a>
     </div>
 
@@ -57,7 +59,7 @@
           </a>
         </li>
 
-        <li class="nav-item dropdown pe-3 profile-container me-3" style="margin-left: 50px">
+        <li class="nav-item dropdown pe-3 profile-container me-5" style="margin-left: 20px">
     <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
         <!-- Profile Image -->
         <img src="{% if admininfo.profile_image and admininfo.profile_image.url %}{{ admininfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
@@ -69,7 +71,7 @@
     <!-- Dropdown Menu -->
     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
         <li class="dropdown-header">
-            <span class="text-warning">Hello, {{ admininfo.username }}!</span>
+            <span class="text-warning pe-5">Hello, {{ admininfo.username }}!</span>
         </li>
         <li><hr class="dropdown-divider"></li>
 
@@ -102,6 +104,8 @@
     </nav>
 
   </header>
+
+
 
   <aside id="sidebar" class="sidebar">
 
@@ -167,6 +171,20 @@
   </aside>
 
 <main id="main" class="main">
+    {% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success' %}  <!-- Show only success messages -->
+            <div  id="success-message" class="alert alert-success">
+                {{ message }}
+             <div class="progress mt-2">
+                    <div id="progress-bar" class="progress-bar bg-success" style="width: 0%;"></div>
+                </div>
+            </div>
+            </div>
+
+        {% endif %}
+    {% endfor %}
+{% endif %}
      <div class="pagetitle">
       <h1> Hello <b class="text-warning">{{ admininfo.name|title }}</b>, Welcome to Admin/Mentor Dashboard <span class="ms-5 bg-black text-white" id="current-time"></span></h1>
       <nav>
@@ -571,6 +589,28 @@ setInterval(updateCurrentTime, 1000);
     .catch(error => console.error("Error:", error));
 });
     }
+
+
+      setTimeout(function() {
+      var successDiv = document.getElementById("success-message");
+         if (successDiv) {
+           successDiv.style.display = "none";
+                    }
+                }, 5000);
+
+                let progressBar = document.getElementById("progress-bar");
+                let logoutDiv = document.getElementById("logout-container");
+                let width = 0;
+                let interval = setInterval(function() {
+                    if (width >= 100) {
+                        clearInterval(interval);
+                        logoutDiv.style.display = "none";  // Hide logout message after 5s
+                    } else {
+                        width++;
+                        progressBar.style.width = width + "%";
+                    }
+                }, 50);
+
   </script>
 </body>
 

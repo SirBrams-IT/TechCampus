@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 import random
 from django.utils import timezone
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 def generate_otp():
     return str(random.randint(100000, 999999))
@@ -25,6 +26,14 @@ class Member(models.Model):
     otp_code = models.CharField(max_length=6, blank=True, null=True)
     otp_expires_at = models.DateTimeField(blank=True, null=True)
 
+    class User(models.Model):
+        email = models.CharField(max_length=100)
+        username = models.CharField(max_length=50)
+        password = models.CharField(max_length=50)
+        is_superuser = models.BooleanField(default=False)
+
+        def __str__(self):
+            return self.email
 
     def generate_otp(self):
         """Generate a new OTP and set expiration time."""
@@ -111,6 +120,22 @@ class AdminLogin(models.Model):
 
     def __str__(self):
         return self.name
+
+class Student(models.Model):
+    member = models.OneToOneField(Member, on_delete=models.CASCADE, primary_key=True)
+    mentor = models.ForeignKey('Mentor', on_delete=models.SET_NULL, null=True, blank=True)
+    learning_percentage = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
+
+    def __str__(self):
+        return self.member.name
+
+class Mentor(models.Model):
+    member = models.OneToOneField(Member, on_delete=models.CASCADE, primary_key=True)
+    expertise = models.CharField(max_length=100)
+    years_of_experience = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.member.name
 
 class FileModel(models.Model):
     video = models.FileField(upload_to='videos/', blank=True, null=True)
