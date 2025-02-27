@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Available Courses</h2>
+<ul>
+    {% for course in courses %}
+    <li>{{ course.title }} ({{ course.course_code }}) - Mentor: {{ course.mentor }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

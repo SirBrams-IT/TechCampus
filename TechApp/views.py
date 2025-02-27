@@ -10,8 +10,8 @@ from TechApp.credentials import MpesaAccessToken, LipanaMpesaPpassword
 from django.shortcuts import  redirect,render, get_object_or_404
 from django.contrib.auth import logout, authenticate
 from django.contrib import messages
-from TechApp.forms import FileUploadForm, StudentForm, AssignmentForm,SubmissionForm,AdminForm
-from TechApp.models import Member, Contact, FileModel, AdminLogin, Assignment, Submission, Student, Mentor
+from TechApp.forms import CourseUploadForm, EnrollmentForm, FileUploadForm, StudentForm, AssignmentForm,SubmissionForm,AdminForm
+from TechApp.models import Course, Member, Contact, FileModel, AdminLogin, Assignment, Submission
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 import random
@@ -224,23 +224,11 @@ def admin_dashboard(request):
         return redirect('admin_login')
 
     contacts = Contact.objects.all()
-    students = Student.objects.all()  # Fetch all students with their progress
-
-    # Add progress statistics
-    total_students = students.count()
-    excellent_students = students.filter(learning_percentage__gte=80).count()
-    average_students = students.filter(learning_percentage__gte=50, learning_percentage__lt=80).count()
-    needs_improvement_students = students.filter(learning_percentage__lt=50).count()
 
     return render(request, 'admin_dashboard.html', {
         'admininfo': admininfo,
         'contacts': contacts,
         'member': member,
-        'students': students,  # Pass students to the template
-        'total_students': total_students,  # Total number of students
-        'excellent_students': excellent_students,  # Students with ≥ 80% progress
-        'average_students': average_students,  # Students with 50% - 79% progress
-        'needs_improvement_students': needs_improvement_students,  # Students with < 50% progress
     })
 
 def logout_mentor(request):
@@ -898,3 +886,29 @@ def edit_student(request):
         return JsonResponse({"success": "Student information updated successfully!"})
 
     return JsonResponse({"error": "Invalid request."})
+
+
+
+def upload_course(request):
+    if request.method == 'POST':
+        form = CourseUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('mentor_dashboard')
+    else:
+        form = CourseUploadForm()
+    return render(request, 'upload_course.html', {'form': form})
+
+def enroll_course(request):
+    if request.method == 'POST':
+        form = EnrollmentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('student_dashboard')
+    else:
+        form = EnrollmentForm()
+    return render(request, 'enroll_course.html', {'form': form})
+
+def course_list(request):
+    courses = Course.objects.all()
+    return render(request, 'course_list.html', {'courses': courses})

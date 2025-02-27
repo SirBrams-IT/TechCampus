@@ -1,7 +1,7 @@
 from datetime import date
 
 from django import forms
-from TechApp.models import FileModel, Member,Assignment,Submission,AdminLogin
+from TechApp.models import Course, Enrollment, FileModel, Member,Assignment,Submission,AdminLogin
 
 
 class FileUploadForm(forms.ModelForm):
@@ -114,3 +114,17 @@ class AdminForm(forms.ModelForm):
             raise forms.ValidationError("Age must be between 30 and 75 years.")
 
         return dob
+
+class CourseUploadForm(forms.ModelForm):
+    class Meta:
+        model = Course
+        fields = ['title', 'mentor', 'learning_material', 'video', 'zoom_link', 'google_classroom']
+        widgets = {
+            'title': forms.Select(choices=Course._meta.get_field('title').choices),
+        }
+
+
+class EnrollmentForm(forms.ModelForm):
+    class Meta:
+        model = Enrollment
+        fields = ['student', 'course', 'learning_status']       

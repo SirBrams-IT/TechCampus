@@ -121,22 +121,6 @@ class AdminLogin(models.Model):
     def __str__(self):
         return self.name
 
-class Student(models.Model):
-    member = models.OneToOneField(Member, on_delete=models.CASCADE, primary_key=True)
-    mentor = models.ForeignKey('Mentor', on_delete=models.SET_NULL, null=True, blank=True)
-    learning_percentage = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
-
-    def __str__(self):
-        return self.member.name
-
-class Mentor(models.Model):
-    member = models.OneToOneField(Member, on_delete=models.CASCADE, primary_key=True)
-    expertise = models.CharField(max_length=100)
-    years_of_experience = models.PositiveIntegerField()
-
-    def __str__(self):
-        return self.member.name
-
 class FileModel(models.Model):
     video = models.FileField(upload_to='videos/', blank=True, null=True)
     file = models.FileField(upload_to='uploads/')
@@ -197,7 +181,7 @@ class CourseStatus(models.Model):
         ('Marked', 'Marked'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='course_statuses')
+    user = models.ForeignKey('Member', on_delete=models.CASCADE, related_name='course_statuses')
     course_name = models.CharField(max_length=100)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Enrolled')
     last_updated = models.DateTimeField(auto_now=True)
@@ -205,6 +189,48 @@ class CourseStatus(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.course_name}: {self.status}"
 
+
+COURSE_CHOICES = [
+    ('Web Development', 'WD111'),
+    ('Android Development', 'AD111'),
+    ('IT Support', 'IT111'),
+    ('Graphic Design', 'GD111'),
+    ('Cybersecurity', 'CS111'),
+    ('Advanced Excel', 'AE111'),
+    ('CCTV Installation', 'CCTV111'),
+    ('Project Management System', 'PMS111'),
+    ('AI', 'AI111'),
+    ('Cloud Computing', 'CC111'),
+]
+
+class Course(models.Model):
+    title = models.CharField(max_length=100, choices=[(c[0], c[0]) for c in COURSE_CHOICES])
+    course_code = models.CharField(max_length=10, editable=False)
+    mentor = models.ForeignKey('AdminLogin', on_delete=models.CASCADE)
+    learning_material = models.FileField(upload_to='courses/materials/', blank=True, null=True, help_text='Supported formats: .pdf, .doc, .docx')
+    video = models.FileField(upload_to='courses/videos/', blank=True, null=True)
+    zoom_link = models.URLField(blank=True, null=True)
+    google_classroom = models.URLField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=[('Uploaded', 'Uploaded'), ('Enrolled', 'Enrolled'), ('Learning', 'Learning')], default='Uploaded')
+    
+    def save(self, *args, **kwargs):
+        # Auto-assign course code
+        for c in COURSE_CHOICES:
+            if self.title == c[0]:
+                self.course_code = c[1]
+                break
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.title} ({self.course_code}) - {self.mentor}"
+
+class Enrollment(models.Model):
+    student = models.ForeignKey('Member', on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    learning_status = models.CharField(max_length=20, choices=[('Not Started', 'Not Started'), ('Started', 'Started')], default='Not Started')
+    
+    def __str__(self):
+        return f"{self.student} - {self.course.title} ({self.learning_status})"
 
 
 

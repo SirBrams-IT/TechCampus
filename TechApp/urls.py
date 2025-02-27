@@ -7,10 +7,10 @@ from .views import generate_pdf
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('index/', views.home, name='index'),
+    path('', views.home, name='index'),
     path('about/', views.about, name='about'),
     path('services/', views.services, name='services'),
-    path('', views.register, name='register'),
+    path('register/', views.register, name='register'),
     path("verify-email/<slug:username>", views.verify_email, name="verify-email"),
     path("resend-otp", views.resend_otp, name="resend-otp"),
     path('login/', views.login, name='login'),
@@ -56,6 +56,9 @@ urlpatterns = [
     path('users-profile/<int:user_id>/', views.users_profile, name='users-profile'),
     path('admin-_main/', views.admin_main, name='admin-main'),
     path("edit_student/", views.edit_student, name="edit_student"),
+    path('upload_course/', views.upload_course, name='upload_course'),
+    path('enroll-course/', views.enroll_course, name='enroll_course'),
+    path('course_list/', views.course_list, name='course_list'),
     ]
 
 
