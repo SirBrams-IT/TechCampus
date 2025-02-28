@@ -24,7 +24,7 @@ USE_X_FORWARDED_HOST = True
 ALLOWED_HOSTS = [
     '127.0.0.1',  # Local development
     'localhost',   # Localhost
-    'techcampus-k4qi.onrender.com',  # Your deployed domain
+    'techcampus-1mnf.onrender.com',  # Your deployed domain
 ]
 
 
@@ -141,6 +141,6 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://techcampus-k4qi.onrender.com',
-    'http://techcampus-k4qi.onrender.com',  # Include both HTTP and HTTPS
+    'https://techcampus-1mnf.onrender.com',
+    'http://techcampus-1mnf.onrender.com',  # Include both HTTP and HTTPS
 ]
