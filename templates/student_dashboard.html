@@ -69,7 +69,7 @@
     <!-- Dropdown Menu -->
     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
         <li class="dropdown-header">
-            <span class="text-warning" id="greeting">, {{ studentinfo.username }}! Welcome Back.</span>
+            <span class="text-warning" >Hello, {{ studentinfo.username }}</span>
         </li>
         <li><hr class="dropdown-divider"></li>
 
@@ -163,7 +163,7 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1> Hello <b class="text-warning">{{ studentinfo.name|title }}</b>, Welcome to Student Dashboard <span class="ms-5 bg-black text-white" id="current-time"></span></h1>
+      <h1 id="greeting"><b class="text-warning">{{ studentinfo.name|title }}</b>, Welcome to Student Dashboard <span class="ms-5 bg-black text-white" id="current-time"></span></h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>

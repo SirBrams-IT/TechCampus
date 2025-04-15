@@ -71,7 +71,7 @@
     <!-- Dropdown Menu -->
     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
         <li class="dropdown-header">
-            <span class="text-warning pe-5 " id="greeting" >,{{ admininfo.username }}! Welcome Back.</span>
+            <span class="text-warning pe-5 " >Hello,{{ admininfo.username }}</span>
         </li>
         <li><hr class="dropdown-divider"></li>
 
@@ -186,7 +186,7 @@
     {% endfor %}
 {% endif %}
      <div class="pagetitle">
-      <h1> Hello <b class="text-warning">{{ admininfo.name|title }}</b>, Welcome to Admin/Mentor Dashboard <span class="ms-5 bg-black text-white" id="current-time"></span></h1>
+      <h1 id="greeting"><b class="text-warning">, {{ admininfo.name|title }}</b>, Welcome to Admin/Mentor Dashboard <span class="ms-5 bg-black text-white" id="current-time"></span></h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
