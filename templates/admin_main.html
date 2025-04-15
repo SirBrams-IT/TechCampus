@@ -63,13 +63,13 @@
         <img src="{% if admininfo.profile_image and admininfo.profile_image.url %}{{ admininfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
      alt="Profile"
      class="rounded-circle profile-img">
-        <span class="d-md-block dropdown-toggle ps-2 me-3" id="greeting">{{ admininfo.username }}</span>
+        <span class="d-md-block dropdown-toggle ps-2 me-3" > Hi, {{ admininfo.username }}</span>
     </a>
 
     <!-- Dropdown Menu -->
     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
         <li class="dropdown-header">
-            <span class="text-warning pe-5">Hello, {{ admininfo.username }}!</span>
+            <span class="text-warning pe-5" id="greeting">, {{ admininfo.username }}! Welcome Back.</span>
         </li>
         <li><hr class="dropdown-divider"></li>
 
