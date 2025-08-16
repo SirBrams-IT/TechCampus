@@ -1,37 +1,29 @@
 import os
 from pathlib import Path
+from decouple import config  # pip install python-decouple
 
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# settings.py
-# settings.py
-GETOTP_BASE_URL = "https://api.getotp.com/request"  # Replace with the actual GetOTP API base URL
-GETOTP_API_KEY = "Pt9LEAOaFX5lMeim218BTJnWkrgNbIhj"  # Replace with your GetOTP API key
-GETOTP_AUTH_TOKEN = "ktp1zf7bigs659adqr03uwjy4nvo2xm8"  # Replace with your GetOTP auth token
+# 🔐 Secrets & API Keys
+SECRET_KEY = config("SECRET_KEY")
+GETOTP_BASE_URL = config("GETOTP_BASE_URL")
+GETOTP_API_KEY = config("GETOTP_API_KEY")
+GETOTP_AUTH_TOKEN = config("GETOTP_AUTH_TOKEN")
 
-
-
-
-
-SECRET_KEY = 'django-insecure-c3ej4k+=96tgk5%bzwlg22fe&mnt@m+3@e(kz!oeq%lix61)_j'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Debug & Hosts
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 USE_X_FORWARDED_HOST = True
 ALLOWED_HOSTS = [
-    '127.0.0.1',  # Local development
-    'localhost',   # Localhost
-    'techcampus-1mnf.onrender.com',  # Your deployed domain
+    '127.0.0.1',
+    'localhost',
+    'techcampus-1mnf.onrender.com',
 ]
-
 
 PORT = os.getenv("PORT", "8000")
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -39,8 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'TechApp'
-
+    'TechApp',
 ]
 
 MIDDLEWARE = [
@@ -58,7 +49,7 @@ ROOT_URLCONF = 'TechCampuss.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -74,73 +65,53 @@ TEMPLATES = [
 WSGI_APPLICATION = 'TechCampuss.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+# 📦 Database (MySQL)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': config("DB_NAME"),
+        'USER': config("DB_USER"),
+        'PASSWORD': config("DB_PASSWORD"),
+        'HOST': config("DB_HOST", default="localhost"),
+        'PORT': config("DB_PORT", default="3306"),
     }
 }
 
-
-
 # Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
+# Media & Static Files
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# 📧 Email Config
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'wekesabramuel00@gmail.com'
-EMAIL_HOST_PASSWORD = 'pdne qcqa jple hulk'
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
+EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
+EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
+EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=False, cast=bool)
 
+# CSRF
 CSRF_TRUSTED_ORIGINS = [
     'https://techcampus-1mnf.onrender.com',
-    'http://techcampus-1mnf.onrender.com',  # Include both HTTP and HTTPS
+    'http://techcampus-1mnf.onrender.com',
 ]
