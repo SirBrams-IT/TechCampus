@@ -18,7 +18,7 @@ USE_X_FORWARDED_HOST = True
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    'techcampus-1mnf.onrender.com',
+    'techcampus-r82w.onrender.com',
 ]
 
 PORT = os.getenv("PORT", "8000")
@@ -112,6 +112,6 @@ EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=False, cast=bool)
 
 # CSRF
 CSRF_TRUSTED_ORIGINS = [
-    'https://techcampus-1mnf.onrender.com',
-    'http://techcampus-1mnf.onrender.com',
+    'https://techcampus-r82w.onrender.com',
+    'http://techcampus-r82w.onrender.com',
 ]
