@@ -1,0 +1,248 @@
+#header1{
+  transition: all 0.5s;
+  z-index: 997;
+  height: 60px;
+  box-shadow: 1px 2px 2px 2px gold;
+  background-color: navy;
+  padding-left: 20px;
+
+}
+
+#titles{
+
+    font-size: 16px;
+    font-weight: bolder;
+    text-decoration: none;
+
+
+}
+
+
+.navbar-nav li a.active {
+    color: #f8d210;
+    font-weight: bold;
+}
+
+.navbar-nav li a {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+    color: white;
+    text-decoration:darkgoldenrod;
+    padding: 5px 10px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease-in-out;
+
+}
+
+.navbar-nav li a:hover {
+    color: gold;
+    transform: translateY(-2px);
+}
+
+#loginDropdown {
+    width: 100%;
+
+}
+
+#loginDropdown + .dropdown-menu {
+    width: 100%;
+
+}
+
+.dropdown-menu-end {
+    display: none;
+}
+
+
+        .carousel {
+            height: 700px;
+        }
+
+        .carousel-inner, .carousel-item, .carousel-item img {
+            height: 100%;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            object-fit: cover; /* Ensures the image covers the entire area without distortion */
+        }
+
+        /* Overlay Positioning */
+        .carousel-item {
+            position: relative;
+        }
+
+        .overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .overlay .content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .toggle-sidebar-btn {
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+
+        }
+
+        .dropdown-options a {
+            display: block;
+            padding: 8px 12px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+
+      form label {
+    font-weight: 600;
+    font-size: 20px;
+    color: gray;
+    margin-bottom: 10px;
+    margin-left: 8px;
+    display: block;
+    }
+
+    form input,
+    form select,
+    form textarea {
+    width: 96%;
+    padding: 10px;
+    margin-left: 10px;
+    font-size: 18px;
+    color: #555;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: all 0.3s ease-in-out;
+    }
+
+
+    form input:focus,
+    form select:focus,
+    form textarea:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+    }
+
+
+    form button[type="submit"] {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    }
+
+    form button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+
+    form legend {
+    font-size: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+    text-align: center;
+    margin-bottom: 15px;
+    }
+
+
+        .dropdown-options a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        .profile-container {
+    text-align: center;
+}
+
+.footer1 {
+    background-color: navy; /* Dark background */
+    color: #ecf0f1; /* Light text */
+    padding: 40px 0;
+    font-family: Arial, sans-serif;
+
+}
+
+.footer1 h4 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.footer1 p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+.footer1 .links {
+    margin-bottom: 20px;
+}
+
+.footer1 .links a {
+    color: #ecf0f1;
+    margin: 0 15px;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+.footer1 .links a:hover {
+    color: yellow; /* Change link color on hover */
+}
+
+.footer1 .social-icons a {
+    color: #ecf0f1;
+    margin: 0 10px;
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.footer1 .social-icons a:hover {
+    color: yellow; /* Change icon color on hover */
+}
+
+.footer1 p {
+    font-size: 1rem;
+    margin-top: 20px;
+    border-top: 1px solid white; /* Add a line above the copyright */
+    padding-top: 10px;
+}
+
+/* Professional Dashboard Cards */
+.dashboard-card {
+    background: #f8f9fa;
+    border: none;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Upcoming Activities */
+.upcoming-activities .list-group-item {
+    border-left: 5px solid #007bff;
+    font-weight: 500;
+}
+
+
+
