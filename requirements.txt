@@ -4,9 +4,11 @@ asn1crypto==1.5.1
 certifi==2025.8.3
 cffi==1.17.1
 charset-normalizer==3.4.3
+cloudinary==1.44.1
 cryptography==45.0.6
 cssselect2==0.8.0
 Django==5.2.5
+django-cloudinary-storage==0.3.0
 gunicorn==23.0.0
 html5lib==1.1
 idna==3.10
@@ -33,4 +35,5 @@ tzlocal==5.3.1
 uritools==5.0.0
 urllib3==2.5.0
 webencodings==0.5.1
+whitenoise==6.7.0
 xhtml2pdf==0.2.17
