@@ -1,14 +1,15 @@
-from django.contrib.auth.base_user import AbstractBaseUser
-from datetime import date,  timezone
+from datetime import date
+import random
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
-import random
 from django.utils import timezone
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
+from cloudinary.models import CloudinaryField  # ✅ Cloudinary import
+
 
 def generate_otp():
     return str(random.randint(100000, 999999))
+
 
 class Member(models.Model):
     name = models.CharField(max_length=100)
@@ -19,9 +20,10 @@ class Member(models.Model):
     id_number = models.CharField(max_length=20)
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')])
-    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    profile_image = CloudinaryField('image', folder="profile_images", null=True, blank=True)  # ✅ Cloudinary
     is_deleted = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
+
     # OTP Fields
     otp_code = models.CharField(max_length=6, blank=True, null=True)
     otp_expires_at = models.DateTimeField(blank=True, null=True)
@@ -36,13 +38,11 @@ class Member(models.Model):
             return self.email
 
     def generate_otp(self):
-        """Generate a new OTP and set expiration time."""
         self.otp_code = str(random.randint(100000, 999999))
         self.otp_expires_at = timezone.now() + timezone.timedelta(minutes=3)
         self.save()
 
     def verify_otp(self, otp):
-        """Check if OTP is correct and not expired."""
         if self.is_otp_valid(otp):
             self.is_active = True
             self.clear_otp()
@@ -51,11 +51,9 @@ class Member(models.Model):
         return False
 
     def is_otp_valid(self, otp):
-        """Check if OTP is valid and not expired."""
         return self.otp_code == otp and self.otp_expires_at > timezone.now()
 
     def clear_otp(self):
-        """Clear OTP after successful verification."""
         self.otp_code = None
         self.otp_expires_at = None
         self.save()
@@ -63,13 +61,15 @@ class Member(models.Model):
     def __str__(self):
         return self.email
 
+
 class Contact(models.Model):
-   name=models.CharField(max_length=100)
-   email=models.EmailField()
-   phone=models.CharField(max_length=13)
-   message=models.CharField(max_length=100)
-   def __str__(self):
-      return self.name
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=13)
+    message = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
 
 
 def validate_age(value):
@@ -87,7 +87,7 @@ class AdminLogin(models.Model):
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField(validators=[validate_age])
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')])
-    profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    profile_image = CloudinaryField('image', folder="admin_profiles", blank=True, null=True)  # ✅ Cloudinary
     password = models.CharField(max_length=100)
 
     # OTP Fields for password reset
@@ -95,13 +95,11 @@ class AdminLogin(models.Model):
     otp_expires_at = models.DateTimeField(blank=True, null=True)
 
     def generate_otp(self):
-        """Generate a new OTP and set expiration time for password reset."""
         self.otp_code = str(random.randint(100000, 999999))
         self.otp_expires_at = timezone.now() + timezone.timedelta(minutes=3)
         self.save()
 
     def verify_otp(self, otp):
-        """Check if OTP is correct and not expired."""
         if self.is_otp_valid(otp):
             self.clear_otp()
             self.save()
@@ -109,11 +107,9 @@ class AdminLogin(models.Model):
         return False
 
     def is_otp_valid(self, otp):
-        """Check if OTP is valid and not expired."""
         return self.otp_code == otp and self.otp_expires_at > timezone.now()
 
     def clear_otp(self):
-        """Clear OTP after successful verification."""
         self.otp_code = None
         self.otp_expires_at = None
         self.save()
@@ -121,9 +117,10 @@ class AdminLogin(models.Model):
     def __str__(self):
         return self.name
 
+
 class FileModel(models.Model):
-    video = models.FileField(upload_to='videos/', blank=True, null=True)
-    file = models.FileField(upload_to='uploads/')
+    video = CloudinaryField('video', folder="videos", blank=True, null=True)  # ✅ Cloudinary video
+    file = CloudinaryField('file', folder="uploads")  # ✅ Cloudinary file
     course_name = models.CharField(max_length=255)
     course_code = models.CharField(max_length=255)
     instructor = models.CharField(max_length=255)
@@ -138,7 +135,7 @@ class FileModel(models.Model):
 class Assignment(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    file = models.FileField(upload_to='assignments/')
+    file = CloudinaryField('file', folder="assignments")  # ✅ Cloudinary
     due_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     mentor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='assigned_assignments')
@@ -150,7 +147,7 @@ class Assignment(models.Model):
 class Submission(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
-    submitted_file = models.FileField(upload_to='submissions/', null=True, blank=True)
+    submitted_file = CloudinaryField('file', folder="submissions", null=True, blank=True)  # ✅ Cloudinary
     submitted_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=[
         ('Not Submitted', 'Not Submitted'),
@@ -180,7 +177,6 @@ class CourseStatus(models.Model):
         ('Due', 'Due'),
         ('Marked', 'Marked'),
     ]
-
     user = models.ForeignKey('Member', on_delete=models.CASCADE, related_name='course_statuses')
     course_name = models.CharField(max_length=100)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Enrolled')
@@ -203,18 +199,22 @@ COURSE_CHOICES = [
     ('Cloud Computing', 'CC111'),
 ]
 
+
 class Course(models.Model):
     title = models.CharField(max_length=100, choices=[(c[0], c[0]) for c in COURSE_CHOICES])
     course_code = models.CharField(max_length=10, editable=False)
     mentor = models.ForeignKey('AdminLogin', on_delete=models.CASCADE)
-    learning_material = models.FileField(upload_to='courses/materials/', blank=True, null=True, help_text='Supported formats: .pdf, .doc, .docx')
-    video = models.FileField(upload_to='courses/videos/', blank=True, null=True)
+    learning_material = CloudinaryField('file', folder="courses/materials", blank=True, null=True)  # ✅ Cloudinary
+    video = CloudinaryField('video', folder="courses/videos", blank=True, null=True)  # ✅ Cloudinary
     zoom_link = models.URLField(blank=True, null=True)
     google_classroom = models.URLField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=[('Uploaded', 'Uploaded'), ('Enrolled', 'Enrolled'), ('Learning', 'Learning')], default='Uploaded')
-    
+    status = models.CharField(max_length=20, choices=[
+        ('Uploaded', 'Uploaded'),
+        ('Enrolled', 'Enrolled'),
+        ('Learning', 'Learning')
+    ], default='Uploaded')
+
     def save(self, *args, **kwargs):
-        # Auto-assign course code
         for c in COURSE_CHOICES:
             if self.title == c[0]:
                 self.course_code = c[1]
@@ -224,14 +224,14 @@ class Course(models.Model):
     def __str__(self):
         return f"{self.title} ({self.course_code}) - {self.mentor}"
 
+
 class Enrollment(models.Model):
     student = models.ForeignKey('Member', on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    learning_status = models.CharField(max_length=20, choices=[('Not Started', 'Not Started'), ('Started', 'Started')], default='Not Started')
-    
+    learning_status = models.CharField(max_length=20, choices=[
+        ('Not Started', 'Not Started'),
+        ('Started', 'Started')
+    ], default='Not Started')
+
     def __str__(self):
         return f"{self.student} - {self.course.title} ({self.learning_status})"
-
-
-
-

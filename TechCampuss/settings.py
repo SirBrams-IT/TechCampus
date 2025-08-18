@@ -4,8 +4,13 @@ from decouple import config
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+import environ
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env()
+environ.Env.read_env()
 
 # 🔐 Secrets & API Keys
 SECRET_KEY = config("SECRET_KEY")
@@ -14,8 +19,8 @@ GETOTP_BASE_URL = config("GETOTP_BASE_URL")
 GETOTP_API_KEY = config("GETOTP_API_KEY")
 GETOTP_AUTH_TOKEN = config("GETOTP_AUTH_TOKEN")
 
-DEBUG = True
-
+# 🚨 Security
+DEBUG = False
 
 USE_X_FORWARDED_HOST = True
 ALLOWED_HOSTS = [
@@ -42,7 +47,7 @@ INSTALLED_APPS = [
 # ⚙️ Middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ Static files for production
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -56,7 +61,7 @@ ROOT_URLCONF = "TechCampuss.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [BASE_DIR / "templates"],  # ✅ where 404.html / 500.html will live
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -98,22 +103,24 @@ USE_I18N = True
 USE_TZ = True
 
 # 🗂️ Static & Media
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# ☁️ Cloudinary Setup
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME"),
     "API_KEY": config("CLOUDINARY_API_KEY"),
     "API_SECRET": config("CLOUDINARY_API_SECRET"),
 }
+
 cloudinary.config(
     cloud_name=config("CLOUDINARY_CLOUD_NAME"),
     api_key=config("CLOUDINARY_API_KEY"),
     api_secret=config("CLOUDINARY_API_SECRET"),
+    secure=True,
 )
+
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 # 📧 Email Config
@@ -130,5 +137,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://techcampus-r82w.onrender.com",
     "http://techcampus-r82w.onrender.com",
 ]
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
