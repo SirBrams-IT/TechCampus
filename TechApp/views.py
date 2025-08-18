@@ -159,7 +159,7 @@ def login(request):
         # Use check_password to verify the hashed password
         if check_password(password, student.password):
             request.session['username'] = username
-            return redirect('/student_dashboard')
+            return redirect('student_dashboard')
         else:
             messages.error(request, "Invalid username or password.")
             return redirect('/login')
@@ -170,20 +170,20 @@ def student_dashboard(request):
     username = request.session.get('username')
 
     if not username:
-        return redirect('/login')
+        return redirect('login')
 
     try:
         studentinfo = Member.objects.get(username=username)
     except Member.DoesNotExist:
         messages.error(request, "User not found.")
-        return redirect('/login')
+        return redirect('login')
 
     return render(request, 'student_dashboard.html', {'studentinfo': studentinfo})
 
 def logout_student(request):
     logout(request)
     messages.success(request, "You have successfully logged out.")
-    return redirect('/login')
+    return redirect('login')
 
 def admin_login(request):
     if request.method == "POST":

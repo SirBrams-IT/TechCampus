@@ -14,7 +14,7 @@ class Member(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=15, unique=True)
-    password = models.CharField(max_length=20)
+    password = models.CharField(max_length=100)
     phone = models.CharField(max_length=15, unique=True)
     id_number = models.CharField(max_length=20)
     date_of_birth = models.DateField()
