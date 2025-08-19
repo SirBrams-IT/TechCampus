@@ -1,0 +1,417 @@
+<br><br>
+{% extends 'student-main.html' %}
+
+
+{% load static %}
+
+{% block body %}
+
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Left Side - Learning Content -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0">Web Development Fundamentals</h5>
+                    <p class="mb-0">Module 2: HTML & CSS Basics</p>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Video Player -->
+                    <div class="ratio ratio-16x9">
+                        <video id="lessonVideo" controls poster="{% static 'images/video-thumbnail.jpg' %}">
+                            <source src="#" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    
+                    <!-- Video Controls -->
+                    <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary me-2">
+                                <i class="fas fa-backward"></i> 10s
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary me-2">
+                                <i class="fas fa-forward"></i> 10s
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark">2:45 / 15:30</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Lesson Content -->
+                    <div class="p-3" style="max-height: 300px; overflow-y: auto;">
+                        <h5>Understanding HTML Structure</h5>
+                        <p>HTML (HyperText Markup Language) is the standard markup language for documents designed to be displayed in a web browser.</p>
+                        
+                        <h6>Basic HTML Document</h6>
+                        <pre class="bg-light p-3 rounded"><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Page Title&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;My First Heading&lt;/h1&gt;
+    &lt;p&gt;My first paragraph.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                        
+                        <p>Web browsers receive HTML documents from a web server or from local storage and render the documents into multimedia web pages.</p>
+                        
+                        <h6>HTML Elements</h6>
+                        <p>HTML elements are the building blocks of HTML pages. Each element can contain attributes that define its behavior.</p>
+                        
+                        <h6>CSS Integration</h6>
+                        <p>CSS (Cascading Style Sheets) is used to style the HTML elements and make them visually appealing.</p>
+                    </div>
+                    
+                    <!-- Resource Links -->
+                    <div class="p-3 bg-light">
+                        <h6 class="mb-3"><i class="fas fa-paperclip me-2"></i>Learning Resources</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-file-pdf me-1"></i> Lecture Notes
+                            </a>
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-file-code me-1"></i> Code Examples
+                            </a>
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-headphones me-1"></i> Audio Recording
+                            </a>
+                            <a href="#" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt me-1"></i> Additional Reading
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation -->
+                    <div class="p-3 d-flex justify-content-between">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-1"></i> Previous Lesson
+                        </button>
+                        <div>
+                            <button class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-bookmark"></i> Save Progress
+                            </button>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#quizModal">
+                                Take Quiz <i class="fas fa-arrow-right ms-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Side - Course Progress & Outline -->
+        <div class="col-lg-4">
+            <!-- Course Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light py-3">
+                    <h6 class="mb-0">Web Development (WD111)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-sm">Overall Progress</span>
+                                <span class="text-sm fw-bold">65%</span>
+                            </div>
+                            <div class="progress mt-1" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 65%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <span class="badge bg-info"><i class="fas fa-clock me-1"></i> 12h 45m remaining</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-download me-1"></i> Download All Materials
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Course Outline -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Course Modules</h6>
+                    <span class="badge bg-primary">8/12 Completed</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <!-- Module 1 -->
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Module 1: Introduction to Web Development</h6>
+                                <span class="badge bg-success"><i class="fas fa-check"></i></span>
+                            </div>
+                            <div class="progress mt-2" style="height: 5px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Module 2 (Current) -->
+                        <div class="list-group-item bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Module 2: HTML & CSS Basics</h6>
+                                <span class="badge bg-primary">In Progress</span>
+                            </div>
+                            <div class="progress mt-2" style="height: 5px;">
+                                <div class="progress-bar" role="progressbar" style="width: 70%"></div>
+                            </div>
+                            <div class="mt-2 ps-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="lesson1" checked>
+                                    <label class="form-check-label text-sm" for="lesson1">Introduction to HTML</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="lesson2" checked>
+                                    <label class="form-check-label text-sm" for="lesson2">HTML Elements & Structure</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="lesson3" checked>
+                                    <label class="form-check-label text-sm" for="lesson3">CSS Fundamentals</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="lesson4">
+                                    <label class="form-check-label text-sm fw-bold" for="lesson4">CSS Layout Techniques</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="lesson5" disabled>
+                                    <label class="form-check-label text-sm text-muted" for="lesson5">Responsive Design</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Module 3 (Locked) -->
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 text-muted">Module 3: JavaScript Fundamentals</h6>
+                                <span class="badge bg-secondary"><i class="fas fa-lock"></i></span>
+                            </div>
+                            <p class="text-xs text-muted mt-1 mb-0">Complete previous module to unlock</p>
+                        </div>
+                        
+                        <!-- Module 4 (Locked) -->
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 text-muted">Module 4: Backend Development</h6>
+                                <span class="badge bg-secondary"><i class="fas fa-lock"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quiz Modal -->
+<div class="modal fade" id="quizModal" tabindex="-1" aria-labelledby="quizModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="quizModalLabel">HTML & CSS Basics Quiz</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-light text-dark me-2">Question 1 of 5</span>
+                        <span class="badge bg-warning text-dark">Time: 02:45</span>
+                    </div>
+                    <div class="progress" style="width: 200px; height: 10px;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 20%"></div>
+                    </div>
+                </div>
+                
+                <div class="quiz-question mb-4">
+                    <h3>Which HTML element is used for the largest heading?</h5>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="quizQuestion" id="option1">
+                        <label class="form-check-label" for="option1">
+                            &lt;heading&gt;
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="quizQuestion" id="option2">
+                        <label class="form-check-label" for="option2">
+                            &lt;h1&gt;
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="quizQuestion" id="option3">
+                        <label class="form-check-label" for="option3">
+                            &lt;head&gt;
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="quizQuestion" id="option4">
+                        <label class="form-check-label" for="option4">
+                            &lt;header&gt;
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info d-none" id="feedbackCorrect">
+                    <i class="fas fa-check-circle text-success me-2"></i> <strong>Correct!</strong> The &lt;h1&gt; element is used for the largest heading in HTML.
+                </div>
+                
+                <div class="alert alert-danger d-none" id="feedbackIncorrect">
+                    <i class="fas fa-times-circle text-danger me-2"></i> <strong>Incorrect.</strong> The correct answer is &lt;h1&gt; which represents the largest heading.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel Quiz</button>
+                <button type="button" class="btn btn-outline-secondary" id="prevQuestion" disabled>Previous</button>
+                <button type="button" class="btn btn-primary" id="nextQuestion">Next Question</button>
+                <button type="button" class="btn btn-success d-none" id="finishQuiz">Finish Quiz</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .video-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+    }
+    
+    .video-container iframe, 
+    .video-container video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .lesson-content {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .module-item {
+        transition: all 0.2s ease;
+        border-left: 3px solid transparent;
+    }
+    
+    .module-item:hover {
+        background-color: #f8f9fa;
+        border-left-color: #4e73df;
+    }
+    
+    .module-item.active {
+        background-color: #e9ecef;
+        border-left-color: #4e73df;
+    }
+    
+    .resource-btn {
+        transition: all 0.2s ease;
+    }
+    
+    .resource-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .progress {
+        overflow: visible;
+    }
+    
+    .progress-bar {
+        border-radius: 4px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Video player functionality
+        const video = document.getElementById('lessonVideo');
+        const progressBar = document.querySelector('.progress-bar');
+        
+        if (video) {
+            video.addEventListener('timeupdate', function() {
+                const value = (100 / video.duration) * video.currentTime;
+                progressBar.style.width = value + '%';
+                progressBar.setAttribute('aria-valuenow', value);
+            });
+        }
+        
+        // Quiz functionality
+        const nextQuestionBtn = document.getElementById('nextQuestion');
+        const prevQuestionBtn = document.getElementById('prevQuestion');
+        const finishQuizBtn = document.getElementById('finishQuiz');
+        const feedbackCorrect = document.getElementById('feedbackCorrect');
+        const feedbackIncorrect = document.getElementById('feedbackIncorrect');
+        
+        if (nextQuestionBtn) {
+            nextQuestionBtn.addEventListener('click', function() {
+                // Simulate moving to next question
+                const progressBar = document.querySelector('.modal-body .progress-bar');
+                progressBar.style.width = '40%';
+                
+                // Show feedback (simulate answer selection)
+                feedbackCorrect.classList.remove('d-none');
+                
+                // Update buttons
+                prevQuestionBtn.disabled = false;
+                nextQuestionBtn.classList.add('d-none');
+                finishQuizBtn.classList.remove('d-none');
+            });
+        }
+        
+        if (finishQuizBtn) {
+            finishQuizBtn.addEventListener('click', function() {
+                // Show quiz results
+                alert('Quiz completed! Your score: 80%');
+                $('#quizModal').modal('hide');
+            });
+        }
+        
+        // Simulate resource download buttons
+        const resourceButtons = document.querySelectorAll('.resource-btn');
+        resourceButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const type = this.querySelector('i').classList[1];
+                let resourceType;
+                
+                if (type.includes('file-pdf')) resourceType = 'PDF';
+                else if (type.includes('file-code')) resourceType = 'Code Examples';
+                else if (type.includes('headphones')) resourceType = 'Audio Recording';
+                else resourceType = 'Resource';
+                
+                alert(`Downloading ${resourceType}...`);
+            });
+        });
+    });
+</script>
+
+        <br>
+
+
+ <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+  <!-- Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+
+{% endblock %}
+
+
+
+

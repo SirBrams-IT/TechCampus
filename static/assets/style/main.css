@@ -244,5 +244,37 @@
     font-weight: 500;
 }
 
+ .module-card, .lesson-card {
+        transition: all 0.2s ease;
+        border-left: 4px solid #4e73df;
+    }
+    
+    .module-card:hover, .lesson-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .lesson-card {
+        border-left-color: #1cc88a;
+    }
+    
+    .drag-handle {
+        cursor: move;
+        color: #6e707e;
+    }
+    
+    .content-management-header {
+        background: linear-gradient(90deg, #4e73df 0%, #224abe 100%);
+    }
+    
+    .module-actions, .lesson-actions {
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+    }
+    
+    .module-card:hover .module-actions, .lesson-card:hover .lesson-actions {
+        opacity: 1;
+    }
+
 
 

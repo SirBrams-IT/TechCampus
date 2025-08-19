@@ -2,26 +2,19 @@
 {% extends 'admin_main.html'%}
 {% load static%}
 {% block content%}
-         <a href="{% url 'uploaded_course' admininfo.id %}" class="btn btn-outline-primary mt-3 position-fixed text-primary" style="margin-left: 70%">
+        
         <i class="fas"></i> Uploaded
         </a>
 
 
     <div class="container mt-5">
-        <h2 class="mb-4 text-center">Upload Course</h2>
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="card p-4">
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary mt-3">Upload</button>
-            </div>
-        </form>
-    </div>
+    <h2 class="mb-4">Upload a New Course</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Upload Course</button>
+    </form>
+</div>
   <br><br><br><br>
 
 {% endblock%}

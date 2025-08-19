@@ -1,22 +1,7 @@
 from datetime import date
 
 from django import forms
-from TechApp.models import Course, Enrollment, FileModel, Member,Assignment,Submission,AdminLogin
-
-
-class FileUploadForm(forms.ModelForm):
-    class Meta:
-        model = FileModel
-        fields = ['file', 'video', 'course_name', 'course_code', 'instructor', 'zoom_link', 'google_classroom_link']
-        widgets = {
-            'course_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Course Name'}),
-            'course_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Course Code'}),
-            'instructor': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Instructor Name'}),
-            'file': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-            'video': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-            'zoom_link': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enter Zoom Link'}),
-            'google_classroom_link': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enter Google Classroom Link'}),
-        }
+from TechApp.models import Course, Enrollment, Member,Assignment,Submission,AdminLogin, Lesson,Module
 
 
 class StudentForm(forms.ModelForm):
@@ -71,9 +56,6 @@ class AssignmentForm(forms.ModelForm):
         }
 
 
-
-
-
 class RegistrationForm(forms.ModelForm):
     class Meta:
         model = Member
@@ -115,16 +97,37 @@ class AdminForm(forms.ModelForm):
 
         return dob
 
-class CourseUploadForm(forms.ModelForm):
-    class Meta:
-        model = Course
-        fields = ['title', 'mentor', 'learning_material', 'video', 'zoom_link', 'google_classroom']
-        widgets = {
-            'title': forms.Select(choices=Course._meta.get_field('title').choices),
-        }
-
-
 class EnrollmentForm(forms.ModelForm):
     class Meta:
         model = Enrollment
-        fields = ['student', 'course', 'learning_status']       
+        fields = ['student', 'course', 'learning_status']     
+
+
+class CourseForm(forms.ModelForm):
+    class Meta:
+        model = Course
+        fields = ["title", "description"]
+
+
+class ModuleForm(forms.ModelForm):
+    class Meta:
+        model = Module
+        fields = ["course", "title", "order"]
+
+    def __init__(self, *args, **kwargs):
+        mentor = kwargs.pop("mentor", None)
+        super().__init__(*args, **kwargs)
+        if mentor:
+            self.fields["course"].queryset = Course.objects.filter(mentor=mentor)
+
+
+class LessonForm(forms.ModelForm):
+    class Meta:
+        model = Lesson
+        fields = ["module", "title", "content", "video", "resource", "order"]
+
+    def __init__(self, *args, **kwargs):
+        mentor = kwargs.pop("mentor", None)
+        super().__init__(*args, **kwargs)
+        if mentor:
+            self.fields["module"].queryset = Module.objects.filter(course__mentor=mentor)

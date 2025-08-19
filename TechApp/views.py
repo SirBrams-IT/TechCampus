@@ -10,13 +10,15 @@ from TechApp.credentials import MpesaAccessToken, LipanaMpesaPpassword
 from django.shortcuts import  redirect,render, get_object_or_404
 from django.contrib.auth import logout, authenticate
 from django.contrib import messages
-from TechApp.forms import CourseUploadForm, EnrollmentForm, FileUploadForm, StudentForm, AssignmentForm,SubmissionForm,AdminForm
-from TechApp.models import Course, Member, Contact, FileModel, AdminLogin, Assignment, Submission
+from TechApp.forms import  EnrollmentForm, StudentForm, AssignmentForm,SubmissionForm,AdminForm, CourseForm, ModuleForm, LessonForm
+from TechApp.models import Course, Member, Contact, AdminLogin, Assignment, Submission ,Module, Lesson
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 import random
 from django.contrib.auth.hashers import make_password
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+
 
 
 def home(request):
@@ -234,7 +236,7 @@ def admin_dashboard(request):
 def logout_mentor(request):
     logout(request)
     messages.success(request, "You have successfully logged out.")
-    return redirect('/admin_login')
+    return redirect('admin_login')
 
 def courses(request):
         return render(request, 'login.html')
@@ -464,20 +466,6 @@ def records(request, user_id):
     admininfo = get_object_or_404(AdminLogin, id=user_id)
     return render(request,'records.html',{'member':allmembers,'admininfo':admininfo})
 
-def add_courses(request, user_id):
-    admininfo = get_object_or_404(AdminLogin, id=user_id)  # Use get_object_or_404 for better error handling
-
-    if request.method == 'POST':
-        form = FileUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "File uploaded successfully!")
-            return redirect('add_courses')  # Ensure 'uploaded_course' is a valid URL name
-    else:
-        form = FileUploadForm()
-
-    return render(request, 'add_courses.html', {'form': form, 'admininfo': admininfo})
-
 def add_cours(request):
     if request.method == "POST":
         form = AssignmentForm(request.POST, request.FILES, user=request.user)  # Pass user to form
@@ -595,10 +583,6 @@ def delete_contact(request, id):
     contacts.delete()
     return redirect('admin_dashboard')
 
-def delete_course(request,id):
-    allcourses=FileModel.objects.get(id=id)
-    allcourses.delete()
-    return redirect('/uploaded_course')
 
 def contacts(request):
    if request.method=='POST':
@@ -633,18 +617,6 @@ def edit_profile(request, user_id):
 
     return render(request, 'edit_profile.html', {'form': form,  'studentinfo':studentinfo})
 
-
-def my_course(request,user_id):
-    coursez = FileModel.objects.all()
-    studentinfo = get_object_or_404(Member, id=user_id)
-
-    return render(request, 'mycourse.html', {'coursez':coursez,'studentinfo':studentinfo})
-
-
-def uploaded_course(request,user_id):
-    admininfo = get_object_or_404(AdminLogin, id=user_id)
-    uploads = FileModel.objects.all()
-    return render(request, 'uploaded_course.html', {'uploads': uploads, 'admininfo':admininfo})
 
 def profile_update(request, user_id):
     admininfo = get_object_or_404(AdminLogin, id=user_id)
@@ -887,18 +859,6 @@ def edit_student(request):
 
     return JsonResponse({"error": "Invalid request."})
 
-
-
-def upload_course(request):
-    if request.method == 'POST':
-        form = CourseUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('mentor_dashboard')
-    else:
-        form = CourseUploadForm()
-    return render(request, 'upload_course.html', {'form': form})
-
 def enroll_course(request):
     if request.method == 'POST':
         form = EnrollmentForm(request.POST)
@@ -912,3 +872,68 @@ def enroll_course(request):
 def course_list(request):
     courses = Course.objects.all()
     return render(request, 'course_list.html', {'courses': courses})
+
+@login_required
+def mentor_courses(request, user_id):
+    admininfo = get_object_or_404(AdminLogin, id=user_id)
+
+    courses = Course.objects.filter(mentor=admininfo)
+
+    return render(request, "upload_courses.html", {
+        "courses": courses,
+        "admininfo": admininfo
+    })
+
+
+@login_required
+def add_course(request, user_id):
+    admininfo = get_object_or_404(AdminLogin, id=user_id)
+
+    if request.method == "POST":
+        form = CourseForm(request.POST, request.FILES)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.mentor = admininfo  # mentor is from AdminLogin
+            course.save()
+            messages.success(request, "Course added successfully!")
+            return redirect("mentor_courses", user_id=admininfo.id)
+    else:
+        form = CourseForm()
+
+    return render(request, "add_courses.html", {
+        "form": form,
+        "admininfo": admininfo
+    })
+
+@login_required
+def add_module(request):
+    if request.method == "POST":
+        form = ModuleForm(request.POST, mentor=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect("mentor_courses")
+    else:
+        form = ModuleForm(mentor=request.user)
+    return render(request, "add_module.html", {"form": form})
+
+
+@login_required
+def add_lesson(request):
+    if request.method == "POST":
+        form = LessonForm(request.POST, request.FILES, mentor=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect("mentor_courses")
+    else:
+        form = LessonForm(mentor=request.user)
+    return render(request, "add_lesson.html", {"form": form})
+
+
+@login_required
+def course_detail(request, pk):
+    course = get_object_or_404(Course, pk=pk, mentor=request.user)
+    return render(request, "course_detail.html", {"course": course})
+
+def learning(request, studentinfo):
+    student = Member.objects.filter(id=studentinfo).first()
+    return render(request, "learning_page.html", {"studentinfo": student})

@@ -117,21 +117,6 @@ class AdminLogin(models.Model):
     def __str__(self):
         return self.name
 
-
-class FileModel(models.Model):
-    video = CloudinaryField('video', folder="videos", blank=True, null=True)  # ✅ Cloudinary video
-    file = CloudinaryField('file', folder="uploads")  # ✅ Cloudinary file
-    course_name = models.CharField(max_length=255)
-    course_code = models.CharField(max_length=255)
-    instructor = models.CharField(max_length=255)
-    zoom_link = models.URLField(max_length=500, blank=True, null=True)
-    google_classroom_link = models.URLField(max_length=500, blank=True, null=True)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.course_name
-
-
 class Assignment(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
@@ -199,31 +184,39 @@ COURSE_CHOICES = [
     ('Cloud Computing', 'CC111'),
 ]
 
-
 class Course(models.Model):
-    title = models.CharField(max_length=100, choices=[(c[0], c[0]) for c in COURSE_CHOICES])
-    course_code = models.CharField(max_length=10, editable=False)
-    mentor = models.ForeignKey('AdminLogin', on_delete=models.CASCADE)
-    learning_material = CloudinaryField('file', folder="courses/materials", blank=True, null=True)  # ✅ Cloudinary
-    video = CloudinaryField('video', folder="courses/videos", blank=True, null=True)  # ✅ Cloudinary
-    zoom_link = models.URLField(blank=True, null=True)
-    google_classroom = models.URLField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=[
-        ('Uploaded', 'Uploaded'),
-        ('Enrolled', 'Enrolled'),
-        ('Learning', 'Learning')
-    ], default='Uploaded')
+    mentor = models.ForeignKey(AdminLogin, on_delete=models.CASCADE, related_name="courses")
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+    def __str__(self):
+        return self.title
+    
+class Module(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="modules")
+    title = models.CharField(max_length=200)
+    order = models.PositiveIntegerField(default=1)
 
-    def save(self, *args, **kwargs):
-        for c in COURSE_CHOICES:
-            if self.title == c[0]:
-                self.course_code = c[1]
-                break
-        super().save(*args, **kwargs)
+    class Meta:
+        ordering = ["order"]
 
     def __str__(self):
-        return f"{self.title} ({self.course_code}) - {self.mentor}"
+        return f"{self.course.title} - {self.title}"
 
+
+class Lesson(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="lessons")
+    title = models.CharField(max_length=200)
+    content = models.TextField(blank=True, null=True)
+    video = CloudinaryField(resource_type="video", blank=True, null=True)
+    resource = CloudinaryField(resource_type="raw", blank=True, null=True)
+    order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"{self.module.title} - {self.title}"
 
 class Enrollment(models.Model):
     student = models.ForeignKey('Member', on_delete=models.CASCADE)

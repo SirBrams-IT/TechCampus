@@ -1,0 +1,36 @@
+<br><br>
+{% extends 'admin_main.html'%}
+{% load static%}
+{% block content%}
+
+<div class="container mt-4">
+    <h2>{{ course.title }}</h2>
+    <p>{{ course.description }}</p>
+
+    <h4>Modules:</h4>
+    {% for module in course.modules.all %}
+        <div class="card mt-3">
+            <div class="card-header">{{ module.title }}</div>
+            <ul class="list-group list-group-flush">
+                {% for lesson in module.lessons.all %}
+                    <li class="list-group-item">
+                        <strong>{{ lesson.title }}</strong><br>
+                        {{ lesson.content|truncatewords:20 }}
+                        {% if lesson.video %}
+                            <br><a href="{{ lesson.video.url }}">📹 Watch</a>
+                        {% endif %}
+                        {% if lesson.resource %}
+                            <br><a href="{{ lesson.resource.url }}">📘 Download</a>
+                        {% endif %}
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No lessons yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% empty %}
+        <p>No modules yet.</p>
+    {% endfor %}
+</div>
+
+{% endblock%}

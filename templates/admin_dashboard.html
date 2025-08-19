@@ -126,8 +126,14 @@
 </li>
 
 <li class="nav-item">
-    <a class="nav-link collapsed" href="{% url 'add_courses' admininfo.id %}">
+    <a class="nav-link collapsed" href="{% url 'add_course' admininfo.id %}">
         <i class="bi bi-book"></i><span>Courses</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link collapsed" href="{% url 'mentor_courses' admininfo.id %}">
+        <i class="bi bi-book"></i><span>AddCourse</span>
     </a>
 </li>
 
@@ -203,7 +209,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Manage Courses</h5>
                     <p class="card-text">Add, edit, and remove courses offered on the platform.</p>
-                    <a href="{% url 'add_courses' user_id=admininfo.id %}" class="btn btn-light">Go to Courses</a>
+                    <a href="{% url 'add_course' user_id=admininfo.id %}" class="btn btn-light">Go to Courses</a>
                 </div>
             </div>
         </div>
