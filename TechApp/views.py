@@ -873,7 +873,6 @@ def course_list(request):
     courses = Course.objects.all()
     return render(request, 'course_list.html', {'courses': courses})
 
-@login_required
 def mentor_courses(request, user_id):
     admininfo = get_object_or_404(AdminLogin, id=user_id)
 
@@ -884,8 +883,6 @@ def mentor_courses(request, user_id):
         "admininfo": admininfo
     })
 
-
-@login_required
 def add_course(request, user_id):
     admininfo = get_object_or_404(AdminLogin, id=user_id)
 
@@ -905,7 +902,6 @@ def add_course(request, user_id):
         "admininfo": admininfo
     })
 
-@login_required
 def add_module(request):
     if request.method == "POST":
         form = ModuleForm(request.POST, mentor=request.user)
@@ -916,8 +912,6 @@ def add_module(request):
         form = ModuleForm(mentor=request.user)
     return render(request, "add_module.html", {"form": form})
 
-
-@login_required
 def add_lesson(request):
     if request.method == "POST":
         form = LessonForm(request.POST, request.FILES, mentor=request.user)
@@ -928,8 +922,6 @@ def add_lesson(request):
         form = LessonForm(mentor=request.user)
     return render(request, "add_lesson.html", {"form": form})
 
-
-@login_required
 def course_detail(request, pk):
     course = get_object_or_404(Course, pk=pk, mentor=request.user)
     return render(request, "course_detail.html", {"course": course})
