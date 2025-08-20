@@ -1,79 +1,83 @@
-<br><br><br><br>
-{% extends 'admin_main.html'%}
-{% load static%}
-{% block content%}
+<br><br><br>
+{% extends 'admin_main.html' %}
+{% load static %}
+{% block  content %}
 
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-11 col-lg-10 col-xl-9">
-            <div class="card shadow-lg mb-4">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
-                    <h4 class="mb-0">Course Content Management</h4>
-                    <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#newCourseModal">
-                        <i class="fas fa-plus me-2"></i>New Course
-                    </button>
-                </div>
-                <div class="card-body">
-                    <!-- Course Selection -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label for="courseSelect" class="form-label fw-bold">Select Course</label>
-                            <select class="form-select" id="courseSelect">
-                                <option value="" selected disabled>-- Choose a course --</option>
-                                <option value="WD111">Web Development (WD111)</option>
-                                <option value="AD111">Android Development (AD111)</option>
-                                <option value="IT111">IT Support (IT111)</option>
-                                <option value="GD111">Graphic Design (GD111)</option>
-                                <option value="CS111">Cybersecurity (CS111)</option>
-                                <option value="AE111">Advanced Excel (AE111)</option>
-                                <option value="CCTV111">CCTV Installation (CCTV111)</option>
-                                <option value="PMS111">Project Management System (PMS111)</option>
-                                <option value="AI111">AI (AI111)</option>
-                                <option value="CC111">Cloud Computing (CC111)</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Course Actions</label>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-primary flex-fill" data-bs-toggle="modal" data-bs-target="#editCourseModal">
-                                    <i class="fas fa-edit me-1"></i> Edit Course
+    <div class="container-fluid">
+            <div class="main-content">
+                <div class="row">
+                    <div class="col-12 " >
+                        <div class="card shadow-lg mb-4">
+                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                                <h4 class="mb-0"><i class="fas fa-book me-2"></i>Course Content Management</h4>
+                                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#newCourseModal">
+                                    <i class="fas fa-plus me-2"></i>New Course
                                 </button>
-                                <button class="btn btn-outline-danger flex-fill">
-                                    <i class="fas fa-trash me-1"></i> Delete Course
+                            </div>
+                            <div class="card-body">
+                            <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="courseSelect" class="form-label fw-bold">Select Course</label>
+                                <select class="form-select" id="courseSelect">
+                                    <option value="" selected disabled>-- Choose a course --</option>
+                                    {% for course in courses %}
+                                        <option value="{{ course.id }}" 
+                                        data-title="{{ course.title }}" 
+                                        data-code="{{ course.code }}" 
+                                        data-description="{{ course.description }}">
+                                    {{ course.title }} ({{ course.code }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Course Actions</label>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary flex-fill" 
+                                    id="editCourseBtn" disabled 
+                                    data-bs-toggle="modal" data-bs-target="#editCourseModal">
+                                <i class="fas fa-edit me-1"></i> Edit Course
+                            </button>
+                            <button class="btn btn-outline-danger flex-fill" 
+                                    id="deleteCourseBtn" disabled>
+                                <i class="fas fa-trash me-1"></i> Delete Course
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Module Management -->
+        <!-- Module Management -->
                     <div class="card mb-4">
-                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Modules</h5>
-                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newModuleModal">
-                                <i class="fas fa-plus me-1"></i> Add Module
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <div class="modules-container">
-                                <div class="alert alert-info">
-                                    Select a course to view and manage its modules
+                       <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                               <h5 class="mb-0"><i class="fas fa-folder me-2"></i>Modules</h5>
+                                    <button class="btn btn-sm btn-primary" id="addModuleBtn" data-bs-toggle="modal" data-bs-target="#newModuleModal" disabled>
+                                        <i class="fas fa-plus me-1"></i> Add Module
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="modules-container" id="modulesContainer">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2  "></i>Select a course to view and manage its modules
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- Lesson Management -->
-                    <div class="card">
-                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Lessons</h5>
-                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newLessonModal">
-                                <i class="fas fa-plus me-1"></i> Add Lesson
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <div class="lessons-container">
-                                <div class="alert alert-info">
-                                    Select a module to view and manage its lessons
+                            <!-- Lesson Management -->
+                            <div class="card">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Lessons</h5>
+                                    <button class="btn btn-sm btn-primary" id="addLessonBtn" data-bs-toggle="modal" data-bs-target="#newLessonModal" disabled>
+                                        <i class="fas fa-plus me-1"></i> Add Lesson
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="lessons-container" id="lessonsContainer">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>Select a module to view and manage its lessons
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -82,247 +86,954 @@
             </div>
         </div>
     </div>
-</div>
 
-<!-- New Course Modal -->
+    <!-- New Course Modal -->
 <div class="modal fade" id="newCourseModal" tabindex="-1" aria-labelledby="newCourseModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="newCourseModalLabel">Create New Course</h5>
+                <h5 class="modal-title" id="newCourseModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Create New Course
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form id="newCourseForm">
-                    <div class="mb-3">
-                        <label for="courseTitle" class="form-label">Course Title</label>
-                        <input type="text" class="form-control" id="courseTitle" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="courseCode" class="form-label">Course Code</label>
-                        <select class="form-select" id="courseCode" required>
-                            <option value="" selected disabled>-- Select Course Code --</option>
-                            <option value="WD111">WD111 - Web Development</option>
-                            <option value="AD111">AD111 - Android Development</option>
-                            <option value="IT111">IT111 - IT Support</option>
-                            <option value="GD111">GD111 - Graphic Design</option>
-                            <option value="CS111">CS111 - Cybersecurity</option>
-                            <option value="AE111">AE111 - Advanced Excel</option>
-                            <option value="CCTV111">CCTV111 - CCTV Installation</option>
-                            <option value="PMS111">PMS111 - Project Management System</option>
-                            <option value="AI111">AI111 - AI</option>
-                            <option value="CC111">CC111 - Cloud Computing</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="courseDescription" class="form-label">Description</label>
-                        <textarea class="form-control" id="courseDescription" rows="4" required></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary">Create Course</button>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- New Module Modal -->
-<div class="modal fade" id="newModuleModal" tabindex="-1" aria-labelledby="newModuleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="newModuleModalLabel">Add New Module</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="newModuleForm">
-                    <div class="mb-3">
-                        <label for="moduleTitle" class="form-label">Module Title</label>
-                        <input type="text" class="form-control" id="moduleTitle" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="moduleOrder" class="form-label">Order</label>
-                        <input type="number" class="form-control" id="moduleOrder" min="1" value="1" required>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary">Add Module</button>
-            </div>
-        </div>
-    </div>
-</div>
+            <!-- ✅ Add action + method -->
+            <form method="POST" action="{% url 'mentor_courses' admininfo.id %}">
+                {% csrf_token %}
+                <!-- hidden flag so view knows it's course creation -->
+                <input type="hidden" name="add_course" value="1">
 
-<!-- New Lesson Modal -->
-<div class="modal fade" id="newLessonModal" tabindex="-1" aria-labelledby="newLessonModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="newLessonModalLabel">Add New Lesson</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="newLessonForm">
-                    <div class="mb-3">
-                        <label for="lessonTitle" class="form-label">Lesson Title</label>
-                        <input type="text" class="form-control" id="lessonTitle" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="lessonOrder" class="form-label">Order</label>
-                        <input type="number" class="form-control" id="lessonOrder" min="1" value="1" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="lessonContent" class="form-label">Content</label>
-                        <textarea class="form-control" id="lessonContent" rows="4"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="lessonVideo" class="form-label">Video Upload</label>
-                        <input class="form-control" type="file" id="lessonVideo" accept="video/*">
-                    </div>
-                    <div class="mb-3">
-                        <label for="lessonResource" class="form-label">Resource File</label>
-                        <input class="form-control" type="file" id="lessonResource">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary">Add Lesson</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Course Modal -->
-<div class="modal fade" id="editCourseModal" tabindex="-1" aria-labelledby="editCourseModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="editCourseModalLabel">Edit Course</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editCourseForm">
-                    <div class="mb-3">
-                        <label for="editCourseTitle" class="form-label">Course Title</label>
-                        <input type="text" class="form-control" id="editCourseTitle" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editCourseCode" class="form-label">Course Code</label>
-                        <input type="text" class="form-control" id="editCourseCode" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editCourseDescription" class="form-label">Description</label>
-                        <textarea class="form-control" id="editCourseDescription" rows="4" required></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary">Save Changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Sample data for demonstration
-        const sampleModules = [
-            { id: 1, title: "Introduction to HTML", order: 1, lessons: [
-                { id: 1, title: "What is HTML?", order: 1, hasVideo: true, hasResource: false },
-                { id: 2, title: "Basic HTML Structure", order: 2, hasVideo: true, hasResource: true }
-            ]},
-            { id: 2, title: "CSS Fundamentals", order: 2, lessons: [
-                { id: 3, title: "CSS Selectors", order: 1, hasVideo: true, hasResource: true },
-                { id: 4, title: "Box Model", order: 2, hasVideo: false, hasResource: true }
-            ]}
-        ];
-        
-        const courseSelect = document.getElementById('courseSelect');
-        
-        // When a course is selected
-        courseSelect.addEventListener('change', function() {
-            const courseCode = this.value;
-            loadCourseContent(courseCode);
-        });
-        
-        function loadCourseContent(courseCode) {
-            // In a real application, you would fetch this data from the server
-            // For demonstration, we're using sample data
-            
-            // Render modules
-            const modulesContainer = document.querySelector('.modules-container');
-            modulesContainer.innerHTML = '';
-            
-            if (sampleModules.length === 0) {
-                modulesContainer.innerHTML = `
-                    <div class="alert alert-warning">
-                        No modules found for this course. Click "Add Module" to create one.
-                    </div>
-                `;
-                return;
-            }
-            
-            sampleModules.forEach(module => {
-                const moduleElement = document.createElement('div');
-                moduleElement.className = 'module-card card mb-3';
-                moduleElement.innerHTML = `
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <span class="drag-handle me-3"><i class="fas fa-bars"></i></span>
-                                <h5 class="mb-0">${module.title}</h5>
-                                <span class="badge bg-secondary ms-3">Order: ${module.order}</span>
-                            </div>
-                            <div class="module-actions">
-                                <button class="btn btn-sm btn-outline-primary me-1">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+                <div class="modal-body">
+                    <!-- Course Selection -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-dark">Select Course Title</label>
+                            <!-- ✅ add name="title" so Django can read it -->
+                            <select id="courseTitleSelect" name="title" class="form-select" required>
+                                <option value="" selected disabled>-- Select Course --</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Android Development">Android Development</option>
+                                <option value="IT Support">IT Support</option>
+                                <option value="Graphic Design">Graphic Design</option>
+                                <option value="Cybersecurity">Cybersecurity</option>
+                                <option value="Advanced Excel">Advanced Excel</option>
+                                <option value="CCTV Installation">CCTV Installation</option>
+                                <option value="Project Management System">Project Management System</option>
+                                <option value="AI">AI</option>
+                                <option value="Cloud Computing">Cloud Computing</option>
+                            </select>
                         </div>
-                        <div class="mt-3 lessons-list">
-                            ${module.lessons.length > 0 ? 
-                                module.lessons.map(lesson => `
-                                    <div class="lesson-card card mb-2">
-                                        <div class="card-body py-2">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div class="d-flex align-items-center">
-                                                    <span class="drag-handle me-3"><i class="fas fa-bars"></i></span>
-                                                    <h6 class="mb-0">${lesson.title}</h6>
-                                                    <span class="badge bg-secondary ms-2">Order: ${lesson.order}</span>
-                                                    ${lesson.hasVideo ? '<span class="badge bg-info ms-1"><i class="fas fa-video"></i></span>' : ''}
-                                                    ${lesson.hasResource ? '<span class="badge bg-warning ms-1"><i class="fas fa-file"></i></span>' : ''}
-                                                </div>
-                                                <div class="lesson-actions">
-                                                    <button class="btn btn-sm btn-outline-primary me-1">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-danger">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="courseDescription" class="form-label text-dark">Description</label>
+                        <!-- ✅ add name="description" -->
+                        <textarea class="form-control" id="courseDescription" name="description" rows="4" required></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Create Course
+                    </button>
+                </div>
+            </form>
+                </div>
+            </div>
+        </div>
+
+    <!-- New Module Modal -->
+    <div class="modal fade" id="newModuleModal" tabindex="-1" aria-labelledby="newModuleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="newModuleModalLabel"><i class="fas fa-folder-plus me-2"></i>Add New Module</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="newModuleForm">
+                    <input type="hidden" id="moduleCourseId" name="course_id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="moduleTitle" class="form-label text-dark">Module Title</label>
+                            <input type="text" class="form-control" id="moduleTitle" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="moduleOrder" class="form-label text-dark">Order</label>
+                            <input type="number" class="form-control" id="moduleOrder" name="order" min="1" value="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-primary">Topics & Subtopics</label>
+                            <div id="topicsContainer">
+                                <div class="topic-entry card mb-2">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0">Topic 1</h6>
+                                            <button type="button" class="btn btn-sm btn-danger remove-topic"><i class="fas fa-times"></i></button>
+                                        </div>
+                                        <input type="text" class="form-control mb-2 topic-title" name="topic_titles[]" placeholder="Topic title" required>
+                                        <div class="subtopics-container">
+                                            <div class="input-group mb-2">
+                                                <input type="text" class="form-control subtopic-input" name="subtopics_1[]" placeholder="Subtopic">
+                                                <button class="btn btn-outline-secondary add-subtopic" type="button"><i class="fas fa-plus"></i></button>
                                             </div>
                                         </div>
                                     </div>
-                                `).join('') : 
-                                '<div class="text-muted mt-2">No lessons in this module</div>'
-                            }
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="addTopicBtn">
+                                <i class="fas fa-plus me-1"></i> Add Another Topic
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Add Module</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Lesson Modal -->
+    <div class="modal fade" id="newLessonModal" tabindex="-1" aria-labelledby="newLessonModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="newLessonModalLabel"><i class="fas fa-file-alt me-2"></i>Add New Lesson</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="newLessonForm" enctype="multipart/form-data">
+                    <input type="hidden" id="lessonModuleId" name="module_id">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="lessonTitle" class="form-label">Lesson Title</label>
+                                    <input type="text" class="form-control" id="lessonTitle" name="title" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="lessonOrder" class="form-label">Order</label>
+                                    <input type="number" class="form-control" id="lessonOrder" name="order" min="1" value="1" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="lessonContent" class="form-label">Content</label>
+                            <textarea class="form-control" id="lessonContent" name="content" rows="6" placeholder="Enter lesson content here..."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="lessonVideoType" class="form-label">Video Type</label>
+                                    <select class="form-select" id="lessonVideoType" name="video_type">
+                                        <option value="none">No Video</option>
+                                        <option value="youtube">YouTube</option>
+                                        <option value="upload">Upload Video</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3" id="youtubeUrlContainer" style="display: none;">
+                                    <label for="lessonYoutubeUrl" class="form-label">YouTube URL</label>
+                                    <input type="url" class="form-control" id="lessonYoutubeUrl" name="youtube_url" placeholder="https://www.youtube.com/watch?v=...">
+                                </div>
+                                <div class="mb-3" id="videoUploadContainer" style="display: none;">
+                                    <label for="lessonVideo" class="form-label">Upload Video</label>
+                                    <input class="form-control" type="file" id="lessonVideo" name="video" accept="video/*">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Resources</label>
+                            
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-file-pdf me-2"></i>Notes (PDF)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <input class="form-control" type="file" id="lessonNotes" name="notes" accept=".pdf">
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-file-audio me-2"></i>Recordings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <input class="form-control" type="file" id="lessonRecording" name="recording" accept="audio/*">
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0"><i class="fas fa-link me-2"></i>Useful Links</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="addLinkBtn">
+                                        <i class="fas fa-plus me-1"></i> Add Link
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="linksContainer">
+                                        <div class="input-group mb-2">
+                                            <input type="url" class="form-control" name="links[]" placeholder="https://example.com">
+                                            <button class="btn btn-outline-danger remove-link" type="button"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Add Lesson</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Course Modal -->
+    <div class="modal fade" id="editCourseModal" tabindex="-1" aria-labelledby="editCourseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="editCourseModalLabel"><i class="fas fa-edit me-2"></i>Edit Course</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editCourseForm">
+                    <input type="hidden" id="editCourseId" name="course_id">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editCourseTitle" class="form-label">Course Title</label>
+                                    <input type="text" class="form-control" id="editCourseTitle" name="title" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editCourseCode" class="form-label text-dar">Course Code</label>
+                                    <input type="text" class="form-control" id="editCourseCode" name="code" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCourseDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editCourseDescription" name="description" rows="4" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Lesson Modal -->
+    <div class="modal fade" id="viewLessonModal" tabindex="-1" aria-labelledby="viewLessonModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="viewLessonModalLabel"><i class="fas fa-eye me-2"></i>Lesson Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h4 id="viewLessonTitle" class="mb-3"></h4>
+                    <div id="viewLessonContent" class="my-3 p-3 bg-light rounded"></div>
+                    
+                    <div id="viewLessonVideo" class="mb-3"></div>
+                    
+                    <div id="viewLessonResources" class="mb-3">
+                        <h5 class="mb-3"><i class="fas fa-paperclip me-2"></i>Resources</h5>
+                        <div id="resourceList" class="list-group"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="successToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                Operation completed successfully.
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const courseSelect = document.getElementById('courseSelect');
+            const editCourseBtn = document.getElementById('editCourseBtn');
+            const deleteCourseBtn = document.getElementById('deleteCourseBtn');
+            const addModuleBtn = document.getElementById('addModuleBtn');
+            const addLessonBtn = document.getElementById('addLessonBtn');
+            const modulesContainer = document.getElementById('modulesContainer');
+            const lessonsContainer = document.getElementById('lessonsContainer');
+            
+            // State
+            let currentCourseId = null;
+            let currentModuleId = null;
+            
+            // Auto-fill Course Code based on title selection
+            document.getElementById('courseTitleSelect').addEventListener('change', function() {
+                const titleToCodeMap = {
+                    'Web Development': 'WD111',
+                    'Android Development': 'AD111',
+                    'IT Support': 'IT111',
+                    'Graphic Design': 'GD111',
+                    'Cybersecurity': 'CS111',
+                    'Advanced Excel': 'AE111',
+                    'CCTV Installation': 'CCTV111',
+                    'Project Management System': 'PMS111',
+                    'AI': 'AI111',
+                    'Cloud Computing': 'CC111'
+                };
+                
+                const selectedTitle = this.value;
+                document.getElementById('courseCode').value = titleToCodeMap[selectedTitle] || '';
+            });
+            
+            // When a course is selected
+            courseSelect.addEventListener('change', function() {
+                currentCourseId = this.value;
+                const selectedOption = this.options[this.selectedIndex];
+                
+                // Enable buttons
+                editCourseBtn.disabled = false;
+                deleteCourseBtn.disabled = false;
+                addModuleBtn.disabled = false;
+                
+                // Set course ID for module form
+                document.getElementById('moduleCourseId').value = currentCourseId;
+                
+                // Load modules for this course
+                loadModules(currentCourseId);
+                
+                // Clear lessons container
+                lessonsContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Select a module to view and manage its lessons</div>';
+                addLessonBtn.disabled = true;
+                currentModuleId = null;
+            });
+            
+            // Load modules for a course
+            function loadModules(courseId) {
+                // Simulate API call with demo data
+                setTimeout(() => {
+                    const modules = [
+                        {
+                            id: 1,
+                            title: "Introduction to Web Development",
+                            order: 1,
+                            lesson_count: 3,
+                            topics: [
+                                {
+                                    title: "HTML Basics",
+                                    subtopics: ["Elements", "Attributes", "Structure"]
+                                },
+                                {
+                                    title: "CSS Fundamentals",
+                                    subtopics: ["Selectors", "Box Model", "Layouts"]
+                                }
+                            ],
+                            lessons: [
+                                {
+                                    id: 101,
+                                    title: "Getting Started with HTML",
+                                    order: 1,
+                                    video: true,
+                                    resource: true,
+                                    link: false
+                                },
+                                {
+                                    id: 102,
+                                    title: "CSS Styling Techniques",
+                                    order: 2,
+                                    video: true,
+                                    resource: true,
+                                    link: true
+                                }
+                            ]
+                        },
+                        {
+                            id: 2,
+                            title: "JavaScript Fundamentals",
+                            order: 2,
+                            lesson_count: 4,
+                            topics: [
+                                {
+                                    title: "Variables and Data Types",
+                                    subtopics: ["let vs const", "Primitive Types", "Objects"]
+                                }
+                            ],
+                            lessons: [
+                                {
+                                    id: 201,
+                                    title: "JavaScript Basics",
+                                    order: 1,
+                                    video: true,
+                                    resource: true,
+                                    link: false
+                                }
+                            ]
+                        }
+                    ];
+                    renderModules(modules);
+                }, 500);
+            }
+            
+            // Render modules
+            function renderModules(modules) {
+                if (modules.length === 0) {
+                    modulesContainer.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>No modules found for this course. Click "Add Module" to create one.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                modulesContainer.innerHTML = '';
+                
+                modules.forEach(module => {
+                    const moduleElement = document.createElement('div');
+                    moduleElement.className = 'module-card card mb-3';
+                    moduleElement.setAttribute('data-module-id', module.id);
+                    moduleElement.innerHTML = `
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <span class="drag-handle me-3"><i class="fas fa-bars"></i></span>
+                                    <h5 class="mb-0">${module.title}</h5>
+                                    <span class="badge bg-secondary ms-3">Order: ${module.order}</span>
+                                    <span class="badge bg-info ms-2">${module.lesson_count} lesson(s)</span>
+                                </div>
+                                <div class="module-actions">
+                                    <button class="btn btn-sm btn-outline-primary me-1 edit-module-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-module-btn">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            ${module.topics ? `
+                            <div class="mt-3">
+                                <h6 class="text-muted">Topics:</h6>
+                                <ul class="list-group list-group-flush">
+                                    ${module.topics.map(topic => `
+                                        <li class="list-group-item">
+                                            <strong>${topic.title}</strong>
+                                            ${topic.subtopics && topic.subtopics.length > 0 ? `
+                                            <ul class="mb-0 mt-1">
+                                                ${topic.subtopics.map(subtopic => `<li>${subtopic}</li>`).join('')}
+                                            </ul>
+                                            ` : ''}
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                            ` : ''}
+                            <div class="mt-3 lessons-list">
+                                ${module.lessons && module.lessons.length > 0 ? 
+                                    module.lessons.map(lesson => `
+                                        <div class="lesson-card card mb-2" data-lesson-id="${lesson.id}">
+                                            <div class="card-body py-2">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="drag-handle me-3"><i class="fas fa-bars"></i></span>
+                                                        <h6 class="mb-0">${lesson.title}</h6>
+                                                        <span class="badge bg-secondary ms-2">Order: ${lesson.order}</span>
+                                                        ${lesson.video ? '<span class="badge bg-info ms-1"><i class="fas fa-video"></i></span>' : ''}
+                                                        ${lesson.resource ? '<span class="badge bg-warning ms-1"><i class="fas fa-file"></i></span>' : ''}
+                                                        ${lesson.link ? '<span class="badge bg-success ms-1"><i class="fas fa-link"></i></span>' : ''}
+                                                    </div>
+                                                    <div class="lesson-actions">
+                                                        <button class="btn btn-sm btn-outline-info me-1 view-lesson-btn">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-primary me-1 edit-lesson-btn">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-danger delete-lesson-btn">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('') : 
+                                    '<div class="text-muted mt-2">No lessons in this module</div>'
+                                }
+                            </div>
+                        </div>
+                    `;
+                    modulesContainer.appendChild(moduleElement);
+                });
+                
+                // Add event listeners to module buttons
+                document.querySelectorAll('.edit-module-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const moduleId = this.closest('.module-card').getAttribute('data-module-id');
+                        alert('Edit module ' + moduleId + ' functionality would be implemented here.');
+                    });
+                });
+                
+                document.querySelectorAll('.delete-module-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const moduleId = this.closest('.module-card').getAttribute('data-module-id');
+                        if (confirm('Are you sure you want to delete this module?')) {
+                            showToast('Module deleted successfully');
+                            // In a real app, you would make an API call here
+                            this.closest('.module-card').remove();
+                        }
+                    });
+                });
+                
+                // Add event listeners to lesson buttons
+                document.querySelectorAll('.view-lesson-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const lessonId = this.closest('.lesson-card').getAttribute('data-lesson-id');
+                        viewLesson(lessonId);
+                    });
+                });
+                
+                document.querySelectorAll('.edit-lesson-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const lessonId = this.closest('.lesson-card').getAttribute('data-lesson-id');
+                        alert('Edit lesson ' + lessonId + ' functionality would be implemented here.');
+                    });
+                });
+                
+                document.querySelectorAll('.delete-lesson-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const lessonId = this.closest('.lesson-card').getAttribute('data-lesson-id');
+                        if (confirm('Are you sure you want to delete this lesson?')) {
+                            showToast('Lesson deleted successfully');
+                            // In a real app, you would make an API call here
+                            this.closest('.lesson-card').remove();
+                        }
+                    });
+                });
+                
+                // Add click event to module cards to select module
+                document.querySelectorAll('.module-card').forEach(card => {
+                    card.addEventListener('click', function(e) {
+                        if (!e.target.closest('.module-actions') && !e.target.closest('.lesson-actions')) {
+                            const moduleId = this.getAttribute('data-module-id');
+                            selectModule(moduleId);
+                        }
+                    });
+                });
+            }
+            
+            // Select a module to view its lessons
+            function selectModule(moduleId) {
+                currentModuleId = moduleId;
+                addLessonBtn.disabled = false;
+                
+                // Set module ID for lesson form
+                document.getElementById('lessonModuleId').value = currentModuleId;
+                
+                // Load lessons for this module
+                loadLessons(moduleId);
+            }
+            
+            // Load lessons for a module
+            function loadLessons(moduleId) {
+                // Simulate API call with demo data
+                setTimeout(() => {
+                    const lessons = [
+                        {
+                            id: 101,
+                            title: "Getting Started with HTML",
+                            order: 1,
+                            content: "In this lesson, we'll cover the basics of HTML, including document structure, common elements, and best practices for writing clean, semantic code.",
+                            video: "https://www.youtube.com/embed/example1",
+                            video_type: "youtube",
+                            notes: "/path/to/notes.pdf",
+                            recording: "/path/to/recording.mp3",
+                            links: ["https://developer.mozilla.org/en-US/docs/Web/HTML", "https://www.w3schools.com/html/"]
+                        },
+                        {
+                            id: 102,
+                            title: "CSS Styling Techniques",
+                            order: 2,
+                            content: "This lesson explores various CSS techniques for styling web pages, including selectors, the box model, flexbox, and responsive design principles.",
+                            video: null,
+                            video_type: "none",
+                            notes: null,
+                            recording: null,
+                            links: []
+                        }
+                    ];
+                    renderLessons(lessons);
+                }, 500);
+            }
+            
+            // Render lessons
+            function renderLessons(lessons) {
+                if (lessons.length === 0) {
+                    lessonsContainer.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>No lessons found for this module. Click "Add Lesson" to create one.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                lessonsContainer.innerHTML = '';
+                
+                lessons.forEach(lesson => {
+                    const lessonElement = document.createElement('div');
+                    lessonElement.className = 'lesson-card card mb-3';
+                    lessonElement.setAttribute('data-lesson-id', lesson.id);
+                    lessonElement.innerHTML = `
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <span class="drag-handle me-3"><i class="fas fa-bars"></i></span>
+                                    <h5 class="mb-0">${lesson.title}</h5>
+                                    <span class="badge bg-secondary ms-3">Order: ${lesson.order}</span>
+                                    ${lesson.video ? '<span class="badge bg-info ms-1"><i class="fas fa-video"></i> Video</span>' : ''}
+                                    ${lesson.notes ? '<span class="badge bg-warning ms-1"><i class="fas fa-file"></i> Resource</span>' : ''}
+                                    ${lesson.links && lesson.links.length > 0 ? '<span class="badge bg-success ms-1"><i class="fas fa-link"></i> Link</span>' : ''}
+                                </div>
+                                <div class="lesson-actions">
+                                    <button class="btn btn-sm btn-outline-info me-1 view-lesson-btn">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary me-1 edit-lesson-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-lesson-btn">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="content-preview mt-2 text-muted">
+                                ${lesson.content ? lesson.content.substring(0, 150) + '...' : 'No content available'}
+                            </div>
+                        </div>
+                    `;
+                    lessonsContainer.appendChild(lessonElement);
+                });
+                
+                // Add event listeners to lesson buttons
+                document.querySelectorAll('.view-lesson-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const lessonId = this.closest('.lesson-card').getAttribute('data-lesson-id');
+                        viewLesson(lessonId);
+                    });
+                });
+                
+                document.querySelectorAll('.edit-lesson-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const lessonId = this.closest('.lesson-card').getAttribute('data-lesson-id');
+                        alert('Edit lesson ' + lessonId + ' functionality would be implemented here.');
+                    });
+                });
+                
+                document.querySelectorAll('.delete-lesson-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const lessonId = this.closest('.lesson-card').getAttribute('data-lesson-id');
+                        if (confirm('Are you sure you want to delete this lesson?')) {
+                            showToast('Lesson deleted successfully');
+                            // In a real app, you would make an API call here
+                            this.closest('.lesson-card').remove();
+                        }
+                    });
+                });
+            }
+            
+            // View lesson details
+            function viewLesson(lessonId) {
+                // Simulate API call with demo data
+                const lesson = {
+                    id: lessonId,
+                    title: "Getting Started with HTML",
+                    content: "In this lesson, we'll cover the basics of HTML, including document structure, common elements, and best practices for writing clean, semantic code.\n\nWe'll explore:\n- HTML document structure\n- Common HTML elements\n- Semantic HTML\n- Forms and input types\n- Accessibility considerations",
+                    video: "https://www.youtube.com/embed/example1",
+                    video_type: "youtube",
+                    notes: "/path/to/notes.pdf",
+                    recording: "/path/to/recording.mp3",
+                    links: ["https://developer.mozilla.org/en-US/docs/Web/HTML", "https://www.w3schools.com/html/"]
+                };
+                
+                document.getElementById('viewLessonTitle').textContent = lesson.title;
+                document.getElementById('viewLessonContent').innerHTML = lesson.content ? 
+                    `<p>${lesson.content.replace(/\n/g, '<br>')}</p>` : 
+                    '<p class="text-muted">No content available</p>';
+                
+                // Display video if available
+                const videoContainer = document.getElementById('viewLessonVideo');
+                if (lesson.video) {
+                    if (lesson.video_type === 'youtube') {
+                        videoContainer.innerHTML = `
+                            <h5 class="mb-3"><i class="fab fa-youtube me-2 text-danger"></i>Video</h5>
+                            <div class="ratio ratio-16x9">
+                                <iframe src="https://www.youtube.com/embed/example1" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                        `;
+                    } else {
+                        videoContainer.innerHTML = `
+                            <h5 class="mb-3"><i class="fas fa-video me-2 text-primary"></i>Video</h5>
+                            <div class="ratio ratio-16x9">
+                                <video controls>
+                                    <source src="${lesson.video}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        `;
+                    }
+                } else {
+                    videoContainer.innerHTML = '';
+                }
+                
+                // Display resources
+                const resourceList = document.getElementById('resourceList');
+                resourceList.innerHTML = '';
+                
+                if (lesson.notes) {
+                    resourceList.innerHTML += `
+                        <a href="${lesson.notes}" class="list-group-item list-group-item-action" download>
+                            <i class="fas fa-file-pdf text-danger me-2"></i> Download Notes (PDF)
+                        </a>
+                    `;
+                }
+                
+                if (lesson.recording) {
+                    resourceList.innerHTML += `
+                        <a href="${lesson.recording}" class="list-group-item list-group-item-action" download>
+                            <i class="fas fa-file-audio text-primary me-2"></i> Download Recording
+                        </a>
+                    `;
+                }
+                
+                if (lesson.links && lesson.links.length > 0) {
+                    lesson.links.forEach(link => {
+                        if (link) {
+                            resourceList.innerHTML += `
+                                <a href="${link}" class="list-group-item list-group-item-action" target="_blank">
+                                    <i class="fas fa-link text-success me-2"></i> ${link}
+                                </a>
+                            `;
+                        }
+                    });
+                }
+                
+                if (resourceList.innerHTML === '') {
+                    document.getElementById('viewLessonResources').innerHTML = '';
+                }
+                
+                // Show the modal
+                const viewLessonModal = new bootstrap.Modal(document.getElementById('viewLessonModal'));
+                viewLessonModal.show();
+            }
+            
+            // Set up edit course button
+            editCourseBtn.addEventListener('click', function() {
+                const selectedOption = courseSelect.options[courseSelect.selectedIndex];
+                document.getElementById('editCourseId').value = currentCourseId;
+                document.getElementById('editCourseTitle').value = selectedOption.getAttribute('data-title');
+                document.getElementById('editCourseCode').value = selectedOption.getAttribute('data-code');
+                document.getElementById('editCourseDescription').value = selectedOption.getAttribute('data-description');
+            });
+            
+            // Set up delete course button
+            deleteCourseBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete this course? All modules and lessons will also be deleted.')) {
+                    showToast('Course deleted successfully');
+                    // In a real app, you would make an API call here
+                    courseSelect.value = '';
+                    editCourseBtn.disabled = true;
+                    deleteCourseBtn.disabled = true;
+                    addModuleBtn.disabled = true;
+                    modulesContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Select a course to view and manage its modules</div>';
+                    lessonsContainer.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Select a module to view and manage its lessons</div>';
+                    addLessonBtn.disabled = true;
+                }
+            });
+            
+            // Topic management
+            document.getElementById('addTopicBtn').addEventListener('click', function() {
+                const topicsContainer = document.getElementById('topicsContainer');
+                const topicCount = topicsContainer.children.length + 1;
+                
+                const topicElement = document.createElement('div');
+                topicElement.className = 'topic-entry card mb-2';
+                topicElement.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Topic ${topicCount}</h6>
+                            <button type="button" class="btn btn-sm btn-danger remove-topic"><i class="fas fa-times"></i></button>
+                        </div>
+                        <input type="text" class="form-control mb-2 topic-title" name="topic_titles[]" placeholder="Topic title" required>
+                        <div class="subtopics-container">
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control subtopic-input" name="subtopics_${topicCount}[]" placeholder="Subtopic">
+                                <button class="btn btn-outline-secondary add-subtopic" type="button"><i class="fas fa-plus"></i></button>
+                            </div>
                         </div>
                     </div>
                 `;
-                modulesContainer.appendChild(moduleElement);
+                topicsContainer.appendChild(topicElement);
+                
+                // Add event listener to remove button
+                topicElement.querySelector('.remove-topic').addEventListener('click', function() {
+                    topicElement.remove();
+                });
+                
+                // Add event listener to add subtopic button
+                topicElement.querySelector('.add-subtopic').addEventListener('click', function() {
+                    const subtopicsContainer = topicElement.querySelector('.subtopics-container');
+                    const topicIndex = Array.from(document.querySelectorAll('.topic-entry')).indexOf(topicElement) + 1;
+                    
+                    const subtopicInput = document.createElement('div');
+                    subtopicInput.className = 'input-group mb-2';
+                    subtopicInput.innerHTML = `
+                        <input type="text" class="form-control" name="subtopics_${topicIndex}[]" placeholder="Subtopic">
+                        <button class="btn btn-outline-danger remove-subtopic" type="button"><i class="fas fa-times"></i></button>
+                    `;
+                    subtopicsContainer.appendChild(subtopicInput);
+                    
+                    // Add event listener to remove subtopic button
+                    subtopicInput.querySelector('.remove-subtopic').addEventListener('click', function() {
+                        subtopicInput.remove();
+                    });
+                });
             });
-        }
-        
-        // Initialize sortable functionality (would need a library like SortableJS in a real implementation)
-    });
-</script>
-
-{% endblock%}
+            
+            // Add event listener to video type selector
+            document.getElementById('lessonVideoType').addEventListener('change', function() {
+                const youtubeContainer = document.getElementById('youtubeUrlContainer');
+                const videoUploadContainer = document.getElementById('videoUploadContainer');
+                
+                if (this.value === 'youtube') {
+                    youtubeContainer.style.display = 'block';
+                    videoUploadContainer.style.display = 'none';
+                } else if (this.value === 'upload') {
+                    youtubeContainer.style.display = 'none';
+                    videoUploadContainer.style.display = 'block';
+                } else {
+                    youtubeContainer.style.display = 'none';
+                    videoUploadContainer.style.display = 'none';
+                }
+            });
+            
+            // Add event listener to add link button
+            document.getElementById('addLinkBtn').addEventListener('click', function() {
+                const linksContainer = document.getElementById('linksContainer');
+                const linkInput = document.createElement('div');
+                linkInput.className = 'input-group mb-2';
+                linkInput.innerHTML = `
+                    <input type="url" class="form-control" name="links[]" placeholder="https://example.com">
+                    <button class="btn btn-outline-danger remove-link" type="button"><i class="fas fa-times"></i></button>
+                `;
+                linksContainer.appendChild(linkInput);
+                
+                // Add event listener to remove link button
+                linkInput.querySelector('.remove-link').addEventListener('click', function() {
+                    linkInput.remove();
+                });
+            });
+            
+            // Helper function to show toast messages
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('successToast');
+                const toastMessage = document.getElementById('toastMessage');
+                
+                toastMessage.textContent = message;
+                
+                if (type === 'danger') {
+                    toast.querySelector('.toast-header').className = 'toast-header bg-danger text-white';
+                } else {
+                    toast.querySelector('.toast-header').className = 'toast-header bg-success text-white';
+                }
+                
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+            }
+            
+            // Initialize topics and subtopics functionality
+            document.querySelectorAll('.remove-topic').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.topic-entry').remove();
+                });
+            });
+            
+            document.querySelectorAll('.add-subtopic').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const subtopicsContainer = this.closest('.subtopics-container');
+                    const topicElement = this.closest('.topic-entry');
+                    const topicIndex = Array.from(document.querySelectorAll('.topic-entry')).indexOf(topicElement) + 1;
+                    
+                    const subtopicInput = document.createElement('div');
+                    subtopicInput.className = 'input-group mb-2';
+                    subtopicInput.innerHTML = `
+                        <input type="text" class="form-control" name="subtopics_${topicIndex}[]" placeholder="Subtopic">
+                        <button class="btn btn-outline-danger remove-subtopic" type="button"><i class="fas fa-times"></i></button>
+                    `;
+                    subtopicsContainer.appendChild(subtopicInput);
+                    
+                    // Add event listener to remove subtopic button
+                    subtopicInput.querySelector('.remove-subtopic').addEventListener('click', function() {
+                        subtopicInput.remove();
+                    });
+                });
+            });
+            
+            document.querySelectorAll('.remove-link').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.input-group').remove();
+                });
+            });
+            
+            // Form submission handlers
+            document.getElementById('newCourseForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                showToast('Course created successfully');
+                $('#newCourseModal').modal('hide');
+                // In a real app, you would submit the form data to the server here
+            });
+            
+            document.getElementById('newModuleForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                showToast('Module created successfully');
+                $('#newModuleModal').modal('hide');
+                // In a real app, you would submit the form data to the server here
+            });
+            
+            document.getElementById('newLessonForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                showToast('Lesson created successfully');
+                $('#newLessonModal').modal('hide');
+                // In a real app, you would submit the form data to the server here
+            });
+            
+            document.getElementById('editCourseForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                showToast('Course updated successfully');
+                $('#editCourseModal').modal('hide');
+                // In a real app, you would submit the form data to the server here
+            });
+        });
+    </script>
+<br><br>
+{% endblock %}    

@@ -112,7 +112,7 @@ class CourseForm(forms.ModelForm):
 class ModuleForm(forms.ModelForm):
     class Meta:
         model = Module
-        fields = ["course", "title", "order"]
+        fields = ["course", "topic", "order"]
 
     def __init__(self, *args, **kwargs):
         mentor = kwargs.pop("mentor", None)

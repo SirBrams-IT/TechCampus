@@ -875,14 +875,30 @@ def course_list(request):
 
 def mentor_courses(request, user_id):
     admininfo = get_object_or_404(AdminLogin, id=user_id)
-
     courses = Course.objects.filter(mentor=admininfo)
+
+    if request.method == "POST" and "add_course" in request.POST:
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+
+        if title and description:
+            Course.objects.create(
+                title=title,
+                description=description,
+                mentor=admininfo,
+            )
+            messages.success(request, "Course added successfully!")
+        else:
+            messages.error(request, "Please fill in all required fields.")
+
+        return redirect("mentor_courses", user_id=admininfo.id)
 
     return render(request, "upload_courses.html", {
         "courses": courses,
-        "admininfo": admininfo
+        "admininfo": admininfo,
     })
 
+# Add a new course
 def add_course(request, user_id):
     admininfo = get_object_or_404(AdminLogin, id=user_id)
 
@@ -890,9 +906,9 @@ def add_course(request, user_id):
         form = CourseForm(request.POST, request.FILES)
         if form.is_valid():
             course = form.save(commit=False)
-            course.mentor = admininfo  # mentor is from AdminLogin
+            course.mentor = admininfo  # Assign logged-in mentor
             course.save()
-            messages.success(request, "Course added successfully!")
+            messages.success(request, "✅ Course added successfully!")
             return redirect("mentor_courses", user_id=admininfo.id)
     else:
         form = CourseForm()
@@ -904,27 +920,67 @@ def add_course(request, user_id):
 
 def add_module(request):
     if request.method == "POST":
-        form = ModuleForm(request.POST, mentor=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect("mentor_courses")
-    else:
-        form = ModuleForm(mentor=request.user)
-    return render(request, "add_module.html", {"form": form})
+        course_id = request.POST.get("course_id")
+        module_title = request.POST.get("module_title")
+        order = request.POST.get("order")
+        topics = request.POST.getlist("topics[]")  # all topic titles
 
-def add_lesson(request):
+        course = get_object_or_404(Course, id=course_id)
+
+        if not module_title or not topics:
+            messages.error(request, "Please fill in all required fields.")
+            return redirect("mentor_courses", user_id=course.mentor.id)
+
+        # Save each topic and subtopics
+        for index, topic in enumerate(topics, start=1):
+            subtopic_key = f"subtopics_{index}[]"  # matches modal input names
+            subtopics = request.POST.getlist(subtopic_key)
+
+            if subtopics:
+                for sub in subtopics:
+                    if sub.strip():  # avoid empty strings
+                        Module.objects.create(
+                            course=course,
+                            module_title=module_title,
+                            topic=topic,
+                            subtopic=sub,
+                            order=order
+                        )
+            else:
+                # If no subtopics, still create a module entry
+                Module.objects.create(
+                    course=course,
+                    module_title=module_title,
+                    topic=topic,
+                    subtopic="",
+                    order=order
+                )
+
+        messages.success(request, "Module added successfully!")
+        return redirect("mentor_courses", user_id=course.mentor.id)
+
+    return redirect("mentor_courses", user_id=request.user.id)
+
+def add_lesson(request, module_id):
+    module = get_object_or_404(Module, id=module_id)
+
     if request.method == "POST":
-        form = LessonForm(request.POST, request.FILES, mentor=request.user)
+        form = LessonForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            return redirect("mentor_courses")
+            lesson = form.save(commit=False)
+            lesson.module = module
+            lesson.save()
+            messages.success(request, "✅ Lesson added successfully!")
+            return redirect("course_detail", pk=module.course.id)
     else:
-        form = LessonForm(mentor=request.user)
-    return render(request, "add_lesson.html", {"form": form})
+        form = LessonForm()
+    return render(request, "add_lesson.html", {"form": form,"module": module })
 
 def course_detail(request, pk):
-    course = get_object_or_404(Course, pk=pk, mentor=request.user)
-    return render(request, "course_detail.html", {"course": course})
+    course = get_object_or_404(Course, pk=pk)
+    modules = course.modules.all().prefetch_related("lessons")
+
+    return render(request, "course_detail.html", {"course": course,"modules": modules})
 
 def learning(request, studentinfo):
     student = Member.objects.filter(id=studentinfo).first()

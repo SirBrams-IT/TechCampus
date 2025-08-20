@@ -185,23 +185,42 @@ COURSE_CHOICES = [
 ]
 
 class Course(models.Model):
-    mentor = models.ForeignKey(AdminLogin, on_delete=models.CASCADE, related_name="courses")
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, unique=True)
     description = models.TextField()
-    created_at = models.DateTimeField(default=timezone.now)
+    code = models.CharField(max_length=20, unique=True, blank=True, null=True)  
+    mentor = models.ForeignKey("AdminLogin", on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            # generate prefix from title (first letters of each word)
+            prefix = "".join([word[0].upper() for word in self.title.split()[:2]])
+            
+            # generate a number (e.g., total count + 200 to start from 200)
+            number = 200 + Course.objects.count()
+            
+            self.code = f"{prefix}-{number}"
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return self.title
-    
+        return f"{self.title} ({self.code})"
+
 class Module(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="modules")
-    title = models.CharField(max_length=200)
+    module_title = models.CharField(max_length=200)
+    topic = models.CharField(max_length=200)
+    subtopic = models.CharField(max_length=200)
     order = models.PositiveIntegerField(default=1)
 
     class Meta:
         ordering = ["order"]
+        unique_together = ("course", "module_title", "topic", "subtopic")  
 
     def __str__(self):
-        return f"{self.course.title} - {self.title}"
+        if self.subtopic:
+            return f"{self.module_title} - {self.topic} - {self.subtopic}"
+        return f"{self.module_title} - {self.topic}"
 
 
 class Lesson(models.Model):
@@ -216,8 +235,8 @@ class Lesson(models.Model):
         ordering = ["order"]
 
     def __str__(self):
-        return f"{self.module.title} - {self.title}"
-
+        return f"{self.module.topic} - {self.title}"
+    
 class Enrollment(models.Model):
     student = models.ForeignKey('Member', on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
