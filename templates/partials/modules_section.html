@@ -1,0 +1,76 @@
+<div id="modulesContainer">
+    <h3 class="text-primary mb-3">Modules for {{ course.title }}</h3>
+    {% if modules %}
+    <div class="row">
+        {% for module in modules %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card module-card shadow-sm">
+                <div class="card-header module-header position-relative">
+                    <h5 class="card-title mb-0 text-truncate">{{ module.title }}</h5>
+                    <small class="d-block mt-1">Order: {{ module.order }}</small>
+                    <div class="module-actions">
+                        <button class="btn btn-sm btn-light me-1 edit-module-btn" 
+                                data-module-id="{{ module.id }}"
+                                data-module-title="{{ module.title }}"
+                                data-module-order="{{ module.order }}">
+                            <i class="fas fa-edit text-primary"> Edit</i>
+                        </button>
+                        <button class="btn btn-sm btn-light delete-module-btn me-2" 
+                                data-module-id="{{ module.id }}">
+                            <i class="fas fa-trash text-danger"> Delete</i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-info">{{ module.topics.count }} Topic(s)</span>
+                        <button class="btn btn-sm btn-outline-primary btn-module view-lessons-btn" 
+                                data-module-id="{{ module.id }}">
+                            <i class="fas fa-eye me-1"></i> View Lessons
+                        </button>
+                    </div>
+
+                    {% if module.topics.all %}
+                    <div class="topics-container mt-3">
+                        {% for topic in module.topics.all %}
+                        <div class="topic-item mb-3">
+                            <h6 class="mb-1">
+                                <i class="fas fa-bookmark text-primary me-1"></i>
+                                {{ topic.title }} <span class="text-muted">(Order: {{ topic.order }})</span>
+                            </h6>
+                            {% if topic.subtopics.all %}
+                            <div class="subtopics ms-3">
+                                {% for subtopic in topic.subtopics.all %}
+                                <div class="subtopic-item">
+                                    <i class="fas fa-caret-right text-secondary me-1"></i>
+                                    {{ subtopic.title }} <span class="text-muted">(Order: {{ subtopic.order }})</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="text-muted ms-3 mb-1">No subtopics</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state py-3">
+                        <i class="fas fa-folder-open"></i>
+                        <p class="mb-0">No topics added yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-folder-open fa-3x"></i>
+        <h5>No Modules Yet</h5>
+        <p class="text-muted">Select a course and add your first module to get started.</p>
+    </div>
+{% endif %}
+
+</div>
+

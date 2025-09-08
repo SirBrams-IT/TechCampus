@@ -244,5 +244,82 @@
     font-weight: 500;
 }
 
+ .module-card, .lesson-card {
+        transition: all 0.2s ease;
+        border-left: 4px solid #4e73df;
+    }
+    
+    .module-card:hover, .lesson-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .lesson-card {
+        border-left-color: #1cc88a;
+    }
+    
+    .drag-handle {
+        cursor: move;
+        color: #6e707e;
+    }
+    
+    .content-management-header {
+        background: linear-gradient(90deg, #4e73df 0%, #224abe 100%);
+    }
+    
+    .module-actions, .lesson-actions {
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+    }
+    
+    .module-card:hover .module-actions, .lesson-card:hover .lesson-actions {
+        opacity: 1;
+    }
 
+        .drag-handle {
+            cursor: move;
+            color: #6c757d;
+        }
+        .module-card, .lesson-card {
+            transition: all 0.2s ease;
+            border-left: 4px solid #0d6efd;
+        }
+        .module-card:hover, .lesson-card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        .content-preview {
+            max-height: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+        }
+        .sortable-ghost {
+            opacity: 0.5;
+            background: #cce5ff;
+        }
+        .badge {
+            font-size: 0.7em;
+        }
+        .topic-entry {
+            border-left: 3px solid #6f42c1;
+        }
+        .subtopic-input {
+            border-right: 0;
+        }
+        .add-subtopic {
+            border-left: 0;
+        }
+        .main-content {
+            margin-left: 30px;
+            margin-right: 0;
+            padding: 20px;
+            width: calc(100% - 30px);
+        }
+        .card-header.bg-primary {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        }
+    
 

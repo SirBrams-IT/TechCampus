@@ -112,7 +112,7 @@ class CourseForm(forms.ModelForm):
 class ModuleForm(forms.ModelForm):
     class Meta:
         model = Module
-        fields = ["course", "topic", "order"]
+        fields = ["course", "title", "order"]
 
     def __init__(self, *args, **kwargs):
         mentor = kwargs.pop("mentor", None)
@@ -124,10 +124,8 @@ class ModuleForm(forms.ModelForm):
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ["module", "title", "content", "video", "resource", "order"]
+        fields = "__all__"
 
-    def __init__(self, *args, **kwargs):
-        mentor = kwargs.pop("mentor", None)
-        super().__init__(*args, **kwargs)
-        if mentor:
-            self.fields["module"].queryset = Module.objects.filter(course__mentor=mentor)
+    def clean_links(self):
+        links_text = self.data.getlist("links[]")
+        return [link.strip() for link in links_text if link.strip()] or None

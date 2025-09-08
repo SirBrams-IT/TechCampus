@@ -1,14 +1,49 @@
 from datetime import date
+import os
 import random
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import models
-from cloudinary.models import CloudinaryField  # ✅ Cloudinary import
 
 
 def generate_otp():
     return str(random.randint(100000, 999999))
+
+
+def profile_image_upload_path(instance, filename):
+    """Generate upload path for profile images"""
+    return f'profile_images/{instance.username}/{filename}'
+
+
+def admin_profile_upload_path(instance, filename):
+    """Generate upload path for admin profile images"""
+    return f'admin_profiles/{instance.username}/{filename}'
+
+
+def assignment_upload_path(instance, filename):
+    """Generate upload path for assignments"""
+    return f'assignments/{instance.title}/{filename}'
+
+
+def submission_upload_path(instance, filename):
+    """Generate upload path for submissions"""
+    return f'submissions/{instance.student.username}/{instance.assignment.title}/{filename}'
+
+
+def lesson_video_upload_path(instance, filename):
+    """Generate upload path for lesson videos"""
+    return f'lessons/videos/{instance.module.course.code}/{instance.module.title}/{filename}'
+
+
+def lesson_notes_upload_path(instance, filename):
+    """Generate upload path for lesson notes"""
+    return f'lessons/notes/{instance.module.course.code}/{instance.module.title}/{filename}'
+
+
+def lesson_recording_upload_path(instance, filename):
+    """Generate upload path for lesson recordings"""
+    return f'lessons/recordings/{instance.module.course.code}/{instance.module.title}/{filename}'
 
 
 class Member(models.Model):
@@ -20,7 +55,7 @@ class Member(models.Model):
     id_number = models.CharField(max_length=20)
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')])
-    profile_image = CloudinaryField('image', folder="profile_images", null=True, blank=True)  # ✅ Cloudinary
+    profile_image = models.ImageField(upload_to=profile_image_upload_path, null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
 
@@ -87,7 +122,7 @@ class AdminLogin(models.Model):
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField(validators=[validate_age])
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')])
-    profile_image = CloudinaryField('image', folder="admin_profiles", blank=True, null=True)  # ✅ Cloudinary
+    profile_image = models.ImageField(upload_to=admin_profile_upload_path, blank=True, null=True)
     password = models.CharField(max_length=100)
 
     # OTP Fields for password reset
@@ -117,10 +152,11 @@ class AdminLogin(models.Model):
     def __str__(self):
         return self.name
 
+
 class Assignment(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    file = CloudinaryField('file', folder="assignments")  # ✅ Cloudinary
+    file = models.FileField(upload_to=assignment_upload_path)
     due_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     mentor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='assigned_assignments')
@@ -132,7 +168,7 @@ class Assignment(models.Model):
 class Submission(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
-    submitted_file = CloudinaryField('file', folder="submissions", null=True, blank=True)  # ✅ Cloudinary
+    submitted_file = models.FileField(upload_to=submission_upload_path, null=True, blank=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=[
         ('Not Submitted', 'Not Submitted'),
@@ -184,12 +220,12 @@ COURSE_CHOICES = [
     ('Cloud Computing', 'CC111'),
 ]
 
+
 class Course(models.Model):
     title = models.CharField(max_length=200, unique=True)
     description = models.TextField()
-    code = models.CharField(max_length=20, unique=True, blank=True, null=True)  
+    code = models.CharField(max_length=20, unique=True, blank=True, null=True)
     mentor = models.ForeignKey("AdminLogin", on_delete=models.CASCADE)
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -206,37 +242,71 @@ class Course(models.Model):
     def __str__(self):
         return f"{self.title} ({self.code})"
 
+
 class Module(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="modules")
-    module_title = models.CharField(max_length=200)
-    topic = models.CharField(max_length=200)
-    subtopic = models.CharField(max_length=200)
+    title = models.CharField(max_length=200)
     order = models.PositiveIntegerField(default=1)
 
     class Meta:
         ordering = ["order"]
-        unique_together = ("course", "module_title", "topic", "subtopic")  
+        unique_together = ("course", "title")
 
     def __str__(self):
-        if self.subtopic:
-            return f"{self.module_title} - {self.topic} - {self.subtopic}"
-        return f"{self.module_title} - {self.topic}"
+        return self.title
+
+
+class Topic(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="topics")
+    title = models.CharField(max_length=200)
+    order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["order"]
+        unique_together = ("module", "title")
+
+    def __str__(self):
+        return self.title
+
+
+class Subtopic(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name="subtopics")
+    title = models.CharField(max_length=200)
+    order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["order"]
+        unique_together = ("topic", "title")
+
+    def __str__(self):
+        return self.title
 
 
 class Lesson(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="lessons")
     title = models.CharField(max_length=200)
     content = models.TextField(blank=True, null=True)
-    video = CloudinaryField(resource_type="video", blank=True, null=True)
-    resource = CloudinaryField(resource_type="raw", blank=True, null=True)
+    video_type = models.CharField(max_length=20, choices=[('none', 'None'), ('youtube', 'YouTube'), ('upload', 'Upload')], default='none')
+    youtube_url = models.URLField(blank=True, null=True)
+    video = models.FileField(upload_to=lesson_video_upload_path, blank=True, null=True)
+    notes = models.FileField(upload_to=lesson_notes_upload_path, blank=True, null=True)
+    recording = models.FileField(upload_to=lesson_recording_upload_path, blank=True, null=True)
+    links = models.JSONField(blank=True, null=True)  # Store as array
     order = models.PositiveIntegerField(default=1)
 
     class Meta:
         ordering = ["order"]
+        unique_together = ("module", "title")
+
+    def youtube_embed_url(self):
+        if self.youtube_url and "watch?v=" in self.youtube_url:
+            return self.youtube_url.replace("watch?v=", "embed/")
+        return self.youtube_url
 
     def __str__(self):
-        return f"{self.module.topic} - {self.title}"
-    
+        return f"{self.module} - {self.title}"
+
+
 class Enrollment(models.Model):
     student = models.ForeignKey('Member', on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)

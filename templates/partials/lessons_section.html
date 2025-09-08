@@ -1,0 +1,106 @@
+<div id="lessonsContainer">
+    <h3 class="text-primary mb-3">
+        <i class="fas fa-book me-2"></i> Lessons for <span class="fw-bold">{{ module.title }}</span>
+    </h3>
+
+    {% if lessons %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for lesson in lessons %}
+        <div class="col">
+            <div class="card shadow-sm h-100 border-0 rounded-3">
+                <div class="card-body">
+                    <!-- Title -->
+                    <h5 class="card-title text-primary mb-3">
+                        <i class="fas fa-chalkboard me-2"></i>{{ lesson.title }}
+                    </h5>
+
+                    <!-- Content -->
+                    {% if lesson.content %}
+                    <div class="mb-2">
+                        <label class="fw-semibold text-muted small"><i class="fas fa-book"></i>Content-Description</label>
+                        <p class="text-muted border rounded p-2 bg-light">
+                            {{ lesson.content|linebreaksbr }}
+
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Video -->
+                    {% if lesson.video_type == "youtube" and lesson.youtube_url %}
+                    <div class="mb-3">
+                        <label class="fw-semibold text-muted small">YouTube Video</label>
+                        <div class="ratio ratio-16x9">
+                        <iframe src="https://www.youtube.com/embed/{{ lesson.youtube_url|cut:'https://youtu.be/'|cut:'?si=ZhJmm8MArmLUeLnN' }}" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    </div>
+
+                    {% elif lesson.video %}
+                    <div class="mb-3">
+                        <label class="fw-semibold text-muted small">Uploaded Video</label>
+                        <video class="w-100 rounded border" controls>
+                            <source src="{{ lesson.video.url }}" type="video/mp4">
+                            Your browser does not support video playback.
+                        </video>
+                    </div>
+                    {% endif %}
+
+                    <!-- Notes -->
+                    {% if lesson.notes %}
+                    <div class="mb-2">
+                        <label class="fw-semibold text-muted small">Notes</label><br>
+                        <a href="{% url 'download_note' lesson.id %}" class="btn btn-outline-secondary btn-sm" target="_blank">
+                            <i class="fas fa-download me-1"></i> Download Notes
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Recording -->
+                    {% if lesson.recording %}
+                    <div class="mb-2">
+                        <label class="fw-semibold text-muted small">Recording</label><br>
+                        <a href="{{ lesson.recording.url }}" class="btn btn-outline-dark btn-sm" target="_blank">
+                            <i class="fas fa-microphone me-1"></i> Listen Recording
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Extra Links -->
+                    {% if lesson.links %}
+                    <div class="mb-2">
+                        <label class="fw-semibold text-muted small">Extra Resources</label>
+                        <ul class="list-unstyled border rounded p-2 bg-light">
+                            {% for link in lesson.links %}
+                            <li>
+                                <a href="{{ link }}" target="_blank" class="text-decoration-none">
+                                    <i class="fas fa-link me-1 text-primary"></i>{{ link }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Footer -->
+                <div class="card-footer bg-white d-flex justify-content-end">
+                    <a href="#" class="btn btn-sm btn-outline-primary me-2">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <form action="#" method="post"
+                          onsubmit="return confirm('Are you sure you want to delete this lesson?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>No lessons found for this module.
+    </div>
+    {% endif %}
+</div>

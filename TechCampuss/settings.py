@@ -1,11 +1,7 @@
 import os
 from pathlib import Path
 from decouple import config
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 import environ
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,8 +36,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "TechApp",
-    "cloudinary",
-    "cloudinary_storage",
 ]
 
 # ⚙️ Middleware
@@ -102,26 +96,21 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# 🗂️ Static & Media
+# 🗂️ Static & Media Files Configuration
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME"),
-    "API_KEY": config("CLOUDINARY_API_KEY"),
-    "API_SECRET": config("CLOUDINARY_API_SECRET"),
-}
+# Media files configuration (for user uploads)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
-cloudinary.config(
-    cloud_name=config("CLOUDINARY_CLOUD_NAME"),
-    api_key=config("CLOUDINARY_API_KEY"),
-    api_secret=config("CLOUDINARY_API_SECRET"),
-    secure=True,
-)
-
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+# File upload settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
 # 📧 Email Config
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -138,5 +127,5 @@ CSRF_TRUSTED_ORIGINS = [
     "http://techcampus-r82w.onrender.com",
 ]
 
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+

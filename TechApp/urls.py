@@ -57,9 +57,14 @@ urlpatterns = [
     path("learning/<int:studentinfo>/", views.learning, name="learning"),
     path("courses/<int:user_id>/", views.mentor_courses, name="mentor_courses"),
     path("add_course/<int:user_id>/", views.add_course, name="add_course"),
-    path("modules/add/", views.add_module, name="add_module"),
-    path("lessons/add/", views.add_lesson, name="add_lesson"),
-    path("courses/<int:pk>/", views.course_detail, name="course_detail"),
+    path("add_module", views.add_module, name="add_module"),
+    path('course/<int:course_id>/modules/', views.get_course_modules, name='get_course_modules'),
+    path('course/<int:course_id>/modules/', views.course_modules_view, name='course_modules'), 
+    path("lessons/add/<int:module_id>/", views.add_lesson, name="add_lesson"),
+    path("modules/<int:module_id>/lessons/", views.get_module_lessons, name="get_module_lessons"),
+    path("lessons/<int:lesson_id>/download/", views.download_note, name="download_note"),
+
+
     ]
 
 
