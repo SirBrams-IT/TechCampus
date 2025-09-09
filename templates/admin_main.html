@@ -238,22 +238,23 @@
       document.getElementById("year").textContent = new Date().getFullYear();
 
     function updateGreeting() {
-        let now = new Date();
-        let hours = now.getHours();
-        let greeting = "{{ studentinfo.username }}";
+    let now = new Date();
+    let hours = now.getHours();
+    let greeting = "";
 
-        if (hours >= 5 && hours < 12) {
-            greeting = "Good morning! {{ admininfo.username }}";
-        } else if (hours >= 12 && hours < 17) {
-            greeting = "Good afternoon! {{ admininfo.username }}";
-        } else if (hours >= 17 && hours < 21) {
-            greeting = "Good evening! {{ admininfo.username }}";
-        } else {
-            greeting = "Good night! {{ admininfo.username }}";
-        }
-
-        document.getElementById("greeting").textContent = greeting;
+    if (hours >= 5 && hours < 12) {
+        greeting = "Good morning";
+    } else if (hours >= 12 && hours < 17) {
+        greeting = "Good afternoon";
+    } else if (hours >= 17 && hours < 21) {
+        greeting = "Good evening";
+    } else {
+        greeting = "Good night";
     }
+
+    // Add the username from Django template
+    document.getElementById("greeting").textContent = greeting + ", ";
+}
 
     updateGreeting(); // Call function on page load
     setInterval(updateGreeting, 60000); // Update every minute

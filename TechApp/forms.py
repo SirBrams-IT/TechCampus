@@ -124,6 +124,7 @@ class ModuleForm(forms.ModelForm):
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
+        exclude = ["module", "links"]
         fields = "__all__"
 
     def clean_links(self):

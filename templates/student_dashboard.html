@@ -165,7 +165,9 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1 id="greeting"><b class="text-warning">{{ studentinfo.name|title }}</b>, Welcome to Student Dashboard <span class="ms-5 bg-black text-white" id="current-time"></span></h1>
+      <h1>
+    <span id="greeting"></span>, <b class="text-warning" >{{ studentinfo.name|title }}</b>! Welcome to Admin/Mentor Dashboard <span class="ms-5 bg-black text-white" id="current-time"></span>
+    </h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
@@ -356,22 +358,23 @@
       document.getElementById("year").textContent = new Date().getFullYear();
 
     function updateGreeting() {
-        let now = new Date();
-        let hours = now.getHours();
-        let greeting = "{{ studentinfo.username }}";
+    let now = new Date();
+    let hours = now.getHours();
+    let greeting = "";
 
-        if (hours >= 5 && hours < 12) {
-            greeting = "Good morning! {{ studentinfo.username }}";
-        } else if (hours >= 12 && hours < 17) {
-            greeting = "Good afternoon! {{ studentinfo.username }}";
-        } else if (hours >= 17 && hours < 21) {
-            greeting = "Good evening! {{ studentinfo.username }}";
-        } else {
-            greeting = "Good night! {{ studentinfo.username }}";
-        }
-
-        document.getElementById("greeting").textContent = greeting;
+    if (hours >= 5 && hours < 12) {
+        greeting = "Good morning";
+    } else if (hours >= 12 && hours < 17) {
+        greeting = "Good afternoon";
+    } else if (hours >= 17 && hours < 21) {
+        greeting = "Good evening";
+    } else {
+        greeting = "Good night";
     }
+
+    // Add the username from Django template
+    document.getElementById("greeting").textContent = greeting + "";
+}
 
     updateGreeting(); // Call function on page load
     setInterval(updateGreeting, 60000); // Update every minute

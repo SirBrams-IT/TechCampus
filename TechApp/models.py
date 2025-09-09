@@ -1,49 +1,14 @@
 from datetime import date
-import os
 import random
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 
 def generate_otp():
     return str(random.randint(100000, 999999))
-
-
-def profile_image_upload_path(instance, filename):
-    """Generate upload path for profile images"""
-    return f'profile_images/{instance.username}/{filename}'
-
-
-def admin_profile_upload_path(instance, filename):
-    """Generate upload path for admin profile images"""
-    return f'admin_profiles/{instance.username}/{filename}'
-
-
-def assignment_upload_path(instance, filename):
-    """Generate upload path for assignments"""
-    return f'assignments/{instance.title}/{filename}'
-
-
-def submission_upload_path(instance, filename):
-    """Generate upload path for submissions"""
-    return f'submissions/{instance.student.username}/{instance.assignment.title}/{filename}'
-
-
-def lesson_video_upload_path(instance, filename):
-    """Generate upload path for lesson videos"""
-    return f'lessons/videos/{instance.module.course.code}/{instance.module.title}/{filename}'
-
-
-def lesson_notes_upload_path(instance, filename):
-    """Generate upload path for lesson notes"""
-    return f'lessons/notes/{instance.module.course.code}/{instance.module.title}/{filename}'
-
-
-def lesson_recording_upload_path(instance, filename):
-    """Generate upload path for lesson recordings"""
-    return f'lessons/recordings/{instance.module.course.code}/{instance.module.title}/{filename}'
 
 
 class Member(models.Model):
@@ -55,7 +20,7 @@ class Member(models.Model):
     id_number = models.CharField(max_length=20)
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')])
-    profile_image = models.ImageField(upload_to=profile_image_upload_path, null=True, blank=True)
+    profile_image = CloudinaryField('image', folder='profile_images', null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
 
@@ -122,7 +87,7 @@ class AdminLogin(models.Model):
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField(validators=[validate_age])
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')])
-    profile_image = models.ImageField(upload_to=admin_profile_upload_path, blank=True, null=True)
+    profile_image = CloudinaryField('image', folder='admin_profiles', blank=True, null=True)
     password = models.CharField(max_length=100)
 
     # OTP Fields for password reset
@@ -156,7 +121,7 @@ class AdminLogin(models.Model):
 class Assignment(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    file = models.FileField(upload_to=assignment_upload_path)
+    file = CloudinaryField('file', folder='assignments')
     due_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     mentor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='assigned_assignments')
@@ -168,7 +133,7 @@ class Assignment(models.Model):
 class Submission(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
-    submitted_file = models.FileField(upload_to=submission_upload_path, null=True, blank=True)
+    submitted_file = CloudinaryField('file', folder='submissions', null=True, blank=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=[
         ('Not Submitted', 'Not Submitted'),
@@ -230,12 +195,8 @@ class Course(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.code:
-            # generate prefix from title (first letters of each word)
             prefix = "".join([word[0].upper() for word in self.title.split()[:2]])
-            
-            # generate a number (e.g., total count + 200 to start from 200)
             number = 200 + Course.objects.count()
-            
             self.code = f"{prefix}-{number}"
         super().save(*args, **kwargs)
 
@@ -286,12 +247,16 @@ class Lesson(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="lessons")
     title = models.CharField(max_length=200)
     content = models.TextField(blank=True, null=True)
-    video_type = models.CharField(max_length=20, choices=[('none', 'None'), ('youtube', 'YouTube'), ('upload', 'Upload')], default='none')
+    video_type = models.CharField(
+        max_length=20,
+        choices=[('none', 'None'), ('youtube', 'YouTube'), ('upload', 'Upload')],
+        default='none'
+    )
     youtube_url = models.URLField(blank=True, null=True)
-    video = models.FileField(upload_to=lesson_video_upload_path, blank=True, null=True)
-    notes = models.FileField(upload_to=lesson_notes_upload_path, blank=True, null=True)
-    recording = models.FileField(upload_to=lesson_recording_upload_path, blank=True, null=True)
-    links = models.JSONField(blank=True, null=True)  # Store as array
+    video = CloudinaryField('video', folder='lessons/videos', blank=True, null=True)
+    notes = CloudinaryField('raw', folder='lessons/notes', blank=True, null=True)
+    recording = CloudinaryField('video', folder='lessons/recordings', blank=True, null=True)
+    links = models.JSONField(blank=True, null=True)
     order = models.PositiveIntegerField(default=1)
 
     class Meta:
@@ -299,12 +264,28 @@ class Lesson(models.Model):
         unique_together = ("module", "title")
 
     def youtube_embed_url(self):
-        if self.youtube_url and "watch?v=" in self.youtube_url:
-            return self.youtube_url.replace("watch?v=", "embed/")
-        return self.youtube_url
+        if not self.youtube_url:
+            return None
+
+        url = self.youtube_url
+
+        # Handle standard YouTube links
+        if "watch?v=" in url:
+            video_id = url.split("watch?v=")[-1].split("&")[0]
+        # Handle shortened youtu.be links
+        elif "youtu.be/" in url:
+            video_id = url.split("youtu.be/")[-1].split("?")[0]
+        # Handle shorts links
+        elif "youtube.com/shorts/" in url:
+            video_id = url.split("shorts/")[-1].split("?")[0]
+        else:
+            return url  # fallback if unknown format
+
+        return f"https://www.youtube.com/embed/{video_id}"
 
     def __str__(self):
         return f"{self.module} - {self.title}"
+
 
 
 class Enrollment(models.Model):

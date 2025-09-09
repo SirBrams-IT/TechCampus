@@ -900,6 +900,7 @@ def mentor_courses(request, user_id):
     return render(request, "upload_courses.html", {
         "courses": courses,
         "admininfo": admininfo,
+        "user": admininfo,  # 👈 Added so admin_main.html works
     })
 
 # Add a new course
@@ -922,6 +923,12 @@ def add_course(request, user_id):
         "admininfo": admininfo
     })
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.urls import reverse
+from django.db import transaction
+from django.http import HttpResponseRedirect
+
 @transaction.atomic
 def add_module(request):
     if request.method != "POST":
@@ -934,90 +941,58 @@ def add_module(request):
 
     course = get_object_or_404(Course, id=course_id)
 
-    # Validate input
     if not module_title or not topics:
-        messages.error(request, "Please fill in all required fields.")
+        messages.error(request, "❌ Please fill in all required fields.")
         return redirect("mentor_courses", user_id=course.mentor.id)
 
-    # Parse order (module order only)
     try:
         module_order = int(order_str) if order_str else 1
     except ValueError:
         module_order = 1
 
-    # 1) Module: create or reuse
     module, module_created = Module.objects.get_or_create(
         course=course,
         title=module_title,
         defaults={"order": module_order},
     )
 
-    # If module already exists and a different order was provided, you can choose to update it:
     if not module_created and module_order and module.order != module_order:
         module.order = module_order
         module.save(update_fields=["order"])
 
-    # Counters for feedback
-    topics_created = 0
-    subtopics_created = 0
-    topics_skipped = 0
-    subtopics_skipped = 0
+    topics_created, subtopics_created = 0, 0
 
-    # 2) Topics & Subtopics
     for idx, topic_title in enumerate(topics, start=1):
-        # Derive this topic's subtopics from form (subtopics_1[], subtopics_2[], ...)
-        subtopic_key = f"subtopics_{idx}[]"
-        raw_subs = request.POST.getlist(subtopic_key)
-        sub_list = [s.strip() for s in raw_subs if s and s.strip()]
+        sub_list = [s.strip() for s in request.POST.getlist(f"subtopics_{idx}[]") if s.strip()]
 
-        # Create/reuse Topic
-        topic_defaults = {
-            # order for topic if newly created; existing topics keep their order
-            "order": (Topic.objects.filter(module=module).count() + 1)
-        }
         topic_obj, topic_created = Topic.objects.get_or_create(
             module=module,
             title=topic_title,
-            defaults=topic_defaults,
+            defaults={"order": (Topic.objects.filter(module=module).count() + 1)},
         )
         if topic_created:
             topics_created += 1
-        else:
-            topics_skipped += 1
 
-        # Create/reuse Subtopics for this topic
-        for sub_idx, sub_title in enumerate(sub_list, start=1):
-            sub_defaults = {
-                "order": (Subtopic.objects.filter(topic=topic_obj).count() + 1)
-            }
-            sub_obj, sub_created = Subtopic.objects.get_or_create(
+        for sub_title in sub_list:
+            _, sub_created = Subtopic.objects.get_or_create(
                 topic=topic_obj,
                 title=sub_title,
-                defaults=sub_defaults,
+                defaults={"order": (Subtopic.objects.filter(topic=topic_obj).count() + 1)},
             )
             if sub_created:
                 subtopics_created += 1
-            else:
-                subtopics_skipped += 1
 
-    # 3) Messages
-    if module_created and (topics_created or subtopics_created):
-        messages.success(
-            request,
-            f"Module “{module.title}” created. Added {topics_created} topic(s) and {subtopics_created} subtopic(s)."
-        )
-    elif not module_created and (topics_created or subtopics_created):
-        messages.success(
-            request,
-            f"Module “{module.title}” already existed; added {topics_created} topic(s) and {subtopics_created} subtopic(s)."
-        )
+    if module_created:
+        msg = f"✅ Module '{module.title}' created. Added {topics_created} topic(s) and {subtopics_created} subtopic(s)."
     else:
-        messages.warning(
-            request,
-            "Module, topics, and subtopics were already added—no changes made."
-        )
+        msg = f"ℹ️ Module '{module.title}' already existed. Added {topics_created} topic(s) and {subtopics_created} subtopic(s)."
 
-    return redirect("mentor_courses", user_id=course.mentor.id)
+    messages.success(request, msg)
+    
+    # Redirect back to the same page with the course selected
+    redirect_url = reverse("mentor_courses", kwargs={"user_id": course.mentor.id})
+    return HttpResponseRedirect(f"{redirect_url}?course={course_id}")
+
 
 def get_course_modules(request, course_id):
     course = get_object_or_404(Course, id=course_id)
@@ -1068,26 +1043,32 @@ def add_lesson(request, module_id):
             if request.FILES.get("recording"):
                 lesson.recording = request.FILES["recording"]
 
-            # Handle multiple links
+            # Multiple links
             links = request.POST.getlist("links[]")
             lesson.links = links if links else None
 
             lesson.save()
             messages.success(request, "✅ Lesson added successfully!")
 
-            # redirect back to mentor_courses with user_id
-            return redirect("mentor_courses", user_id=module.course.mentor.id)
-
+            return redirect("mentor_courses", user_id=module.course.mentor.id)  # ✅ success → go back
         else:
-            messages.error(request, "❌ Please correct the errors below.")
-    else:
-        form = LessonForm()
+            # ❌ failure → stay on same page, re-render with errors
+            lessons = Lesson.objects.filter(module=module).order_by("order")
+            admininfo = module.course.mentor
+            return render(
+                request,
+                "upload_courses.html",
+                {
+                    "form": form,
+                    "module": module,
+                    "lessons": lessons,
+                    "admininfo": admininfo,
+                    "open_modal": True,  # ✅ tell template to reopen modal
+                }
+            )
 
-    return render(
-        request,
-        "upload_courses.html",
-        {"form": form, "module": module}
-    )
+    # GET request
+    return redirect("mentor_courses", user_id=module.course.mentor.id)
 
 
 def get_module_lessons(request, module_id):

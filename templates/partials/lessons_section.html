@@ -28,9 +28,13 @@
                     <!-- Video -->
                     {% if lesson.video_type == "youtube" and lesson.youtube_url %}
                     <div class="mb-3">
-                        <label class="fw-semibold text-muted small">YouTube Video</label>
-                        <div class="ratio ratio-16x9">
-                        <iframe src="https://www.youtube.com/embed/{{ lesson.youtube_url|cut:'https://youtu.be/'|cut:'?si=ZhJmm8MArmLUeLnN' }}" frameborder="0" allowfullscreen></iframe>
+                    <label class="fw-semibold text-muted small">YouTube Video</label>
+                    <div class="ratio ratio-16x9">
+                        <iframe 
+                        src="https://www.youtube.com/embed/{{ lesson.youtube_url|cut:'https://youtu.be/'|cut:'https://www.youtube.com/watch?v='|slice:':11' }}" 
+                        frameborder="0" 
+                        allowfullscreen>
+                        </iframe>
                     </div>
                     </div>
 
