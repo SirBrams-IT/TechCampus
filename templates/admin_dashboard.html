@@ -32,149 +32,164 @@
 
 <body>
 
+ <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy; max-height: 100px">
 
+    <!-- Sidebar Toggle -->
+    <i class="bi bi-list toggle-sidebar-btn me-3"></i>
 
- <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy ; max-height: 100px">
-    <i class="bi bi-list toggle-sidebar-btn " style="margin-left: 60px"></i>
-    <div class="d-flex  ">
+    <!-- title -->
+    <div class="d-flex">
         <a href="#" class="logo d-flex align-items-center">
-            <span class=" d-lg-block text-uppercase text-white " style="margin-left: 30px">STVC</span>
+            <img src="{% static 'asset/img/image.png' %}" alt="title" class="text-uppercase text-white ms-1" id="titles">
         </a>
     </div>
 
-
-    <div class="search-bar">
-      <form class="search-form d-flex align-items-center" method="POST" action="#">
-        <input type="text" name="query" placeholder="Search" title="Enter search keyword">
-        <button type="submit" title="Search"><i class="bi bi-search"></i></button>
-      </form>
+    <!-- Search Bar -->
+    <div class="search-bar ms-5">
+        <form class="search-form d-flex align-items-center" method="POST" action="#">
+            <input type="text" name="query" placeholder="Search" title="Enter search keyword">
+            <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+        </form>
     </div>
 
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
+     <!-- Profile Dropdown (Desktop Only) -->
+        <nav class="header-nav ms-auto d-none d-lg-block">
+        <ul class="d-flex align-items-center">
+            <li class="nav-item dropdown pe-3 profile-container me-5" style="margin-left: 20px">
+            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+                
+                <!-- Profile Wrapper with Status Dot -->
+                <div class="position-relative d-inline-block">
+                <!-- Profile Image -->
+                <img src="{% if admininfo.profile_image and admininfo.profile_image.url %}{{ admininfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
+                    alt="Profile" class="rounded-circle profile-img" width="40" height="40">
+                <!-- Status Dot -->
+                <span class="status-dot bg-success"></span>
 
-        <li class="nav-item d-block d-lg-none d-none">
-          <a class="nav-link nav-icon search-bar-toggle " href="#">
-            <i class="bi bi-search"></i>
-          </a>
-        </li>
+                </div>
 
-        <li class="nav-item dropdown pe-3 profile-container me-5" style="margin-left: 20px">
-    <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-        <!-- Profile Image -->
+                <span class="d-md-block dropdown-toggle ps-2 me-3">Hi, {{ studentinfo.username }}</span>
+            </a>
+
+                <!-- Dropdown Menu -->
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+                    <li class="dropdown-header">
+                        <span class="text-warning pe-5">Hello, {{ admininfo.username }}</span>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="{% url 'users-profile' admininfo.id %}">
+                            <i class="bi bi-person"></i>
+                            <span>My Profile</span>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="{% url 'users-profile' admininfo.id %}">
+                            <i class="bi bi-gear"></i>
+                            <span>Account Settings</span>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Sign Out</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+
+<!-- Sidebar -->
+<aside id="sidebar" class="sidebar">
+
+    <!-- Profile Image (Mobile Only) -->
+    <div class="d-block d-lg-none text-center my-3">
+         <div class="position-relative d-inline-block">
         <img src="{% if admininfo.profile_image and admininfo.profile_image.url %}{{ admininfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
-     alt="Profile"
-     class="rounded-circle profile-img">
-        <span class="d-md-block dropdown-toggle ps-2 me-3" > Hi, {{ admininfo.username }}</span>
-    </a>
+             alt="Profile" class="rounded-circle shadow-sm" width="80" height="80">
+              <!-- Status Dot -->
+             <span class="status-dot bg-success"></span>
+             </div>
+             <br>
+             <span class="d-md-block text-primary  ps-2 me-3">Hi, {{ admininfo.username }}</span><br>
+             <span class=" bg-black text-white current-time" ></span>
+    </div>
 
-    <!-- Dropdown Menu -->
-    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-        <li class="dropdown-header">
-            <span class="text-warning pe-5 " >Hello,{{ admininfo.username }}</span>
+    <!-- Sidebar Menu -->
+    <ul class="sidebar-nav" id="sidebar-nav">
+
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                <i class="bi bi-grid"></i>
+                <span>Dashboard</span>
+            </a>
         </li>
-        <li><hr class="dropdown-divider"></li>
 
-        <li>
-            <a class="dropdown-item d-flex align-items-center" href="{% url 'users-profile' admininfo.id %}">
-                <i class="bi bi-person"></i>
+        <li class="nav-item">
+            <a class="nav-link collapsed profile-link" href="{% url 'users-profile' admininfo.id %}">
+                <i class="bi bi-person-bounding-box"></i>
                 <span>My Profile</span>
             </a>
         </li>
-        <li><hr class="dropdown-divider"></li>
 
-        <li>
-            <a class="dropdown-item d-flex align-items-center" href="{% url 'users-profile' admininfo.id  %}">
-                <i class="bi bi-gear"></i>
-                <span>Account Settings</span>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="{% url 'add_course' admininfo.id %}">
+                <i class="bi bi-book"></i><span>Courses</span>
             </a>
         </li>
-        <li><hr class="dropdown-divider"></li>
 
-        <li>
-            <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="{% url 'mentor_courses' admininfo.id %}">
+                <i class="bi bi-book"></i><span>AddCourse</span>
             </a>
         </li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="{% url 'add_student' admininfo.id %}">
+                <i class="bi bi-mortarboard"></i><span>Add Students</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#">
+                <i class="bi bi-pencil-square"></i><span>Assignments</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#">
+                <i class="bi bi-list-check"></i><span>Activities</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#">
+                <i class="bi bi-chat-dots"></i><span>Messages</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#">
+                <i class="bi bi-envelope"></i><span>Reports</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                <i class="bi bi-box-arrow-right"></i><span>Signout</span>
+            </a>
+        </li>
+
     </ul>
-</li>
-
-      </ul>
-    </nav>
-
-  </header>
-
-
-
-  <aside id="sidebar" class="sidebar">
-
-    <ul class="sidebar-nav" id="sidebar-nav">
-
-      <li class="nav-item">
-        <a class="nav-link " href="{% url 'admin_dashboard' %}">
-          <i class="bi bi-grid"></i>
-          <span>  Dashboard</span>
-        </a>
-      </li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed profile-link" href="{% url 'users-profile' admininfo.id %}">
-        <i class="bi bi-person-bounding-box"></i>
-        <span>My Profile</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed" href="{% url 'add_course' admininfo.id %}">
-        <i class="bi bi-book"></i><span>Courses</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed" href="{% url 'mentor_courses' admininfo.id %}">
-        <i class="bi bi-book"></i><span>AddCourse</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed" href="{% url 'add_student' admininfo.id %}">
-        <i class="bi bi-mortarboard"></i><span>Add  Students</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed" href="#">
-        <i class="bi bi-pencil-square"></i><span>Assignments</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed" href="#">
-        <i class="bi bi-list-check"></i><span>Activities</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed" href="#">
-        <i class="bi bi-chat-dots"></i><span>Messages</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed" href="#">
-        <i class="bi bi-envelope"></i>
-        <span>Reports</span>
-    </a>
-</li>
-     <li class="nav-item">
-    <a class="nav-link collapsed" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
-        <i class="bi bi-box-arrow-left "></i>
-        <span class="text-danger">Signout</span>
-    </a>
-</li>
-    </ul>
-  </aside>
+</aside>
 
 <main id="main" class="main">
     {% if messages %}
@@ -190,19 +205,31 @@
 
         {% endif %}
     {% endfor %}
-{% endif %}
-     <div class="pagetitle">
-     <h1>
-    <span id="greeting"></span>, <b class="text-warning" >{{ admininfo.name|title }}</b>! Welcome to Admin/Mentor Dashboard <span class="ms-5 bg-black text-white" id="current-time"></span>
-    </h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
-          <li class="breadcrumb-item active"> Admin/Mentor Dashboard </li>
+    {% endif %}
+   <!--search bar for small devices-->
+   <div class="d-lg-none position-sticky top-0 start-0 w-100 bg-white shadow-sm p-2 z-3">
+  <form class="search-form d-flex align-items-center w-100" method="POST" action="#">
+    <input type="text" class="form-control me-2" name="query" placeholder="Search" title="Enter search keyword">
+    <button type="submit" class="btn btn-primary" title="Search">
+      <i class="bi bi-search"></i>
+    </button>
+  </form>
+ </div>
 
-        </ol>
-      </nav>
-    </div>
+  <div class="pagetitle">
+    <h1>
+    <span id="greeting"></span>, 
+    <b class="text-warning">{{ admininfo.name|title }}</b>! Welcome to Mentor-Dashboard 
+    <span class="ms-5 bg-black d-none text-white current-time" ></span>
+   </h1>
+
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+      <li class="breadcrumb-item active">Admin/Mentor Dashboard</li>
+    </ol>
+  </nav>
+</div>
 
 
     <div class="row">
@@ -211,7 +238,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Manage Courses</h5>
                     <p class="card-text">Add, edit, and remove courses offered on the platform.</p>
-                    <a href="{% url 'add_course' user_id=admininfo.id %}" class="btn btn-light">Go to Courses</a>
+                    <a href="{% url 'mentor_courses' user_id=admininfo.id %}" class="btn btn-light">Go to Courses</a>
                 </div>
             </div>
         </div>
@@ -447,8 +474,6 @@
     </section>
 </main>
 
-
-
  <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -533,19 +558,23 @@
 
     updateGreeting(); // Call function on page load
     setInterval(updateGreeting, 60000); // Update every minute
-     function updateCurrentTime() {
-  const now = new Date();
-  const hours = now.getHours().toString().padStart(2, '0'); // Adds leading zero if single digit
-  const minutes = now.getMinutes().toString().padStart(2, '0');
-  const seconds = now.getSeconds().toString().padStart(2, '0');
+   // Time function (for all elements with class "current-time")
+        function updateCurrentTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0'); 
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
 
-  const timeString = `${hours}:${minutes}:${seconds}`;
+        const timeString = `${hours}:${minutes}:${seconds}`;
 
-  document.getElementById("current-time").textContent = timeString;
-}
+        // Update all elements with the class
+        document.querySelectorAll(".current-time").forEach(el => {
+            el.textContent = timeString;
+        });
+        }
 
-updateCurrentTime(); // Call function on page load
-setInterval(updateCurrentTime, 1000);
+        updateCurrentTime(); // Call function on page load
+        setInterval(updateCurrentTime, 1000);
 
        function openDeleteModal(deleteUrl) {
             document.getElementById('confirmDeleteBtn').href = deleteUrl;

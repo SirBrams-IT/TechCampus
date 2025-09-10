@@ -254,74 +254,85 @@
 
   </header>
 
-  <aside id="sidebar" class="sidebar">
+    <aside id="sidebar" class="sidebar">
 
-    <ul class="sidebar-nav" id="sidebar-nav">
-
-      <li class="nav-item">
-        <a class="nav-link " href="#">
-          <i class="bi bi-grid"></i>
-          <span>Dashboard</span>
-        </a>
-      </li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="{% url 'user-profile' %}">
-        <i class="bi bi-person-bounding-box"></i><span>My Profile</span>
-    </a> </li>
+      <ul class="sidebar-nav" id="sidebar-nav">
 
         <li class="nav-item">
-    <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="{% url 'available_courses' %}">
-        <i class="bi bi-person-bounding-box"></i><span>Courses</span>
-    </a> </li>
+          <a class="nav-link " href="#">
+            <i class="bi bi-grid"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+
+  <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="{% url 'user-profile' %}">
+          <i class="bi bi-person-bounding-box"></i><span>My Profile</span>
+      </a> </li>
+
+          <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="{% url 'available_courses' %}">
+          <i class="bi bi-person-bounding-box"></i><span>Courses</span>
+      </a> </li>
+
+          <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="{% url 'my_course' %}">
+          <i class="bi bi-mortarboard"></i><span>My Courses</span>
+      </a></li>
+
+  <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-pencil-square"></i><span>Assignments</span>
+      </a>
+  </li>
+
+  <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-list-check"></i><span>Activities</span>
+      </a>
+  </li>
+
+  <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-chat-dots"></i><span>Messages</span>
+      </a>
+  </li>
 
         <li class="nav-item">
-    <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="{% url 'my_course' %}">
-        <i class="bi bi-mortarboard"></i><span>My Courses</span>
-    </a></li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-pencil-square"></i><span>Assignments</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-list-check"></i><span>Activities</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link collapsed" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-chat-dots"></i><span>Messages</span>
-    </a>
-</li>
-
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="#">
-          <i class="bi bi-envelope"></i>
-          <span>Contact</span>
-        </a>
-      </li>
-    </ul>
-  </aside><!-- End Sidebar-->
-
-  <main id="main" class="main">
-
-    <div class="pagetitle">
-      <h1>Dashboard</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
-          <li class="breadcrumb-item active"> Student Dashboard </li>
-
-          <div class="text-white ms-auto" id="current-time" style="font-size: 18px;"></div>
+          <a class="nav-link collapsed" href="#">
+            <i class="bi bi-envelope"></i>
+            <span>Contact</span>
+          </a>
+        </li>
+      </ul>
+    </aside><!-- End Sidebar-->
 
 
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
+    <main id="main" class="main">
+      
+      <!--search bar for small devices-->
+    <div class="d-lg-none position-sticky top-0 start-0 w-100 bg-white shadow-sm p-2 z-3">
+    <form class="search-form d-flex align-items-center w-100" method="POST" action="#">
+      <input type="text" class="form-control me-2" name="query" placeholder="Search" title="Enter search keyword">
+      <button type="submit" class="btn btn-primary" title="Search">
+        <i class="bi bi-search"></i>
+      </button>
+    </form>
+  </div>
+
+      <div class="pagetitle">
+        <h1>Dashboard</h1>
+        <nav>
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active"> Student Dashboard </li>
+
+            <div class="text-white ms-auto" id="current-time" style="font-size: 18px;"></div>
+
+
+          </ol>
+        </nav>
+      </div><!-- End Page Title -->
 
     <section class="section dashboard">
       <div class="row">

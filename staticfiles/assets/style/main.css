@@ -173,59 +173,6 @@
     text-align: center;
 }
 
-.footer1 {
-    background-color: navy; /* Dark background */
-    color: #ecf0f1; /* Light text */
-    padding: 40px 0;
-    font-family: Arial, sans-serif;
-
-}
-
-.footer1 h4 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-
-.footer1 p {
-    font-size: 1rem;
-    margin-bottom: 20px;
-}
-
-.footer1 .links {
-    margin-bottom: 20px;
-}
-
-.footer1 .links a {
-    color: #ecf0f1;
-    margin: 0 15px;
-    text-decoration: none;
-    font-size: 1.1rem;
-    transition: color 0.3s ease;
-}
-
-.footer1 .links a:hover {
-    color: yellow; /* Change link color on hover */
-}
-
-.footer1 .social-icons a {
-    color: #ecf0f1;
-    margin: 0 10px;
-    font-size: 1.5rem;
-    transition: color 0.3s ease;
-}
-
-.footer1 .social-icons a:hover {
-    color: yellow; /* Change icon color on hover */
-}
-
-.footer1 p {
-    font-size: 1rem;
-    margin-top: 20px;
-    border-top: 1px solid white; /* Add a line above the copyright */
-    padding-top: 10px;
-}
-
 /* Professional Dashboard Cards */
 .dashboard-card {
     background: #f8f9fa;
@@ -322,4 +269,55 @@
             background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
         }
     
+.footer1 {
+    background-color: navy; 
+    color: #ecf0f1; /* Light text */
+    padding: 40px 0;
+    font-family: Arial, sans-serif;
 
+}
+
+.footer1 h4 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.footer1 p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+.footer1 .links {
+    margin-bottom: 20px;
+}
+
+.footer1 .links a {
+    color: #ecf0f1;
+    margin: 0 15px;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+.footer1 .links a:hover {
+    color: yellow; /* Change link color on hover */
+}
+
+.footer1 .social-icons a {
+    color: #ecf0f1;
+    margin: 0 10px;
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.footer1 .social-icons a:hover {
+    color: yellow; /* Change icon color on hover */
+}
+
+.footer1 p {
+    font-size: 1rem;
+    margin-top: 20px;
+    border-top: 1px solid white; /* Add a line above the copyright */
+    padding-top: 10px;
+}

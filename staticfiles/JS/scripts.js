@@ -15,55 +15,80 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize topic management in the new module modal
     initializeTopicManagement();
 
-    // When a course is selected
-    courseSelect.addEventListener('change', function() {
-        currentCourseId = this.value;
-        const selectedOption = this.options[this.selectedIndex];
-        
-        // Reset buttons state
-        editCourseBtn.disabled = !currentCourseId;
-        deleteCourseBtn.disabled = !currentCourseId;
-        addModuleBtn.disabled = !currentCourseId;
-        
-        if (currentCourseId) {
-            // Set course data for editing
-            editCourseBtn.setAttribute('data-course-id', currentCourseId);
-            editCourseBtn.setAttribute('data-course-title', selectedOption.getAttribute('data-title'));
-            editCourseBtn.setAttribute('data-course-code', selectedOption.getAttribute('data-code'));
-            editCourseBtn.setAttribute('data-course-description', selectedOption.getAttribute('data-description'));
-            
-            // Load modules
-            loadModules(currentCourseId);
-        } else {
-            // Clear modules container if no course selected
-            modulesContainer.innerHTML = `
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>Please select a course to view its modules
-                </div>
-            `;
-        }
+    // Check if there's a course parameter in the URL and select it
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseParam = urlParams.get('course');
+    if (courseParam && courseSelect) {
+        courseSelect.value = courseParam;
+        // Trigger the change event to load modules
+        const event = new Event('change');
+        courseSelect.dispatchEvent(event);
+    }
 
-        // Reset lessons container
-        lessonsContainer.innerHTML = `
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>Select a module to view and manage its lessons
-            </div>
-        `;
-        addLessonBtn.disabled = true;
-        currentModuleId = null;
-    });
+    // When a course is selected
+    if (courseSelect) {
+        courseSelect.addEventListener('change', function() {
+            currentCourseId = this.value;
+            const selectedOption = this.options[this.selectedIndex];
+            
+            // Update URL with selected course
+            updateUrlParameter('course', currentCourseId);
+            
+            // Reset buttons state
+            if (editCourseBtn) editCourseBtn.disabled = !currentCourseId;
+            if (deleteCourseBtn) deleteCourseBtn.disabled = !currentCourseId;
+            if (addModuleBtn) addModuleBtn.disabled = !currentCourseId;
+            
+            if (currentCourseId) {
+                // Set course data for editing
+                if (editCourseBtn) {
+                    editCourseBtn.setAttribute('data-course-id', currentCourseId);
+                    editCourseBtn.setAttribute('data-course-title', selectedOption.getAttribute('data-title'));
+                    editCourseBtn.setAttribute('data-course-code', selectedOption.getAttribute('data-code'));
+                    editCourseBtn.setAttribute('data-course-description', selectedOption.getAttribute('data-description'));
+                }
+                
+                // Load modules
+                loadModules(currentCourseId);
+            } else {
+                // Clear modules container if no course selected
+                if (modulesContainer) {
+                    modulesContainer.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>Please select a course to view its modules
+                        </div>
+                    `;
+                }
+            }
+
+            // Reset lessons container
+            if (lessonsContainer) {
+                lessonsContainer.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>Select a module to view and manage its lessons
+                    </div>
+                `;
+            }
+            if (addLessonBtn) addLessonBtn.disabled = true;
+            currentModuleId = null;
+        });
+    }
 
     // Set up module course ID when add module button is clicked
-    addModuleBtn.addEventListener('click', function() {
-        if (!currentCourseId) return;
-        
-        document.getElementById('moduleCourseId').value = currentCourseId;
-        // Set the next order number
-        const nextOrder = modulesContainer.querySelectorAll('.module-card').length + 1;
-        document.getElementById('moduleOrder').value = nextOrder;
-    });
+    if (addModuleBtn) {
+        addModuleBtn.addEventListener('click', function() {
+            if (!currentCourseId) return;
+            
+            document.getElementById('moduleCourseId').value = currentCourseId;
+            // Set the next order number
+            const nextOrder = modulesContainer.querySelectorAll('.module-card').length + 1;
+            document.getElementById('moduleOrder').value = nextOrder;
+        });
+    }
 
     function loadModules(courseId) {
+        if (!modulesContainer) return;
+        
         modulesContainer.innerHTML = `
             <div class="text-center py-4">
                 <div class="spinner-border text-primary mb-2"></div>
@@ -104,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.view-lessons-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 currentModuleId = this.getAttribute('data-module-id');
-                addLessonBtn.disabled = false;
+                if (addLessonBtn) addLessonBtn.disabled = false;
                 loadLessons(currentModuleId);
             });
         });
@@ -145,6 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadLessons(moduleId) {
+        if (!lessonsContainer) return;
+        
         lessonsContainer.innerHTML = `
             <div class="text-center py-4">
                 <div class="spinner-border text-primary mb-2"></div>
@@ -187,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ✅ Add lesson button handling (fix for NoReverseMatch)
+    // ✅ Add lesson button handling
     if (addLessonBtn) {
         addLessonBtn.addEventListener('click', function() {
             if (!currentModuleId) {
@@ -277,59 +304,15 @@ document.addEventListener('DOMContentLoaded', function() {
         topicCounter = topics.length;
     }
 
-    // Handle new module form submission with AJAX
-    const newModuleForm = document.getElementById('newModuleForm');
-    if (newModuleForm) {
-        newModuleForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': csrftoken
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('newModuleModal'));
-                    if (modal) modal.hide();
-                    
-                    showToast('Module added successfully');
-                    loadModules(currentCourseId);
-                    
-                    this.reset();
-                    document.getElementById('topicsContainer').innerHTML = `
-                        <div class="topic-entry card mb-2" data-topic-id="1">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="mb-0">Topic 1</h6>
-                                    <button type="button" class="btn btn-sm btn-danger remove-topic"><i class="fas fa-times"></i></button>
-                                </div>
-                                <input type="text" class="form-control mb-2 topic-title" name="topics[]" placeholder="Topic title" required>
-                                <div class="subtopics-container">
-                                    <div class="input-group mb-2">
-                                        <input type="text" class="form-control subtopic-input" name="subtopics_1[]" placeholder="Subtopic">
-                                        <button class="btn btn-outline-secondary add-subtopic" type="button"><i class="fas fa-plus"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    topicCounter = 1;
-                    initializeTopicManagement();
-                } else {
-                    alert('Error: ' + (data.message || 'Unknown error occurred'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while adding the module');
-            });
-        });
+    // Function to update URL parameter
+    function updateUrlParameter(key, value) {
+        const url = new URL(window.location);
+        if (value) {
+            url.searchParams.set(key, value);
+        } else {
+            url.searchParams.delete(key);
+        }
+        window.history.replaceState({}, '', url);
     }
 
     // Toast notification function
