@@ -39,7 +39,7 @@
 
   <nav class="navbar navbar-expand-lg fixed-top px-3" id="header1">
     <div class="d-flex align-items-center me-auto">
-        <i class="bi bi-list toggle-sidebar-btn me-1 text-white d-lg-none"></i>
+        <i class="bi bi-list toggle-sidebar-btn me-3 text-white d-lg-none"></i>
 
         <img src="{% static 'assets/img/logo.png' %}" alt="logo"
      class="d-none d-lg-inline"
@@ -50,7 +50,6 @@
      id="titles"
      class="img-fluid ms-1"
      style="max-height:45px; width:auto; object-fit:contain;">
-
 
     </div>
 
@@ -87,9 +86,15 @@
 
 
 
- <aside class="sidebar d-block d-md-none">
-     <ul class="sidebar-nav">
-        <li class="nav-item">
+ <aside class="sidebar d-block d-md-none ">
+     <ul class="sidebar-nav" style="background-color: navy;">
+         <!-- Logo For Small Devices -->
+    <div class="d-flex justify-content-center" style="margin: 4px auto;" >
+      <img src="{% static 'assets/img/logo.png' %}" alt="logo"
+           style="height:80px; width:80px; background-color:dodgerblue; padding:10px; border-radius:50%; object-fit:contain;">
+    </div>
+        
+     <li class="nav-item">
             <a class="nav-link" href="{% url 'index' %}">
                 <i class="bi bi-house-door"></i> <span>Home</span>
             </a>
