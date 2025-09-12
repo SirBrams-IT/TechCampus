@@ -70,12 +70,12 @@
     <!-- Dropdown Menu -->
     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
         <li class="dropdown-header">
-            <span class="text-warning" id="greeting">, {{ studentinfo.username }}! Welcome Back</span>
+             <span class="text-warning">Hello, {{ studentinfo.username }}</span>
         </li>
         <li><hr class="dropdown-divider"></li>
 
         <li>
-            <a class="dropdown-item d-flex align-items-center" href="{% url 'user-profile' studentinfo.id %}">
+            <a class="dropdown-item d-flex align-items-center" href="{% url 'student_profile'  studentinfo.id  %}">
                 <i class="bi bi-person"></i>
                 <span>My Profile</span>
             </a>
@@ -83,7 +83,7 @@
         <li><hr class="dropdown-divider"></li>
 
         <li>
-            <a class="dropdown-item d-flex align-items-center" href="{% url 'user-profile' studentinfo.id %}">
+            <a class="dropdown-item d-flex align-items-center" href="{% url 'student_profile'  studentinfo.id  %}">
                 <i class="bi bi-gear"></i>
                 <span>Account Settings</span>
             </a>
@@ -132,12 +132,13 @@
             </a>
         </li>
 
-    <li class="nav-item">
-        <a class="nav-link collapsed profile-link" href="{% url 'user-profile' studentinfo.id %}">
+
+      <li class="nav-item">
+        <a class="nav-link collapsed profile-link" href="{% url 'student_profile' studentinfo.id %}">
             <i class="bi bi-person-bounding-box"></i>
             <span>My Profile</span>
         </a>
-    </li>
+    </li>  
 
     <li class="nav-item">
         <a class="nav-link collapsed" href="{% url 'available_courses' studentinfo.id%}">

@@ -34,7 +34,6 @@ urlpatterns = [
     path('logout_student/', views.logout_student, name='logout_student'),
     path('logout_mentor/', views.logout_mentor, name='logout_mentor'),
     path('download/pdf/', generate_pdf, name='generate_pdf'),
-    path('profile_update/<int:user_id>', views.profile_update, name='profile_update'),
     path('settings/', views.settings_view, name='settings'),
     path('delete_account/<int:id>', views.delete_account_view, name='delete_account'),
     path('add_cours/', views.add_cours, name='add_cours'),
@@ -46,10 +45,7 @@ urlpatterns = [
     path('admin_reset_request/', views.admin_reset_request, name='admin-reset-request'),
     path('admin_reset_password/<str:username>/', views.admin_reset_password, name='admin-reset-password'),
     path('admin_resend_reset_otp/', views.admin_resend_reset_otp, name='admin-resend-reset-otp'),
-    path('user-profile/<int:user_id>/',views.user_profile, name='user-profile'),
     path('student-main/', views.student_main, name='student-main'),
-    path('edit_profile/<int:user_id>', views.edit_profile, name='edit_profile'),
-    path('users-profile/<int:user_id>/', views.users_profile, name='users-profile'),
     path('admin-_main/', views.admin_main, name='admin-main'),
     path("edit_student/", views.edit_student, name="edit_student"),
     path('enroll-course/', views.enroll_course, name='enroll_course'),
@@ -64,6 +60,15 @@ urlpatterns = [
     path("modules/<int:module_id>/lessons/", views.get_module_lessons, name="get_module_lessons"),
     path("lessons/<int:lesson_id>/download/", views.download_note, name="download_note"),
 
+    # urls for profile-student
+    path('profile/<int:studentinfo>/student', views.student_profile, name='student_profile'),
+    path('profile/<int:id>/change-password/', views.change_password_s, name='change_password'),
+    path('profile/<int:id>/delete/', views.delete_account_s, name='delete_account'),
+
+    # urls for profile-mentor
+    path('mentor/<int:admininfo>/profile', views.mentor_profile, name='mentor_profile'),
+    path('mentor/<int:id>/change-password/', views.change_password_m, name='change'),
+    path('mentor/<int:id>/delete/', views.delete_account_m, name='account'),
 
     ]
 

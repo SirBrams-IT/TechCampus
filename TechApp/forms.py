@@ -130,3 +130,84 @@ class LessonForm(forms.ModelForm):
     def clean_links(self):
         links_text = self.data.getlist("links[]")
         return [link.strip() for link in links_text if link.strip()] or None
+    
+# Student_edit form
+class StudentEditForm(forms.ModelForm):
+    class Meta:
+        model = Member
+        fields = ['name', 'email', 'username', 'phone', 'id_number', 'profile_image','date_of_birth']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if Member.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+            raise forms.ValidationError("Email already exists.")
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if Member.objects.exclude(pk=self.instance.pk).filter(username=username).exists():
+            raise forms.ValidationError("Username already taken.")
+        return username
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if Member.objects.exclude(pk=self.instance.pk).filter(phone=phone).exists():
+            raise forms.ValidationError("Phone number already in use.")
+        return phone
+
+    def clean_id_number(self):
+        id_number = self.cleaned_data.get('id_number')
+        if Member.objects.exclude(pk=self.instance.pk).filter(id_number=id_number).exists():
+            raise forms.ValidationError("ID number already registered.")
+        return id_number
+
+    def clean_date_of_birth(self):
+        dob = self.cleaned_data['date_of_birth']
+        today = date.today()
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+        if age < 18 or age > 80:
+            raise forms.ValidationError("Age must be between 18 and 80 years.")
+
+        return dob
+    
+
+# Student_edit form
+class MentorEditForm(forms.ModelForm):
+    class Meta:
+        model = AdminLogin
+        fields = ['name', 'email', 'username', 'phone', 'id_number', 'profile_image','date_of_birth']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if AdminLogin.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+            raise forms.ValidationError("Email already exists.")
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if AdminLogin.objects.exclude(pk=self.instance.pk).filter(username=username).exists():
+            raise forms.ValidationError("Username already taken.")
+        return username
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if AdminLogin.objects.exclude(pk=self.instance.pk).filter(phone=phone).exists():
+            raise forms.ValidationError("Phone number already in use.")
+        return phone
+
+    def clean_id_number(self):
+        id_number = self.cleaned_data.get('id_number')
+        if AdminLogin.objects.exclude(pk=self.instance.pk).filter(id_number=id_number).exists():
+            raise forms.ValidationError("ID number already registered.")
+        return id_number
+
+    def clean_date_of_birth(self):
+        dob = self.cleaned_data['date_of_birth']
+        today = date.today()
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+        if age < 18 or age > 80:
+            raise forms.ValidationError("Age must be between 18 and 80 years.")
+
+        return dob

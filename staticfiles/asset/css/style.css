@@ -635,10 +635,6 @@ h6 {
   .toggle-sidebar #footer {
     margin-left: 0;
   }
-
-  .toggle-sidebar .sidebar {
-    left:;
-  }
 }
 
 .sidebar-nav {
@@ -691,7 +687,7 @@ h6 {
 }
 
 .sidebar-nav .nav-link.collapsed i {
-  color: #899bbd;
+  color: white;
 }
 
 .sidebar-nav .nav-link:hover {

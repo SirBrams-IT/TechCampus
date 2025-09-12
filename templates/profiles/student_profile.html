@@ -1,0 +1,319 @@
+{% extends 'student-main.html'%}
+{% load static%}
+{% block body%}
+
+<style>
+   .pagetitle {
+  margin-bottom: 10px;
+    }
+
+    .pagetitle h1 {
+      font-size: 10px;
+      margin-bottom: 0;
+      font-weight: 400;
+      color: #012970;
+    }
+    .profile-container {
+        max-width: 1100px;
+        margin: 100px auto;
+        padding: px;
+    }
+
+    .card {
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+        padding: 20px;
+    }
+
+
+    .btn-primary, .btn-danger, .btn-warning {
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 10px;
+    }
+
+
+
+    @media (max-width: 768px) {
+        .profile-sections {
+            flex-direction: column;
+        }
+    }
+</style>
+
+    {% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+    <div class="pagetitle">
+      <h1>Profile</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"> <a href="{% url 'student_dashboard' %}">Dashboard</a></li>
+          <li class="breadcrumb-item">Student</li>
+          <li class="breadcrumb-item active">Profile</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+
+<section class="section profile">
+      <div class="row">
+        <div class="col-xl-4">
+
+          <div class="card">
+            <div class="card-body profile-card pt-4 d-flex flex-column align-items-center">
+
+              <img src="{% if infos.profile_image and infos.profile_image.url %}{{ infos.profile_image.url }}{% else %}{% static 'assets/img/profile.jpeg' %}{% endif %}"
+                         alt="Profile" class="rounded-circle" style=" width: 100px; height: 100px">
+              <h4 style="color: #012970; "> <b>{{ infos.name }} </b></h2>
+              <h5>Student</h3>
+              <div class="social-links mt-2">
+                <a href="#" class="twitter"><i class="bi bi-whatsapp"></i></a>
+                <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+                <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+                <a href="#" class="linkedin"><i class="bi bi-twitter-x"></i></a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      <div class="col-xl-8">
+
+          <div class="card">
+            <div class="card-body pt-3">
+              <!-- Bordered Tabs -->
+              <ul class="nav nav-tabs nav-tabs-bordered">
+
+                <li class="nav-item">
+                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
+                </li>
+
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Edit Profile</button>
+                </li>
+
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-settings">Settings</button>
+                </li>
+
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-change-password">Change Password</button>
+                </li>
+
+              </ul>
+              <div class="tab-content pt-2">
+
+                <div class="tab-pane fade show active profile-overview" id="profile-overview">
+
+                  <h5 class="card-title " style="color: #012970;">Personal Information</h5>
+
+                  <div class="table-responsive">
+           <table class="table table-bordered">
+            <tbody>
+         <tr>
+          <th scope="row">Full Name</th>
+           <td>{{ infos.name }}</td>
+         </tr>
+        <tr>
+        <th scope="row">Username</th>
+        <td>{{ infos.username }}</td>
+       </tr>
+      <tr>
+        <th scope="row">Email</th>
+        <td>{{ infos.email }}</td>
+      </tr>
+      <tr>
+        <th scope="row">ID Number</th>
+        <td>{{ infos.id_number }}</td>
+      </tr>
+      <tr>
+        <th scope="row">Phone</th>
+        <td>{{ infos.phone }}</td>
+      </tr>
+      <tr>
+        <th scope="row">DOB</th>
+        <td>{{ infos.date_of_birth }}</td>
+      </tr>
+      <tr>
+        <th scope="row">Gender</th>
+        <td>{{ infos.gender }}</td>
+      </tr>
+       </tbody>
+     </table>
+     </div>      
+   </div>
+             <!-- edit profile -->
+<div class="tab-pane fade profile-edit pt-3" id="profile-edit">
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Profile Image -->
+    <div class="row mb-3">
+      <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Profile Image</label>
+      <div class="col-md-8 col-lg-9">
+        <div class="position-relative d-inline-block">
+          <!-- Profile Picture -->
+          <img src="{% if infos.profile_image and infos.profile_image.url %}{{ infos.profile_image.url }}{% else %}{% static 'assets/img/profile.jpeg' %}{% endif %}"
+               alt="Profile"
+               style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;"
+               id="profilePreview">
+
+          <!-- Upload Icon Overlay -->
+          <label for="profileImage" class="position-absolute bottom-0 end-0 bg-light rounded-circle p-2 shadow"
+                 style="cursor:pointer;">
+            <i class="bi bi-camera-fill fs-5 text-primary"></i>
+          </label>
+        </div>
+
+        <!-- Hidden file input -->
+        <input type="file" name="profile_image" id="profileImage" class="d-none">
+      </div>
+    </div>
+
+    <!-- Full Name -->
+    <div class="row mb-3">
+      <label for="fullName" class="col-md-4 col-lg-3 col-form-label">Full Name</label>
+      <div class="col-md-8 col-lg-9">
+        <input name="name" type="text" class="form-control" id="fullName" value="{{ infos.name }}">
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="row mb-3">
+      <label for="email" class="col-md-4 col-lg-3 col-form-label">Email</label>
+      <div class="col-md-8 col-lg-9">
+        <input name="email" type="email" class="form-control" id="email" value="{{ infos.email }}">
+      </div>
+    </div>
+
+    <!-- Username -->
+    <div class="row mb-3">
+      <label for="username" class="col-md-4 col-lg-3 col-form-label">Username</label>
+      <div class="col-md-8 col-lg-9">
+        <input name="username" type="text" class="form-control" id="username" value="{{ infos.username }}">
+      </div>
+    </div>
+
+    <!-- Phone -->
+    <div class="row mb-3">
+      <label for="phone" class="col-md-4 col-lg-3 col-form-label">Phone</label>
+      <div class="col-md-8 col-lg-9">
+        <input name="phone" type="text" class="form-control" id="phone" value="{{ infos.phone }}">
+      </div>
+    </div>
+
+    <!-- Date of Birth -->
+    <div class="row mb-3">
+      <label for="dateOfBirth" class="col-md-4 col-lg-3 col-form-label">Date of Birth</label>
+      <div class="col-md-8 col-lg-9">
+        <input name="date_of_birth" type="date" class="form-control" id="dateOfBirth" 
+               value="{{ infos.date_of_birth|date:'Y-m-d' }}">
+      </div>
+    </div>
+
+    <!-- ID Number -->
+    <div class="row mb-3">
+      <label for="idNumber" class="col-md-4 col-lg-3 col-form-label">ID Number</label>
+      <div class="col-md-8 col-lg-9">
+        <input name="id_number" type="text" class="form-control" id="idNumber" value="{{ infos.id_number }}">
+      </div>
+    </div>
+
+    <!-- Gender (Professional Radio Buttons) -->
+    <div class="row mb-3">
+      <label class="col-md-4 col-lg-3 col-form-label">Gender</label>
+      <div class="col-md-8 col-lg-9 d-flex align-items-center gap-3">
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="gender" id="genderMale" value="Male" 
+                 {% if infos.gender == "Male" %}checked{% endif %}>
+          <label class="form-check-label" for="genderMale">Male</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="Female" 
+                 {% if infos.gender == "Female" %}checked{% endif %}>
+          <label class="form-check-label" for="genderFemale">Female</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="gender" id="genderOther" value="Other" 
+                 {% if infos.gender == "Other" %}checked{% endif %}>
+          <label class="form-check-label" for="genderOther">Other</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="text-center">
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+    </div>
+  </form>
+</div>
+
+
+
+          <div class="tab-pane fade" id="profile-settings"><br>
+        <h5>Delete Account</h5>
+        <p class="text-danger">⚠ This action is irreversible. Please confirm your Email to proceed.</p>
+
+       <form method="POST" action="{% url 'delete_account' infos.id %}">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="email">Confirm your Email:</label>
+            <input type="email" class="form-control" name="email" required>
+            <button type="submit" class="btn btn-danger mt-2 bi bi-trash">Delete My Account</button>
+                </div>
+
+            </form>
+        </div>
+
+         <div class="tab-pane fade" id="profile-change-password"><br>
+
+    <form method="POST" action="{% url 'change_password' infos.id %}">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="currentPassword" class="form-label">Current Password</label>
+            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+        </div>
+        <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password</label>
+            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+        </div>
+        <div class="mb-3">
+            <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Password</button>
+                </form>
+            </div>
+            </div>
+            </div> 
+          </div>
+      </div>
+      </div>
+    </section>
+    
+        <script>
+            document.getElementById('profilePreview').addEventListener('click', function() {
+                document.getElementById('profileImage').click();
+            });
+
+            // Optional: Show selected image preview
+            document.getElementById('profileImage').addEventListener('change', function(event) {
+                let reader = new FileReader();
+                reader.onload = function() {
+                    document.getElementById('profilePreview').src = reader.result;
+                }
+                reader.readAsDataURL(event.target.files[0]);
+            });
+        </script>
+
+
+{% endblock %}

@@ -14,11 +14,12 @@ from TechApp.credentials import MpesaAccessToken, LipanaMpesaPpassword
 from django.shortcuts import  redirect,render, get_object_or_404
 from django.contrib.auth import logout, authenticate
 from django.contrib import messages
-from TechApp.forms import  EnrollmentForm, StudentForm, AssignmentForm,SubmissionForm,AdminForm, CourseForm, ModuleForm, LessonForm
+from TechApp.forms import  EnrollmentForm, StudentForm,StudentEditForm, MentorEditForm, AssignmentForm,SubmissionForm,AdminForm, CourseForm, ModuleForm, LessonForm
 from TechApp.models import Course, Member, Contact, AdminLogin, Assignment, Submission ,Module, Lesson,Topic, Subtopic
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 import random
+from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -789,16 +790,6 @@ def settings_view(request):
 
     return render(request, "settings.html")
 
-
-def user_profile(request, user_id):
-    studentinfo = get_object_or_404(Member, id=user_id)
-    return render(request, 'user-profile.html', {'studentinfo': studentinfo})
-
-
-def users_profile(request, user_id):
-    admininfo = get_object_or_404(AdminLogin, id=user_id)
-    return render(request, 'users-profile.html', {'admininfo': admininfo})
-
 def student_main(request):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -1152,3 +1143,146 @@ def download_note(request, lesson_id):
             "An error occurred while preparing the download. Please contact support.",
             status=500
         )
+
+# student_profile
+def student_profile(request, studentinfo):
+    infos = get_object_or_404(Member, id=studentinfo)
+
+    if request.method == 'POST':
+        form = StudentEditForm(request.POST, request.FILES, instance=infos)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('student_profile', studentinfo=studentinfo)
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = StudentEditForm(instance=infos)
+
+    return render(request, 'profiles/student_profile.html', {
+        'form': form,
+        'infos': infos,
+        'studentinfo': infos   # 👈 add this line
+    })
+
+
+def change_password_s(request, id):
+    infos = get_object_or_404(Member, id=id)
+
+    if request.method == "POST":
+        current_password = request.POST.get("currentPassword")
+        new_password = request.POST.get("newPassword")
+        confirm_password = request.POST.get("confirmNewPassword")
+
+        if not check_password(current_password, infos.password):
+            messages.error(request, "Current password is incorrect.")
+            return redirect("student_profile", id=id)
+
+        if new_password != confirm_password:
+            messages.error(request, "New passwords do not match.")
+            return redirect("student_profile", id=id)
+
+        infos.password = make_password(new_password)
+        infos.save()
+
+        messages.success(request, "Password updated successfully!")
+        return redirect("student_profile", id=id)
+
+    return redirect("student_profile", id=id)
+
+
+@csrf_protect
+def delete_account_s(request, id):
+    infos = get_object_or_404(Member, id=id)
+
+    if request.method == "POST":
+        email_input = request.POST.get("email")
+
+        if not email_input:
+            messages.error(request, "Please enter your email.")
+            return redirect("student_profile", id=id)
+
+        if email_input.strip().lower() != infos.email.lower():
+            messages.error(request, "Email does not match. Account not deleted.")
+            return redirect("student_profile", id=id)
+
+        logout(request)
+
+        infos.delete()
+
+        messages.success(request, "Your account has been deleted successfully.")
+        return redirect("register")  # Ensure 'register' is a valid URL name
+
+    return redirect("student_profile", id=id)
+
+# mentor profile
+
+def mentor_profile(request, admininfo):
+    infos = get_object_or_404(AdminLogin, id=admininfo)
+
+    if request.method == 'POST':
+        form = MentorEditForm(request.POST, request.FILES, instance=infos)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('mentor_profile', admininfo=admininfo)
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = MentorEditForm(instance=infos)
+
+    return render(request, 'profiles/mentor_profile.html', {
+        'form': form,
+        'infos': infos,
+        'admininfo': infos  
+    })
+
+
+def change_password_m(request, id):
+    infos = get_object_or_404(AdminLogin, id=id)
+
+    if request.method == "POST":
+        current_password = request.POST.get("currentPassword")
+        new_password = request.POST.get("newPassword")
+        confirm_password = request.POST.get("confirmNewPassword")
+
+        if not check_password(current_password, infos.password):
+            messages.error(request, "Current password is incorrect.")
+            return redirect("mentor_profile", id=id)
+
+        if new_password != confirm_password:
+            messages.error(request, "New passwords do not match.")
+            return redirect("mentor_profile", id=id)
+
+        infos.password = make_password(new_password)
+        infos.save()
+
+        messages.success(request, "Password updated successfully!")
+        return redirect("mentor_profile", id=id)
+
+    return redirect("mentor_profile", id=id)
+
+
+@csrf_protect
+def delete_account_m(request, id):
+    infos = get_object_or_404(AdminLogin, id=id)
+
+    if request.method == "POST":
+        email_input = request.POST.get("email")
+
+        if not email_input:
+            messages.error(request, "Please enter your email.")
+            return redirect("mentor_profile", id=id)
+
+        if email_input.strip().lower() != infos.email.lower():
+            messages.error(request, "Email does not match. Account not deleted.")
+            return redirect("mentor_profile", id=id)
+
+        logout(request)
+
+        infos.delete()
+
+        messages.success(request, "Your account has been deleted successfully.")
+        return redirect("register")  # Ensure 'register' is a valid URL name
+
+    return redirect("mentor_profile", id=id)
