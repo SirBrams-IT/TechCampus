@@ -1,11 +1,8 @@
-<br><br><br>
-
 {% extends 'student-main.html' %}
 {% load static %}
 {% block  body %}
 
-
-    <div id="mpesa-payment-container" >
+   <div id="mpesa-payment-container" >
         <img src="{% static 'assets/img/mpesa.png' %}" alt="mpesa" style="width: 100%">
         <form action="{% url 'stk' %}" method="POST" id="mpesa-payment-form ">
           {% csrf_token %}
@@ -45,7 +42,7 @@
     <style>
         #mpesa-payment-container {
             max-width: 400px;
-            margin: 60px auto;
+            margin-top: 40px ;
             background: white;
             padding: 20px;
             border-radius: 20px;

@@ -317,3 +317,44 @@
   }
 
 })();
+document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Time function (for all elements with class "current-time")
+        function updateCurrentTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0'); 
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+
+        const timeString = `${hours}:${minutes}:${seconds}`;
+
+        // Update all elements with the class
+        document.querySelectorAll(".current-time").forEach(el => {
+            el.textContent = timeString;
+        });
+        }
+
+        updateCurrentTime(); // Call function on page load
+        setInterval(updateCurrentTime, 1000);
+      
+ function updateGreeting() {
+    let now = new Date();
+    let hours = now.getHours();
+    let greeting = "";
+
+    if (hours >= 5 && hours < 12) {
+        greeting = "Good morning";
+    } else if (hours >= 12 && hours < 17) {
+        greeting = "Good afternoon";
+    } else if (hours >= 17 && hours < 21) {
+        greeting = "Good evening";
+    } else {
+        greeting = "Good night";
+    }
+
+    // Add the username from Django template
+    document.getElementById("greeting").textContent = greeting + "";
+}
+
+    updateGreeting(); // Call function on page load
+    setInterval(updateGreeting, 60000); // Update every minute

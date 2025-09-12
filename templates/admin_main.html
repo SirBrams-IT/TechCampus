@@ -35,17 +35,17 @@
  <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy; max-height: 100px">
 
     <!-- Sidebar Toggle -->
-    <i class="bi bi-list toggle-sidebar-btn me-3"></i>
+    <i class="bi bi-list toggle-sidebar-btn me-2"></i>
 
     <!-- title -->
     <div class="d-flex">
         <a href="#" class="logo d-flex align-items-center">
-            <img src="{% static 'asset/img/image.png' %}" alt="title" class="text-uppercase text-white ms-1" id="titles">
+            <img src="{% static 'asset/img/image.png' %}" alt="title" class="text-uppercase text-white" id="titles">
         </a>
     </div>
 
     <!-- Search Bar for large devices-->
-    <div class="search-bar ms-5">
+    <div class="search-bar " style="margin-left: 250px;">
         <form class="search-form d-flex align-items-center" method="POST" action="#">
             <input type="text" name="query" placeholder="Search" title="Enter search keyword">
             <button type="submit" title="Search"><i class="bi bi-search"></i></button>
@@ -55,7 +55,7 @@
             <!-- Profile Dropdown (Desktop Only) -->
         <nav class="header-nav ms-auto d-none d-lg-block">
         <ul class="d-flex align-items-center">
-            <li class="nav-item dropdown pe-3 profile-container me-5" style="margin-left: 20px">
+            <li class="nav-item dropdown pe-3 profile-container me-3" style="margin-left: 20px">
             <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
                 
                 <!-- Profile Wrapper with Status Dot -->
@@ -68,7 +68,7 @@
 
                 </div>
 
-                <span class="d-md-block dropdown-toggle ps-2 me-3">Hi, {{ studentinfo.username }}</span>
+                <span class="d-md-block dropdown-toggle ps-2 me-3">Hi, {{ admininfo.username }}</span>
             </a>
                 <!-- Dropdown Menu -->
                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
@@ -103,28 +103,26 @@
             </li>
         </ul>
     </nav>
-</header>
+    </header>
 
+    <aside id="sidebar" class="sidebar">
+        <!-- Profile Image (Mobile Only) -->
+        <div class="d-block d-lg-none text-center my-3">
+           <!-- Profile Wrapper with Status Dot -->
+        <div class="position-relative d-inline-block">
+          <!-- Profile Image -->
+          <img src="{% if admininfo.profile_image and admininfo.profile_image.url %}{{ admininfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
+               alt="Profile" class="rounded-circle profile-img" width="55" height="55">
+         <!-- Status Dot -->
+        <span class="status-dot bg-success"></span>
 
-<!-- Sidebar -->
-<aside id="sidebar" class="sidebar">
+        </div>
+                <br>
+                <span class="d-md-block text-primary  ps-2 me-3">Hi, {{ admininfo.username }}</span><br>
+                <span class=" bg-black text-white current-time" ></span>
+        </div>
 
-    <!-- Profile Image (Mobile Only) -->
-    <div class="d-block d-lg-none text-center my-3">
-         <div class="position-relative d-inline-block">
-        <img src="{% if admininfo.profile_image and admininfo.profile_image.url %}{{ admininfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
-             alt="Profile" class="rounded-circle shadow-sm" width="80" height="80">
-                <!-- Status Dot -->
-             <span class="status-dot bg-success"></span>
-             </div>
-             <br>
-             <span class="d-md-block text-primary  ps-2 me-3">Hi, {{ admininfo.username }}</span> <br>
-             <span class=" bg-black text-white current-time" ></span>
-             
-    </div>
-
-    <!-- Sidebar Menu -->
-    <ul class="sidebar-nav" id="sidebar-nav">
+        <ul class="sidebar-nav" id="sidebar-nav">
 
         <li class="nav-item">
             <a class="nav-link" href="{% url 'admin_dashboard' %}">
@@ -190,6 +188,7 @@
 
     </ul>
 </aside>
+<main id="main" class="main">
 <!--search bar for small devices-->
    <div class="d-lg-none position-sticky top-0 start-0 w-100 bg-white shadow-sm p-2 z-3">
   <form class="search-form d-flex align-items-center w-100" method="POST" action="#">
@@ -203,6 +202,7 @@
  {% block content %}
 
  {% endblock %}
+</main>
 
   <div style="background-color: navy">
       <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
@@ -261,49 +261,7 @@
   <!-- Template Main JS File -->
   <script src="{% static 'asset/js/main.js' %}"></script>
   <script>
-
-      document.getElementById("year").textContent = new Date().getFullYear();
-
-    function updateGreeting() {
-    let now = new Date();
-    let hours = now.getHours();
-    let greeting = "";
-
-    if (hours >= 5 && hours < 12) {
-        greeting = "Good morning";
-    } else if (hours >= 12 && hours < 17) {
-        greeting = "Good afternoon";
-    } else if (hours >= 17 && hours < 21) {
-        greeting = "Good evening";
-    } else {
-        greeting = "Good night";
-    }
-
-    // Add the username from Django template
-    document.getElementById("greeting").textContent = greeting + "";
-    }
-
-    // Greeting function
-    updateGreeting(); // Call on page load
-    setInterval(updateGreeting, 60000); // Update every minute
-
-        // Time function (for all elements with class "current-time")
-        function updateCurrentTime() {
-        const now = new Date();
-        const hours = now.getHours().toString().padStart(2, '0'); 
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-
-        const timeString = `${hours}:${minutes}:${seconds}`;
-
-        // Update all elements with the class
-        document.querySelectorAll(".current-time").forEach(el => {
-            el.textContent = timeString;
-        });
-        }
-
-        updateCurrentTime(); // Call function on page load
-        setInterval(updateCurrentTime, 1000);
+  
 
        function openDeleteModal(deleteUrl) {
             document.getElementById('confirmDeleteBtn').href = deleteUrl;

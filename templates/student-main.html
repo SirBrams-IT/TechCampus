@@ -33,15 +33,15 @@
 <body>
 
  <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy">
-    <i class="bi bi-list toggle-sidebar-btn me-3"></i>
+    <i class="bi bi-list toggle-sidebar-btn me-2"></i>
     <div class="d-flex  ">
         <a href="#" class="logo d-flex align-items-center">
-            <img src="{% static 'asset/img/image.png' %}" alt="title" class="text-uppercase text-white ms-1" id="titles"></img>
+            <img src="{% static 'asset/img/image.png' %}" alt="title" class="text-uppercase text-white " id="titles"></img>
         </a>
     </div>
 
         <!-- Search Bar -->
-    <div class="search-bar ms-5">
+    <div class="search-bar " style="margin-left: 250px;">
         <form class="search-form d-flex align-items-center" method="POST" action="#">
             <input type="text" name="query" placeholder="Search" title="Enter search keyword">
             <button type="submit" title="Search"><i class="bi bi-search"></i></button>
@@ -51,7 +51,7 @@
      <!-- Profile Dropdown (Desktop Only) -->
 <nav class="header-nav ms-auto d-none d-lg-block">
   <ul class="d-flex align-items-center">
-    <li class="nav-item dropdown pe-3 profile-container me-5" style="margin-left: 20px">
+    <li class="nav-item dropdown pe-3 profile-container me-3" style="margin-left: 20px">
       <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
         
         <!-- Profile Wrapper with Status Dot -->
@@ -113,7 +113,7 @@
         <div class="position-relative d-inline-block">
           <!-- Profile Image -->
           <img src="{% if studentinfo.profile_image and studentinfo.profile_image.url %}{{ studentinfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
-               alt="Profile" class="rounded-circle profile-img" width="40" height="40">
+               alt="Profile" class="rounded-circle profile-img" width="55" height="55">
          <!-- Status Dot -->
         <span class="status-dot bg-success"></span>
 
@@ -184,6 +184,7 @@
     </li>
         </ul>
     </aside><!-- End Sidebar-->
+     <main id="main" class="main">
 
     <!--search bar for small devices-->
     <div class="d-lg-none position-sticky top-0 start-0 w-100 bg-white shadow-sm p-2 z-3">
@@ -198,6 +199,7 @@
     {% block body %}
 
     {% endblock %}
+    </main>
 
       <div class="modal fade text-center text-white" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -259,47 +261,6 @@
   <!-- Template Main JS File -->
   <script src="{% static 'asset/js/main.js' %}"></script>
   <script>
-
-      document.getElementById("year").textContent = new Date().getFullYear();
-
-    function updateGreeting() {
-        let now = new Date();
-        let hours = now.getHours();
-        let greeting = "{{ studentinfo.username }}";
-
-        if (hours >= 5 && hours < 12) {
-            greeting = "Good morning! {{ studentinfo.username }}";
-        } else if (hours >= 12 && hours < 17) {
-            greeting = "Good afternoon! {{ studentinfo.username }}";
-        } else if (hours >= 17 && hours < 21) {
-            greeting = "Good evening! {{ studentinfo.username }}";
-        } else {
-            greeting = "Good night! {{ studentinfo.username }}";
-        }
-
-        document.getElementById("greeting").textContent = greeting;
-    }
-
-    updateGreeting(); // Call function on page load
-    setInterval(updateGreeting, 60000); // Update every minute
-
-    // Time function (for all elements with class "current-time")
-        function updateCurrentTime() {
-        const now = new Date();
-        const hours = now.getHours().toString().padStart(2, '0'); 
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-
-        const timeString = `${hours}:${minutes}:${seconds}`;
-
-        // Update all elements with the class
-        document.querySelectorAll(".current-time").forEach(el => {
-            el.textContent = timeString;
-        });
-        }
-
-        updateCurrentTime(); // Call function on page load
-        setInterval(updateCurrentTime, 1000);
 
    function openDeleteModal(deleteUrl) {
     var userConfirmation = prompt("Type DELETE to confirm deletion:");
