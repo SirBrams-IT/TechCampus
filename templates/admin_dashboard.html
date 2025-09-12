@@ -32,9 +32,9 @@
 
 <body>
 
-   <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy; max-height: 100px">
+   <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy; max-height: 100px ">
     <!-- Sidebar Toggle -->
-    <i class="bi bi-list toggle-sidebar-btn me-2"></i>
+    <i class="bi bi-list toggle-sidebar-btn me-2" ></i>
     <!-- title -->
     <div class="d-flex">
         <a href="#" class="logo d-flex align-items-center">
@@ -301,7 +301,7 @@
                             <td>{{ x.id_number }}</td>
                             <td>{{ x.date_of_birth }}</td>
                             <td>{{ x.gender }}</td>
-                            <td class="text-center" style="width: 55px; height: 55px;">
+                            <td class="text-center" style="max-width: 55px; max-height: 55px;">
                                 {% if x.profile_image %}
                                     <img src="{{ x.profile_image.url }}" class="rounded-circle img-thumbnail">
                                 {% else %}
