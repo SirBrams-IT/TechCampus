@@ -94,7 +94,7 @@
                     <li><hr class="dropdown-divider"></li>
 
                     <li>
-                        <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                        <a class="dropdown-item d-flex align-items-center text-danger" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
                             <i class="bi bi-box-arrow-right"></i>
                             <span>Sign Out</span>
                         </a>
@@ -139,20 +139,20 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link collapsed" href="{% url 'add_course' admininfo.id %}">
-                <i class="bi bi-book"></i><span>Courses</span>
-            </a>
-        </li>
-
-        <li class="nav-item">
             <a class="nav-link collapsed" href="{% url 'mentor_courses' admininfo.id %}">
-                <i class="bi bi-book"></i><span>AddCourse</span>
+                <i class="bi bi-journal-plus fs-4"></i><span>AddCourse</span>
+            </a>
+        </li>
+
+         <li class="nav-item">
+            <a class="nav-link collapsed" href="{% url 'add_student' admininfo.id %}">
+                <i class="bi bi-person-plus fs-4"></i><span>Add Students</span>
             </a>
         </li>
 
         <li class="nav-item">
-            <a class="nav-link collapsed" href="{% url 'add_student' admininfo.id %}">
-                <i class="bi bi-mortarboard"></i><span>Add Students</span>
+            <a class="nav-link collapsed" href="{% url 'registered_students' %}">
+                <i class="bi bi-mortarboard"></i><span>ViewStudents</span>
             </a>
         </li>
 
@@ -181,8 +181,8 @@
         </li>
 
         <li class="nav-item">
-            <a class="nav-link collapsed" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                <i class="bi bi-box-arrow-right"></i><span>Signout</span>
+            <a class="nav-link collapsed text-danger" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                <i class="bi bi-box-arrow-right text-danger"></i><span>Signout</span>
             </a>
         </li>
 

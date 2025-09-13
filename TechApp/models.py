@@ -23,6 +23,8 @@ class Member(models.Model):
     profile_image = CloudinaryField('image', folder='profile_images', null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True) 
+    updated_at = models.DateTimeField(auto_now=True) 
 
     # OTP Fields
     otp_code = models.CharField(max_length=6, blank=True, null=True)
@@ -192,6 +194,7 @@ class Course(models.Model):
     code = models.CharField(max_length=20, unique=True, blank=True, null=True)
     mentor = models.ForeignKey("AdminLogin", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True) 
 
     def save(self, *args, **kwargs):
         if not self.code:

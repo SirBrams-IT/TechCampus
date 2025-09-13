@@ -3,6 +3,8 @@ from django.http import FileResponse
 from django.db import transaction
 from datetime import timezone
 import requests
+from datetime import timedelta
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls import reverse
 from django.db.models import Prefetch
 from django.contrib.auth.hashers import check_password
@@ -218,17 +220,30 @@ def admin_login(request):
 
     return render(request, 'mentor_login.html')
 
-
 def admin_dashboard(request):
-    member = Member.objects.all()
     username = request.session.get('username')
     if not username:
         return redirect('admin_login')
+
     try:
         admininfo = AdminLogin.objects.get(username=username)
     except AdminLogin.DoesNotExist:
         messages.error(request, "User not found.")
         return redirect('admin_login')
+
+    # Students
+    member = Member.objects.all()
+    total_students = member.count()
+    today = timezone.now().date()
+    new_today = member.filter(created_at__date=today).count()
+
+    # Courses
+    courses = Course.objects.all()
+    total_courses = courses.count()
+
+    # courses added this week
+    start_week = today - timedelta(days=today.weekday())  # Monday of this week
+    new_this_week = courses.filter(created_at__date__gte=start_week).count()
 
     contacts = Contact.objects.all()
 
@@ -236,6 +251,10 @@ def admin_dashboard(request):
         'admininfo': admininfo,
         'contacts': contacts,
         'member': member,
+        'total_students': total_students,
+        'new_today': new_today,
+        'total_courses': total_courses,
+        'new_this_week': new_this_week,
     })
 
 def logout_mentor(request):
@@ -572,7 +591,7 @@ def updates(request, id):
 def delete_member(request,id):
     member= Member.objects.get(id  = id )
     member.delete()
-    return redirect('admin_dashboard')
+    return redirect('registered_students')
 
 def records_view(request):
     members = Member.objects.filter(is_deleted=True)
@@ -602,44 +621,6 @@ def contacts(request):
 
    else:
        return render(request,'contact.html')
-
-
-def edit_profile(request, user_id):
-    studentinfo=Member.objects.get(id=user_id)
-
-
-    if request.method == 'POST':
-        # Include request.FILES for file uploads
-        form = StudentForm(request.POST, request.FILES, instance=studentinfo)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Profile updated successfully!")
-            return redirect('student_dashboard')  # Ensure this URL name exists in urls.py
-        else:
-            messages.error(request, "Please correct the errors below.")
-    else:
-        form = StudentForm(instance=studentinfo)
-
-    return render(request, 'edit_profile.html', {'form': form,  'studentinfo':studentinfo})
-
-
-def profile_update(request, user_id):
-    admininfo = get_object_or_404(AdminLogin, id=user_id)
-
-    if request.method == 'POST':
-        form = AdminForm(request.POST, request.FILES, instance=admininfo)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Profile updated successfully!")
-            request.session['username'] = admininfo.username
-
-            return redirect('admin_dashboard')
-        else:
-            messages.error(request, "Please correct the errors below.")
-    else:
-        form = AdminForm(instance=admininfo)
-
-    return render(request, 'profile_update.html', {'form': form, 'admininfo': admininfo})
 
 def generate_pdf(request):
     members = Member.objects.all()
@@ -1286,3 +1267,37 @@ def delete_account_m(request, id):
         return redirect("register")  # Ensure 'register' is a valid URL name
 
     return redirect("mentor_profile", id=id)
+
+#registered students view
+
+def registered_students(request):
+    username = request.session.get('username')
+    if not username:
+        return redirect('admin_login')
+    
+    try:
+        admininfo = AdminLogin.objects.get(username=username)
+    except AdminLogin.DoesNotExist:
+        messages.error(request, "User not found.")
+        return redirect('admin_login')
+
+    # Get all students and order them
+    student_list = Member.objects.all().order_by('name')
+    
+    # Set up pagination - 10 students per page
+    paginator = Paginator(student_list, 10)
+    page = request.GET.get('page')
+    
+    try:
+        page_obj = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page of results
+        page_obj = paginator.page(paginator.num_pages)
+
+    return render(request, 'student_record/student.html', {
+        'admininfo': admininfo,
+        'page_obj': page_obj,  # Paginated students
+    })

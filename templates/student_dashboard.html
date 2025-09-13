@@ -93,7 +93,7 @@
         <li><hr class="dropdown-divider"></li>
 
         <li>
-          <a class="dropdown-item d-flex align-items-center" href="{% url 'logout_student' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
+          <a class="dropdown-item d-flex align-items-center text-danger" href="{% url 'logout_student' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
             <i class="bi bi-box-arrow-right"></i>
             <span>Sign Out</span>
           </a>
@@ -177,8 +177,8 @@
     </li>
 
      <li class="nav-item">
-        <a class="nav-link collapsed"href="{% url 'logout_student' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                <i class="bi bi-box-arrow-right"></i>
+        <a class="nav-link collapsed text-danger"href="{% url 'logout_student' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                <i class="bi bi-box-arrow-right text-danger"></i>
             <span>Sign Out</span>
         </a>
     </li>

@@ -70,6 +70,9 @@ urlpatterns = [
     path('mentor/<int:id>/change-password/', views.change_password_m, name='change'),
     path('mentor/<int:id>/delete/', views.delete_account_m, name='account'),
 
+    #url for students
+    path('registered-students/', views.registered_students, name='registered_students'),
+
     ]
 
 
