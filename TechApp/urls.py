@@ -72,6 +72,8 @@ urlpatterns = [
 
     #url for students
     path('registered-students/', views.registered_students, name='registered_students'),
+     #contact message
+    path('contact_messages/', views.contact_message, name='contact_messages'),
 
     ]
 

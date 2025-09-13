@@ -245,11 +245,8 @@ def admin_dashboard(request):
     start_week = today - timedelta(days=today.weekday())  # Monday of this week
     new_this_week = courses.filter(created_at__date__gte=start_week).count()
 
-    contacts = Contact.objects.all()
-
     return render(request, 'admin_dashboard.html', {
         'admininfo': admininfo,
-        'contacts': contacts,
         'member': member,
         'total_students': total_students,
         'new_today': new_today,
@@ -1157,19 +1154,19 @@ def change_password_s(request, id):
 
         if not check_password(current_password, infos.password):
             messages.error(request, "Current password is incorrect.")
-            return redirect("student_profile", id=id)
+            return redirect("student_profile", studentinfo=id)
 
         if new_password != confirm_password:
             messages.error(request, "New passwords do not match.")
-            return redirect("student_profile", id=id)
+            return redirect("student_profile", studentinfo=id)
 
         infos.password = make_password(new_password)
         infos.save()
 
         messages.success(request, "Password updated successfully!")
-        return redirect("student_profile", id=id)
+        return redirect("student_profile", studentinfo=id)
 
-    return redirect("student_profile", id=id)
+    return redirect("student_profile", studentinfo=id)
 
 
 @csrf_protect
@@ -1229,19 +1226,19 @@ def change_password_m(request, id):
 
         if not check_password(current_password, infos.password):
             messages.error(request, "Current password is incorrect.")
-            return redirect("mentor_profile", id=id)
+            return redirect("mentor_profile", admininfo=id)  # ✅ updated
 
         if new_password != confirm_password:
             messages.error(request, "New passwords do not match.")
-            return redirect("mentor_profile", id=id)
+            return redirect("mentor_profile", admininfo=id)  # ✅ updated
 
         infos.password = make_password(new_password)
         infos.save()
 
         messages.success(request, "Password updated successfully!")
-        return redirect("mentor_profile", id=id)
+        return redirect("mentor_profile", admininfo=id)  # ✅ updated
 
-    return redirect("mentor_profile", id=id)
+    return redirect("mentor_profile", admininfo=id)  # ✅ updated
 
 
 @csrf_protect
@@ -1264,7 +1261,7 @@ def delete_account_m(request, id):
         infos.delete()
 
         messages.success(request, "Your account has been deleted successfully.")
-        return redirect("register")  # Ensure 'register' is a valid URL name
+        return redirect("index")  # Ensure 'register' is a valid URL name
 
     return redirect("mentor_profile", id=id)
 
@@ -1300,4 +1297,52 @@ def registered_students(request):
     return render(request, 'student_record/student.html', {
         'admininfo': admininfo,
         'page_obj': page_obj,  # Paginated students
+    })
+
+
+#contact messages
+def contact_message(request):
+    username = request.session.get('username')
+    if not username:
+        return redirect('admin_login')
+
+    try:
+        admininfo = AdminLogin.objects.get(username=username)
+    except AdminLogin.DoesNotExist:
+        messages.error(request, "User not found.")
+        return redirect('admin_login')
+    
+    # Get search query
+    search_query = request.GET.get('q', '')
+    
+    # Get sort option
+    sort_option = request.GET.get('sort', 'newest')
+    
+    # Base queryset
+    contact_list = Contact.objects.all()
+    
+    # Apply search filter if provided
+    if search_query:
+        contact_list = contact_list.filter(
+            Q(name__icontains=search_query) | 
+            Q(email__icontains=search_query) | 
+            Q(message__icontains=search_query)
+        )
+    
+    # Apply sorting
+    if sort_option == 'oldest':
+        contact_list = contact_list.order_by('id')
+    else:  # newest first by default
+        contact_list = contact_list.order_by('-id')
+    
+    # Pagination
+    paginator = Paginator(contact_list, 10)  # Show 10 contacts per page
+    page_number = request.GET.get('page')
+    contacts = paginator.get_page(page_number)
+    
+    return render(request, 'contact_messages.html', {
+        'admininfo': admininfo,
+        'contacts': contacts,
+        'search_query': search_query,
+        'sort_option': sort_option,
     })
