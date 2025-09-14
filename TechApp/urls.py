@@ -67,7 +67,7 @@ urlpatterns = [
 
     # urls for profile-mentor
     path('mentor/<int:admininfo>/profile', views.mentor_profile, name='mentor_profile'),
-    path('mentor/<int:id>/change-password/', views.change_password_m, name='change'),
+    path('mentor/<int:id>/change-password/', views.change_password_m, name='change-password'),
     path('mentor/<int:id>/delete/', views.delete_account_m, name='account'),
 
     #url for students

@@ -3,6 +3,7 @@ from django.http import FileResponse
 from django.db import transaction
 from datetime import timezone
 import requests
+from django.db.models import Q 
 from datetime import timedelta
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls import reverse
@@ -602,22 +603,33 @@ def restore_member(request, id):
 def delete_contact(request, id):
     contacts = get_object_or_404(Contact, id=id)
     contacts.delete()
-    return redirect('admin_dashboard')
-
+    return redirect('contact_messages')
 
 def contacts(request):
-   if request.method=='POST':
-       mycontact = Contact(
-           name = request.POST['name'],
-           email = request.POST['email'],
-           phone = request.POST['phone'],
-           message = request.POST['message']
-       )
-       mycontact.save()
-       return redirect('/index')
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        message = request.POST.get('message')
 
-   else:
-       return render(request,'contact.html')
+        if name and email and message:  # ✅ validate required fields
+            try:
+                mycontact = Contact(
+                    name=name,
+                    email=email,
+                    phone=phone,
+                    message=message
+                )
+                mycontact.save()
+                messages.success(request, "Your message has been sent successfully ✅")
+            except Exception as e:
+                messages.error(request, f"Failed to send message ❌: {str(e)}")
+        else:
+            messages.warning(request, "Please fill in all required fields.")
+
+        return redirect('contacts')  # redirect after POST (best practice)
+
+    return render(request, 'contact.html')
 
 def generate_pdf(request):
     members = Member.objects.all()
@@ -1215,7 +1227,6 @@ def mentor_profile(request, admininfo):
         'admininfo': infos  
     })
 
-
 def change_password_m(request, id):
     infos = get_object_or_404(AdminLogin, id=id)
 
@@ -1226,20 +1237,19 @@ def change_password_m(request, id):
 
         if not check_password(current_password, infos.password):
             messages.error(request, "Current password is incorrect.")
-            return redirect("mentor_profile", admininfo=id)  # ✅ updated
+            return redirect("mentor_profile", admininfo=id)
 
         if new_password != confirm_password:
             messages.error(request, "New passwords do not match.")
-            return redirect("mentor_profile", admininfo=id)  # ✅ updated
+            return redirect("mentor_profile", admininfo=id)
 
         infos.password = make_password(new_password)
         infos.save()
 
         messages.success(request, "Password updated successfully!")
-        return redirect("mentor_profile", admininfo=id)  # ✅ updated
+        return redirect("mentor_profile", admininfo=id)
 
-    return redirect("mentor_profile", admininfo=id)  # ✅ updated
-
+    return redirect("mentor_profile", admininfo=id)
 
 @csrf_protect
 def delete_account_m(request, id):
@@ -1345,4 +1355,5 @@ def contact_message(request):
         'contacts': contacts,
         'search_query': search_query,
         'sort_option': sort_option,
+        
     })

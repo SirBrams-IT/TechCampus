@@ -189,59 +189,44 @@
     </ul>
 </aside>
 <main id="main" class="main">
-<!--search bar for small devices-->
-   <div class="d-lg-none position-sticky top-0 start-0 w-100 bg-white shadow-sm p-2 z-3">
-  <form class="search-form d-flex align-items-center w-100" method="POST" action="#">
-    <input type="text" class="form-control me-2" name="query" placeholder="Search" title="Enter search keyword">
-    <button type="submit" class="btn btn-primary" title="Search">
-      <i class="bi bi-search"></i>
-    </button>
-  </form>
- </div>
 
  {% block content %}
 
  {% endblock %}
-</main>
 
-  <div style="background-color: navy">
-      <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+ 
+  </main>
+  <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center text-danger">
-                Are you sure you want to log out?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a href="{% url 'logout_mentor' %}" class="btn btn-danger">Yes, Logout</a>
-            </div>
-        </div>
-    </div>
-</div>
-      <div class="modal fade text-center text-white" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deleteConfirmLabel">
-                    <i class="fas fa-exclamation-triangle"></i> Confirm Deletion
-                </h5>
+                <h5 class="modal-title text-secondary text-center" id="logoutModalLabel">
+                 Confirm Logout <i class="bi bi-box-arrow-right fs-4"></i></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                <p class="fw-bold text-danger">Are you sure you want to delete contact messages?</p>
-                <p class="text-muted">This action cannot be undone.</p>
+                
+                <h5 class="text-primary mb-3">{{ admininfo.username }}</h5>
+                <p class="text-secondary mb-0">
+                    Do you really want to log out now? 🔒
+                </p>
             </div>
-            <div class="modal-footer me-2">
-                <button type="button" class="btn btn-secondary me-5" data-bs-dismiss="modal">Cancel</button>
-                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Yes, Delete</a>
+
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    ❌ No, Stay
+                </button>
+                <a href="{% url 'logout_mentor' %}" class="btn btn-danger">
+                    ✅ Yes, Log Out
+                </a>
             </div>
+
         </div>
     </div>
-    </div>
+</div>
+ 
+  </main>     
+ <div style="background-color: navy">
    <footer class=" text-white text-center py-3 mt-4 ">
     <p class="mb-0">&copy; <span id="year"></span> SirBrams Tech Virtual Campus. All Rights Reserved.</p>
  </footer>
@@ -261,82 +246,31 @@
   <!-- Template Main JS File -->
   <script src="{% static 'asset/js/main.js' %}"></script>
   <script>
-  
 
-       function openDeleteModal(deleteUrl) {
-            document.getElementById('confirmDeleteBtn').href = deleteUrl;
-            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-            deleteModal.show();
-        }
-        function showUpdateModal(id) {
-            var updateUrl = "/updates/" + id;
-            document.getElementById("confirmUpdateBtn").href = updateUrl;
-            var modal = new bootstrap.Modal(document.getElementById("updateModal"));
-            modal.show();
-        }
+        // Progress bar for success message
+        setTimeout(function() {
+            var successDiv = document.getElementById("success-message");
+            if (successDiv) {
+                successDiv.style.display = "none";
+            }
+        }, 5000);
 
-
-
-             function populateEditForm(id, name, email, username, phone, id_number, date_of_birth, gender) {
-        document.getElementById("student_id").value = id;
-        document.getElementById("student_name").value = name;
-        document.getElementById("student_email").value = email;
-        document.getElementById("student_username").value = username;
-        document.getElementById("student_phone").value = phone;
-        document.getElementById("student_id_number").value = id_number;
-        document.getElementById("student_dob").value = date_of_birth;
-        document.getElementById("student_gender").value = gender;
-
-        document.getElementById("editStudentForm").addEventListener("submit", function(event) {
-    event.preventDefault(); // Prevent default form submission
-
-    let form = this;
-    let formData = new FormData(form);
-
-    fetch("{% url 'edit_student' %}", {
-        method: "POST",
-        body: formData,
-        headers: {
-            "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            // Show error message inside modal
-            let errorDiv = document.getElementById("editStudentError");
-            errorDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-        } else if (data.success) {
-            // Reload the page after a short delay for changes to reflect
-            window.location.reload();
-        }
-    })
-    .catch(error => console.error("Error:", error));
-});
-    }
-
-
-      setTimeout(function() {
-      var successDiv = document.getElementById("success-message");
-         if (successDiv) {
-           successDiv.style.display = "none";
+        let progressBar = document.getElementById("progress-bar");
+        let logoutDiv = document.getElementById("logout-container");
+        if (progressBar) {
+            let width = 0;
+            let interval = setInterval(function() {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    if (logoutDiv) {
+                        logoutDiv.style.display = "none";
                     }
-                }, 5000);
-
-                let progressBar = document.getElementById("progress-bar");
-                let logoutDiv = document.getElementById("logout-container");
-                let width = 0;
-                let interval = setInterval(function() {
-                    if (width >= 100) {
-                        clearInterval(interval);
-                        logoutDiv.style.display = "none";  // Hide logout message after 5s
-                    } else {
-                        width++;
-                        progressBar.style.width = width + "%";
-                    }
-                }, 50);
-
+                } else {
+                    width++;
+                    progressBar.style.width = width + "%";
+                }
+            }, 50);
+        }
   </script>
 </body>
-
 </html>

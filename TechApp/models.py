@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import models
 from cloudinary.models import CloudinaryField
+from django.contrib.auth.hashers import make_password, check_password
 
 
 def generate_otp():
@@ -68,7 +69,8 @@ class Contact(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=13)
-    message = models.CharField(max_length=100)
+    message = models.CharField(max_length=300)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -90,7 +92,7 @@ class AdminLogin(models.Model):
     date_of_birth = models.DateField(validators=[validate_age])
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')])
     profile_image = CloudinaryField('image', folder='admin_profiles', blank=True, null=True)
-    password = models.CharField(max_length=100)
+    password = models.CharField(max_length=250)
 
     # OTP Fields for password reset
     otp_code = models.CharField(max_length=6, blank=True, null=True)
@@ -115,6 +117,15 @@ class AdminLogin(models.Model):
         self.otp_code = None
         self.otp_expires_at = None
         self.save()
+
+    def save(self, *args, **kwargs):
+        # Only hash if not already hashed
+        if not self.password.startswith('pbkdf2_sha256$'):
+            self.password = make_password(self.password)
+        super().save(*args, **kwargs)
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)    
 
     def __str__(self):
         return self.name
