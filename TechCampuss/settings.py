@@ -19,7 +19,7 @@ GETOTP_API_KEY = config("GETOTP_API_KEY")
 GETOTP_AUTH_TOKEN = config("GETOTP_AUTH_TOKEN")
 
 # 🚨 Security
-DEBUG = False
+DEBUG = True
 
 USE_X_FORWARDED_HOST = True
 ALLOWED_HOSTS = [
@@ -37,10 +37,13 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "channels", #chanel for messaging
     "django.contrib.staticfiles",
     "TechApp",
     "cloudinary",
     "cloudinary_storage",
+    
+    
 ]
 
 # ⚙️ Middleware
@@ -73,7 +76,17 @@ TEMPLATES = [
     },
 ]
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
 WSGI_APPLICATION = "TechCampuss.wsgi.application"
+ASGI_APPLICATION = 'TechCampuss.asgi.application'
 
 # 📦 Database (MySQL from Aiven)
 DATABASES = {

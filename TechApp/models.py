@@ -5,13 +5,69 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import models
 from cloudinary.models import CloudinaryField
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import make_password, check_password,is_password_usable
 
 
 def generate_otp():
     return str(random.randint(100000, 999999))
 
+#conversation
+class Conversation(models.Model):
+    CONVERSATION_TYPES = (
+        ('dm', 'Direct Message'),
+        ('forum', 'Forum'),
+    )
+    
+    name = models.CharField(max_length=255, blank=True, null=True)
+    conversation_type = models.CharField(max_length=10, choices=CONVERSATION_TYPES)
+    participants = models.ManyToManyField('Member', related_name='conversations')
+    admin_participants = models.ManyToManyField('AdminLogin', related_name='conversations', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def clean(self):
+        if self.conversation_type == 'dm' and self.participants.count() + self.admin_participants.count() != 2:
+            raise ValidationError("Direct messages must have exactly 2 participants")
+    
+    def __str__(self):
+        if self.conversation_type == 'dm':
+            participants = list(self.participants.all()) + list(self.admin_participants.all())
+            return f"DM: {', '.join([p.name for p in participants])}"
+        return f"Forum: {self.name}"
 
+#message model
+class Message(models.Model):
+    conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
+    sender_member = models.ForeignKey('Member', on_delete=models.CASCADE, null=True, blank=True)
+    sender_admin = models.ForeignKey('AdminLogin', on_delete=models.CASCADE, null=True, blank=True)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['timestamp']
+    
+    def clean(self):
+        if not self.sender_member and not self.sender_admin:
+            raise ValidationError("Message must have a sender")
+        if self.sender_member and self.sender_admin:
+            raise ValidationError("Message can only have one sender")
+    
+    def get_sender_name(self):
+        if self.sender_member:
+            return self.sender_member.name
+        return self.sender_admin.name
+    
+    def get_sender_type(self):
+        if self.sender_member:
+            return 'student'
+        return 'mentor'
+    
+    def __str__(self):
+        sender_name = self.get_sender_name()
+        return f"{sender_name}: {self.content[:50]}"
+
+#student model
 class Member(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
@@ -60,6 +116,14 @@ class Member(models.Model):
         self.otp_code = None
         self.otp_expires_at = None
         self.save()
+     #methods for messages
+    def get_conversations(self):
+        return self.conversations.all()
+    
+    def get_unread_count(self):
+        return Message.objects.filter(
+            conversation__in=self.conversations.all()
+        ).exclude(sender_member=self).filter(read=False).count()    
 
     def __str__(self):
         return self.email
@@ -82,7 +146,7 @@ def validate_age(value):
     if age < 30 or age > 75:
         raise ValidationError(f'Age must be between 30 and 75 years. Current age: {age} years.')
 
-
+#mentor/admin model
 class AdminLogin(models.Model):
     name = models.CharField(max_length=100)
     username = models.CharField(max_length=50, unique=True)
@@ -93,20 +157,37 @@ class AdminLogin(models.Model):
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')])
     profile_image = CloudinaryField('image', folder='admin_profiles', blank=True, null=True)
     password = models.CharField(max_length=250)
+    
 
-    # OTP Fields for password reset
+    # OTP Fields
     otp_code = models.CharField(max_length=6, blank=True, null=True)
     otp_expires_at = models.DateTimeField(blank=True, null=True)
 
+    # 🔐 Password methods
+    def set_password(self, raw_password):
+        """Hashes and sets the password."""
+        self.password = make_password(raw_password)
+        self.save(update_fields=["password"])
+
+    def check_password(self, raw_password):
+        """Verifies a password against the stored hash."""
+        return check_password(raw_password, self.password)
+
+    def save(self, *args, **kwargs):
+        # Only hash if it's not already a valid hashed password
+        if not is_password_usable(self.password):
+            self.password = make_password(self.password)
+        super().save(*args, **kwargs)
+
+    # 🔑 OTP methods
     def generate_otp(self):
         self.otp_code = str(random.randint(100000, 999999))
         self.otp_expires_at = timezone.now() + timezone.timedelta(minutes=3)
-        self.save()
+        self.save(update_fields=["otp_code", "otp_expires_at"])
 
     def verify_otp(self, otp):
         if self.is_otp_valid(otp):
             self.clear_otp()
-            self.save()
             return True
         return False
 
@@ -116,16 +197,16 @@ class AdminLogin(models.Model):
     def clear_otp(self):
         self.otp_code = None
         self.otp_expires_at = None
-        self.save()
+        self.save(update_fields=["otp_code", "otp_expires_at"])
 
-    def save(self, *args, **kwargs):
-        # Only hash if not already hashed
-        if not self.password.startswith('pbkdf2_sha256$'):
-            self.password = make_password(self.password)
-        super().save(*args, **kwargs)
-
-    def check_password(self, raw_password):
-        return check_password(raw_password, self.password)    
+     # methods for messaging
+    def get_conversations(self):
+        return self.conversations.all()
+    
+    def get_unread_count(self):
+        return Message.objects.filter(
+            conversation__in=self.conversations.all()
+        ).exclude(sender_admin=self).filter(read=False).count()    
 
     def __str__(self):
         return self.name

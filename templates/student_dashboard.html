@@ -36,25 +36,78 @@
 
     <i class="bi bi-list toggle-sidebar-btn me-2"></i>
 
-    <div class="d-flex  ">
-        <a href="#" class="logo d-flex align-items-center">
-            <img src="{% static 'asset/img/image.png' %}" alt="title" class="text-uppercase text-white " id="titles"></img>
+    <!-- logo-->
+    <img src="{% static 'assets/img/logo.png' %}" alt="logo"
+       class="me-2"
+         style="height:45px; width:45px; background-color:dodgerblue; padding:4px; border-radius:50%; object-fit:contain;">
+
+    <!-- title for desktops -->
+    <div class="d-flex">
+        <a href="#" class="logo d-flex align-items-center d-none d-lg-block">
+            <img src="{% static 'asset/img/image.png' %}" alt="title" class="text-uppercase text-white " id="titles">
         </a>
     </div>
 
+     <!-- title for mobiles -->
+    <div class="d-flex d-block d-lg-none">
+            <h1 class="text-uppercase text-white text-center mt-2" > STVC</h1>
+        
+    </div>
+
     <!-- Search Bar -->
-    <div class="search-bar " style="margin-left: 250px;">
+    <div class="search-bar " style="margin-left: 100px;">
         <form class="search-form d-flex align-items-center" method="POST" action="#">
             <input type="text" name="query" placeholder="Search" title="Enter search keyword">
             <button type="submit" title="Search"><i class="bi bi-search"></i></button>
         </form>
     </div>
+     
+      <!-- Notification Dropdown -->
+   <div class="nav-item dropdown " style="margin-left: 10px;">
+    <a class="nav-link nav-icon position-relative" href="#" data-bs-toggle="dropdown">
+        <i class="bi bi-bell fs-5 text-white pt-5"></i> <!-- Bell Icon -->
+        {% if messages_count > -1 %}
+        <span class="badge bg-warning position-absolute top-0 start-100 translate-middle rounded-pill">
+            {{ messages_count }}
+        </span>
+        {% endif %}
+    </a>
 
-<!-- Profile Dropdown (Desktop Only) -->
-<nav class="header-nav ms-auto d-none d-lg-block">
-  <ul class="d-flex align-items-center">
-    <li class="nav-item dropdown pe-3 profile-container me-3" style="margin-left: 20px">
-      <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications shadow-lg  mt-3" style="margin-left: 10px" >
+        <li class="dropdown-header bg-light p-3 border-bottom">
+            <strong >You have {{ messages_count }} unread messages</strong>
+            <a href="{% url 'latest_messages' %}" class="ms-2">
+                <span class="badge rounded-pill bg-primary p-2">View All</span>
+            </a>
+        </li>
+
+        {% if latest_messages %}
+            {% for msg in latest_messages %}
+            <li class="notification-item d-flex align-items-start p-3">
+                <i class="bi bi-envelope text-primary fs-4 me-3"></i>
+                <div>
+                    <h6 class="mb-1 text-black">{{ msg.name }}</h6>
+                    <p class="mb-1 text-muted" style="max-width: 400px;word-wrap: break-word">{{ msg.message|truncatewords:10 }}</p>
+                    <small class="text-secondary">{{ msg.created_at|timesince }} ago</small>
+                </div>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            {% endfor %}
+        {% else %}
+            <li class="p-3 text-center text-muted">No new messages</li>
+        {% endif %}
+
+        <li class="dropdown-footer text-center p-2">
+            <a href="" class="text-primary fw-bold">See all messages</a>
+        </li>
+    </ul>
+    </div>
+
+        <!-- Profile Dropdown -->
+        <nav class="header-nav ms-auto ">
+        <ul class="d-flex align-items-center">
+            <li class="nav-item dropdown pe-3 profile-container me-1" style="margin-left:3px">
+            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
         
         <!-- Profile Wrapper with Status Dot -->
         <div class="position-relative d-inline-block">
@@ -107,21 +160,7 @@
   </header>
 
   <aside id="sidebar" class="sidebar">
-     <!-- Profile Image (Mobile Only) -->
-        <div class="d-block d-lg-none text-center my-3">
-           <!-- Profile Wrapper with Status Dot -->
-        <div class="position-relative d-inline-block">
-          <!-- Profile Image -->
-          <img src="{% if studentinfo.profile_image and studentinfo.profile_image.url %}{{ studentinfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
-               alt="Profile" class="rounded-circle profile-img" width="55" height="55">
-         <!-- Status Dot -->
-        <span class="status-dot bg-success"></span>
-
-        </div>
-                <br>
-                <span class="d-md-block text-primary  ps-2 me-3">Hi, {{ studentinfo.username }}</span><br>
-                <span class=" bg-black text-white current-time" ></span>
-        </div>
+     <span class=" bg-black text-white current-time ms-5" ></span>
       <ul class="sidebar-nav" id="sidebar-nav">
       <li class="nav-item">
         <a class="nav-link " href="{% url 'student_dashboard' %}">
@@ -186,15 +225,6 @@
     </aside><!-- End Sidebar-->
 
     <main id="main" class="main">
-        <!--search bar for small devices-->
-    <div class="d-lg-none position-sticky top-0 start-0 w-100 bg-white shadow-sm p-2 z-3">
-    <form class="search-form d-flex align-items-center w-100" method="POST" action="#">
-        <input type="text" class="form-control me-2" name="query" placeholder="Search" title="Enter search keyword">
-        <button type="submit" class="btn btn-primary" title="Search">
-        <i class="bi bi-search"></i>
-        </button>
-    </form>
-    </div>
 
     <div class="pagetitle">
 
@@ -278,6 +308,104 @@
     </ul>
 </div>
 
+<!-- Messaging Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+               <h5 class="card-title mb-0 text-info">Messaging Center</h5>
+                <div class="dropdown d-inline-block">
+                    <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="mentorDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-lines-fill"></i> Message a Mentor
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="mentorDropdown">
+                        {% for mentor in mentors %}
+                            <li>
+                                <a class="dropdown-item" href="javascript:void(0);" onclick="startDmWithMentor({{ mentor.id }})">
+                                    {{ mentor.name }}
+                                </a>
+                            </li>
+                        {% empty %}
+                            <li><span class="dropdown-item text-muted">No mentors available</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+             </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Conversations List -->
+                    <div class="col-md-4 border-end" style="max-height: 400px; overflow-y: auto;">
+                        <div class="conversation-search mb-3">
+                            <input type="text" class="form-control" placeholder="Search conversations..." 
+                                   onkeyup="filterConversations(this.value)">
+                        </div>
+                        <div id="studentConversations">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Loading conversations...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Area -->
+                    <div class="col-md-8">
+                        <div id="studentChatHeader" class="chat-header p-3 border-bottom">
+                            <h6 class="mb-0 text-muted">Select a conversation to start messaging</h6>
+                        </div>
+                        
+                        <div id="studentChatMessages" class="chat-messages" style="height: 300px; overflow-y: auto;">
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-chat-left-text display-4"></i>
+                                    <p class="mt-2">No conversation selected</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input p-3 border-top">
+                            <div class="input-group">
+                                <input type="text" id="studentMessageInput" class="form-control" 
+                                       placeholder="Type a message..." disabled>
+                                <button id="studentSendButton" class="btn btn-primary" disabled>
+                                    <i class="bi bi-send"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mentors List Modal -->
+ {% if studentinfo %}
+<script id="student-data" type="application/json">
+    { "id": {{ studentinfo.id }} }
+</script>
+{% endif %}
+
+<div id="mentorsModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-info">Select a Mentor to Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="mentorsList" style="max-height: 300px; overflow-y: auto;">
+                    <div class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden text-secondary">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 
 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
@@ -337,6 +465,7 @@
 
   <!-- Template Main JS File -->
   <script src="{% static 'asset/js/main.js' %}"></script>
+  <script src="{% static 'asset/js/chats.js' %}"></script>
   <script>
 
    function openDeleteModal(deleteUrl) {

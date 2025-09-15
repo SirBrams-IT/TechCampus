@@ -276,7 +276,7 @@
 
          <div class="tab-pane fade" id="profile-change-password"><br>
 
-       <form method="POST" >
+       <form method="POST"  action="{% url 'change-password' admininfo.id %}">
         {% csrf_token %}
         <div class="mb-3">
             <label for="currentPassword" class="form-label">Current Password</label>

@@ -1,7 +1,7 @@
 import json
 from django.http import FileResponse
 from django.db import transaction
-from datetime import timezone
+from django.utils import timezone
 import requests
 from django.db.models import Q 
 from datetime import timedelta
@@ -18,14 +18,15 @@ from django.shortcuts import  redirect,render, get_object_or_404
 from django.contrib.auth import logout, authenticate
 from django.contrib import messages
 from TechApp.forms import  EnrollmentForm, StudentForm,StudentEditForm, MentorEditForm, AssignmentForm,SubmissionForm,AdminForm, CourseForm, ModuleForm, LessonForm
-from TechApp.models import Course, Member, Contact, AdminLogin, Assignment, Submission ,Module, Lesson,Topic, Subtopic
+from TechApp.models import Course, Member, Contact,Conversation, Message, AdminLogin, Assignment, Submission ,Module, Lesson,Topic, Subtopic
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 import random
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.hashers import make_password
-from django.utils import timezone
-from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 
 
@@ -178,6 +179,7 @@ def login(request):
 
 def student_dashboard(request):
     username = request.session.get('username')
+    
 
     if not username:
         return redirect('login')
@@ -188,7 +190,9 @@ def student_dashboard(request):
         messages.error(request, "User not found.")
         return redirect('login')
 
-    return render(request, 'student_dashboard.html', {'studentinfo': studentinfo})
+    mentors = AdminLogin.objects.all()
+
+    return render(request, 'student_dashboard.html', {'studentinfo': studentinfo, 'mentors':mentors})
 
 def logout_student(request):
     logout(request)
@@ -200,24 +204,25 @@ def admin_login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        if AdminLogin.objects.filter(username=username, password=password).exists():
-            admininfo = AdminLogin.objects.filter(username=username).first()
+        # Get the admin info by username
+        admininfo = AdminLogin.objects.filter(username=username).first()
 
+        if admininfo and check_password(password, admininfo.password):
             request.session['username'] = username
             request.session['admin_id'] = admininfo.id
 
-            messages.success(request, "Login successful! Welcome to the admin dashboard.")  # Set success message
-            return redirect('admin_dashboard')  # Redirect with message
+            messages.success(request, "Login successful! Welcome to the admin dashboard.")  
+            return redirect('admin_dashboard')
 
+        # Superuser login via Django’s auth
         user = authenticate(request, username=username, password=password)
-        if user is not None:
-            if user.is_superuser:
-                auth_login(request, user)
+        if user is not None and user.is_superuser:
+            auth_login(request, user)
+            messages.success(request, "Login successful! Redirecting to admin panel.")  
+            return redirect('/admin/')
 
-                messages.success(request, "Login successful! Redirecting to admin panel.")  # Set success message
-                return redirect('/admin/')  # Redirect with message
-
-        messages.error(request, "Invalid username or password")  # Error message for incorrect login
+        # If nothing matched
+        messages.error(request, "Invalid username or password")
 
     return render(request, 'mentor_login.html')
 
@@ -1235,21 +1240,30 @@ def change_password_m(request, id):
         new_password = request.POST.get("newPassword")
         confirm_password = request.POST.get("confirmNewPassword")
 
-        if not check_password(current_password, infos.password):
-            messages.error(request, "Current password is incorrect.")
+        # 1. Check current password
+        if not infos.check_password(current_password):
+            messages.error(request, "❌ Current password is incorrect.")
             return redirect("mentor_profile", admininfo=id)
 
+        # 2. Confirm new password match
         if new_password != confirm_password:
-            messages.error(request, "New passwords do not match.")
+            messages.error(request, "⚠️ New passwords do not match.")
             return redirect("mentor_profile", admininfo=id)
 
-        infos.password = make_password(new_password)
-        infos.save()
+        # 3. Prevent reusing the same password
+        if infos.check_password(new_password):
+            messages.warning(request, "⚠️ New password cannot be the same as current password.")
+            return redirect("mentor_profile", admininfo=id)
 
-        messages.success(request, "Password updated successfully!")
+        # 4. Save new hashed password
+        infos.set_password(new_password)
+
+        messages.success(request, "✅ Password updated successfully!")
         return redirect("mentor_profile", admininfo=id)
 
+    messages.error(request, "Invalid request method.")
     return redirect("mentor_profile", admininfo=id)
+
 
 @csrf_protect
 def delete_account_m(request, id):
@@ -1357,3 +1371,226 @@ def contact_message(request):
         'sort_option': sort_option,
         
     })
+
+# send messages view
+@csrf_exempt
+@require_http_methods(["POST"])
+def send_message(request, conversation_id):
+    try:
+        data = json.loads(request.body)
+        content = data.get('content')
+        sender_type = data.get('sender_type')  # 'student' or 'mentor'
+        sender_id = data.get('sender_id')
+        
+        if not content or not sender_type or not sender_id:
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+        
+        conversation = get_object_or_404(Conversation, id=conversation_id)
+        
+        # Create the message
+        message = Message(conversation=conversation, content=content)
+        
+        if sender_type == 'student':
+            student = get_object_or_404(Member, id=sender_id)
+            # Verify student is in conversation
+            if student not in conversation.participants.all():
+                return JsonResponse({'error': 'Not authorized'}, status=403)
+            message.sender_member = student
+        else:
+            mentor = get_object_or_404(AdminLogin, id=sender_id)
+            # Verify mentor is in conversation
+            if mentor not in conversation.admin_participants.all():
+                return JsonResponse({'error': 'Not authorized'}, status=403)
+            message.sender_admin = mentor
+        
+        message.save()
+        conversation.updated_at = timezone.now()
+        conversation.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message_id': message.id,
+            'timestamp': message.timestamp.isoformat()
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_conversation_messages(request, conversation_id):
+    try:
+        user_type = request.GET.get('user_type')
+        user_id = request.GET.get('user_id')
+        
+        if not user_type or not user_id:
+            return JsonResponse({'error': 'Missing user identification'}, status=400)
+        
+        conversation = get_object_or_404(Conversation, id=conversation_id)
+        
+        # Verify user has access to this conversation
+        if user_type == 'student':
+            student = get_object_or_404(Member, id=user_id)
+            if student not in conversation.participants.all():
+                return JsonResponse({'error': 'Not authorized'}, status=403)
+        else:
+            mentor = get_object_or_404(AdminLogin, id=user_id)
+            if mentor not in conversation.admin_participants.all():
+                return JsonResponse({'error': 'Not authorized'}, status=403)
+        
+        # Get messages
+        messages = conversation.messages.all().order_by('timestamp')
+        
+        # Mark messages as read for the requesting user
+        if user_type == 'student':
+            conversation.messages.exclude(sender_member__isnull=True).update(read=True)
+        else:
+            conversation.messages.exclude(sender_admin__isnull=True).update(read=True)
+        
+        messages_data = []
+        for msg in messages:
+            messages_data.append({
+                'id': msg.id,
+                'content': msg.content,
+                'sender_name': msg.get_sender_name(),
+                'sender_type': msg.get_sender_type(),
+                'timestamp': msg.timestamp.isoformat(),
+                'is_own': (user_type == 'student' and msg.sender_member and msg.sender_member.id == int(user_id)) or 
+                          (user_type == 'mentor' and msg.sender_admin and msg.sender_admin.id == int(user_id))
+            })
+        
+        return JsonResponse({'messages': messages_data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def start_dm(request):
+    try:
+        data = json.loads(request.body)
+        student_id = data.get('student_id')
+        mentor_id = data.get('mentor_id')
+        
+        if not student_id or not mentor_id:
+            return JsonResponse({'error': 'Missing student or mentor ID'}, status=400)
+        
+        student = get_object_or_404(Member, id=student_id)
+        mentor = get_object_or_404(AdminLogin, id=mentor_id)
+        
+        # Check if DM already exists
+        existing_dm = Conversation.objects.filter(
+            conversation_type='dm',
+            participants=student,
+            admin_participants=mentor
+        ).first()
+        
+        if existing_dm:
+            return JsonResponse({'conversation_id': existing_dm.id})
+        
+        # Create new DM
+        dm = Conversation(conversation_type='dm')
+        dm.save()
+        dm.participants.add(student)
+        dm.admin_participants.add(mentor)
+        
+        return JsonResponse({'conversation_id': dm.id})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_user_conversations(request):
+    try:
+        user_type = request.GET.get('user_type')
+        user_id = request.GET.get('user_id')
+        
+        if not user_type or not user_id:
+            return JsonResponse({'error': 'Missing user identification'}, status=400)
+        
+        if user_type == 'student':
+            user = get_object_or_404(Member, id=user_id)
+            conversations = user.conversations.all()
+        else:
+            user = get_object_or_404(AdminLogin, id=user_id)
+            conversations = user.conversations.all()
+        
+        conversations_data = []
+        for conv in conversations:
+            last_message = conv.messages.last()
+            unread_count = conv.messages.filter(read=False).count()
+            
+            # Get conversation name and other participant info
+            if conv.conversation_type == 'dm':
+                # For DMs, get the other participant's name
+                if user_type == 'student':
+                    other_participants = list(conv.admin_participants.all())
+                    name = other_participants[0].name if other_participants else "Unknown"
+                else:
+                    other_participants = list(conv.participants.all())
+                    name = other_participants[0].name if other_participants else "Unknown"
+            else:
+                # For forums, use the forum name
+                name = conv.name
+            
+            conversations_data.append({
+                'id': conv.id,
+                'name': name,
+                'type': conv.conversation_type,
+                'last_message': last_message.content if last_message else '',
+                'last_message_time': last_message.timestamp if last_message else conv.updated_at,
+                'unread_count': unread_count
+            })
+        
+        return JsonResponse({'conversations': conversations_data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_forum(request):
+    try:
+        data = json.loads(request.body)
+        name = data.get('name')
+        mentor_id = data.get('mentor_id')
+        
+        if not name or not mentor_id:
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+        
+        mentor = get_object_or_404(AdminLogin, id=mentor_id)
+        
+        # Create forum
+        forum = Conversation(conversation_type='forum', name=name)
+        forum.save()
+        forum.admin_participants.add(mentor)
+        
+        # Add all students to the forum
+        all_students = Member.objects.all()
+        for student in all_students:
+            forum.participants.add(student)
+        
+        return JsonResponse({'forum_id': forum.id})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_available_mentors(request):
+    try:
+        mentors = AdminLogin.objects.all()
+        mentors_data = [{
+            'id': mentor.id,
+            'name': mentor.name,
+            'username': mentor.username,
+            'email': mentor.email
+        } for mentor in mentors]
+        
+        return JsonResponse({'mentors': mentors_data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+#notifications
+def latest_messages(request):
+    messages_count = Contact.objects.count()  # or filter for unread if you track it
+    latest_messages = Contact.objects.order_by('-created_at')[:5]
+    return {
+        'messages_count': messages_count,
+        'latest_messages': latest_messages,
+    }    

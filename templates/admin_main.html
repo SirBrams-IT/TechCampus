@@ -29,33 +29,110 @@
 
 
 </head>
+<style>
+     .notifications {
+        max-width: 700px; /* Adjust dropdown width */
+        max-height: 500px;
+        overflow-y: auto;
+        border-radius: 10px;
+    }
 
+    .notification-item:hover {
+        background: #f8f9fa;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .dropdown-header strong {
+        font-size: 14px;
+    }
+
+    .dropdown-footer a {
+        text-decoration: none;
+    }
+
+    .dropdown-footer a:hover {
+        text-decoration: underline;
+    }
+    
+</style>
 <body>
 
- <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy; max-height: 100px">
-
+   <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy; max-height: 100px;">
     <!-- Sidebar Toggle -->
-    <i class="bi bi-list toggle-sidebar-btn me-2"></i>
-    <!-- title -->
-    <div class="d-flex">
-        <a href="#" class="logo d-flex align-items-center">
-            <img src="{% static 'asset/img/image.png' %}" alt="title" class="text-uppercase text-white" id="titles">
+    <i class="bi bi-list toggle-sidebar-btn me-2" ></i>
 
-            </a>
+    <!-- logo-->
+    <img src="{% static 'assets/img/logo.png' %}" alt="logo"
+       class="me-2"
+         style="height:45px; width:45px; background-color:dodgerblue; padding:4px; border-radius:50%; object-fit:contain;">
+
+    <!-- title for desktops -->
+    <div class="d-flex">
+        <a href="#" class="logo d-flex align-items-center d-none d-lg-block">
+            <img src="{% static 'asset/img/image.png' %}" alt="title" class="text-uppercase text-white " id="titles">
+        </a>
     </div>
 
-    <!-- Search Bar for large devices-->
-    <div class="search-bar " style="margin-left: 250px;">
+     <!-- title for mobiles -->
+    <div class="d-flex d-block d-lg-none">
+            <h1 class="text-uppercase text-white text-center mt-2" > STVC</h1>
+        
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar " style="margin-left: 100px;">
         <form class="search-form d-flex align-items-center" method="POST" action="#">
             <input type="text" name="query" placeholder="Search" title="Enter search keyword">
             <button type="submit" title="Search"><i class="bi bi-search"></i></button>
         </form>
     </div>
+     
+      <!-- Notification Dropdown -->
+   <div class="nav-item dropdown " style="margin-left: 10px;">
+    <a class="nav-link nav-icon position-relative" href="#" data-bs-toggle="dropdown">
+        <i class="bi bi-bell fs-5 text-white pt-5"></i> <!-- Bell Icon -->
+        {% if messages_count > -1 %}
+        <span class="badge bg-warning position-absolute top-0 start-100 translate-middle rounded-pill">
+            {{ messages_count }}
+        </span>
+        {% endif %}
+    </a>
 
-            <!-- Profile Dropdown (Desktop Only) -->
-        <nav class="header-nav ms-auto d-none d-lg-block">
+    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications shadow-lg  mt-3" style="margin-left: 10px" >
+        <li class="dropdown-header bg-light p-3 border-bottom">
+            <strong >You have {{ messages_count }} unread messages</strong>
+            <a href="{% url 'latest_messages' %}" class="ms-2">
+                <span class="badge rounded-pill bg-primary p-2">View All</span>
+            </a>
+        </li>
+
+        {% if latest_messages %}
+            {% for msg in latest_messages %}
+            <li class="notification-item d-flex align-items-start p-3">
+                <i class="bi bi-envelope text-primary fs-4 me-3"></i>
+                <div>
+                    <h6 class="mb-1 text-black">{{ msg.name }}</h6>
+                    <p class="mb-1 text-muted" style="max-width: 400px;word-wrap: break-word">{{ msg.message|truncatewords:10 }}</p>
+                    <small class="text-secondary">{{ msg.created_at|timesince }} ago</small>
+                </div>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            {% endfor %}
+        {% else %}
+            <li class="p-3 text-center text-muted">No new messages</li>
+        {% endif %}
+
+        <li class="dropdown-footer text-center p-2">
+            <a href="" class="text-primary fw-bold">See all messages</a>
+        </li>
+    </ul>
+    </div>
+
+     <!-- Profile Dropdown -->
+        <nav class="header-nav ms-auto ">
         <ul class="d-flex align-items-center">
-            <li class="nav-item dropdown pe-3 profile-container me-3" style="margin-left: 20px">
+            <li class="nav-item dropdown pe-3 profile-container me-1" style="margin-left:3px">
             <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
                 
                 <!-- Profile Wrapper with Status Dot -->
@@ -70,6 +147,7 @@
 
                 <span class="d-md-block dropdown-toggle ps-2 me-3">Hi, {{ admininfo.username }}</span>
             </a>
+
                 <!-- Dropdown Menu -->
                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
                     <li class="dropdown-header">
@@ -102,27 +180,15 @@
                 </ul>
             </li>
         </ul>
-    </nav>
+        </nav>
     </header>
 
+
+    <!-- Sidebar -->
     <aside id="sidebar" class="sidebar">
-        <!-- Profile Image (Mobile Only) -->
-        <div class="d-block d-lg-none text-center my-3">
-           <!-- Profile Wrapper with Status Dot -->
-        <div class="position-relative d-inline-block">
-          <!-- Profile Image -->
-          <img src="{% if admininfo.profile_image and admininfo.profile_image.url %}{{ admininfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
-               alt="Profile" class="rounded-circle profile-img" width="55" height="55">
-         <!-- Status Dot -->
-        <span class="status-dot bg-success"></span>
-
-        </div>
-                <br>
-                <span class="d-md-block text-primary  ps-2 me-3">Hi, {{ admininfo.username }}</span><br>
-                <span class=" bg-black text-white current-time" ></span>
-        </div>
-
-        <ul class="sidebar-nav" id="sidebar-nav">
+     <span class=" bg-black text-white current-time ms-5" ></span>
+    <!-- Sidebar Menu -->
+    <ul class="sidebar-nav" id="sidebar-nav">
 
         <li class="nav-item">
             <a class="nav-link" href="{% url 'admin_dashboard' %}">
@@ -144,7 +210,7 @@
             </a>
         </li>
 
-         <li class="nav-item">
+        <li class="nav-item">
             <a class="nav-link collapsed" href="{% url 'add_student' admininfo.id %}">
                 <i class="bi bi-person-plus fs-4"></i><span>Add Students</span>
             </a>
@@ -180,7 +246,7 @@
             </a>
         </li>
 
-        <li class="nav-item">
+        <li class="nav-item ">
             <a class="nav-link collapsed text-danger" href="{% url 'logout_mentor' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
                 <i class="bi bi-box-arrow-right text-danger"></i><span>Signout</span>
             </a>
@@ -188,6 +254,7 @@
 
     </ul>
 </aside>
+
 <main id="main" class="main">
 
  {% block content %}

@@ -74,7 +74,17 @@ urlpatterns = [
     path('registered-students/', views.registered_students, name='registered_students'),
      #contact message
     path('contact_messages/', views.contact_message, name='contact_messages'),
+    
+    #messaging urls
+    path('api/send_message/<int:conversation_id>/', views.send_message, name='send_message'),
+    path('api/messages/<int:conversation_id>/', views.get_conversation_messages, name='get_messages'),
+    path('api/start_dm/', views.start_dm, name='start_dm'),
+    path('api/conversations/', views.get_user_conversations, name='get_conversations'),
+    path('api/create_forum/', views.create_forum, name='create_forum'),
+    path('api/mentors/', views.get_available_mentors, name='get_mentors'),
 
+    #notification
+    path('latest_messages', views.latest_messages, name='latest_messages'),
     ]
 
 
