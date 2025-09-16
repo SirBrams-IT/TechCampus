@@ -96,23 +96,28 @@ TEMPLATES = [
 # Detect environment
 ENVIRONMENT = os.environ.get("DJANGO_ENV", "development")  # default is development
 
+ENVIRONMENT = os.environ.get("DJANGO_ENV", "development")
+
 if ENVIRONMENT == "production":
-    # Production: use Redis
+    REDIS_URL = os.environ.get("REDIS_URL")
+    if not REDIS_URL:
+        raise ValueError("REDIS_URL is required in production")
+    
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
-                "hosts": [(os.environ.get("REDIS_HOST", "127.0.0.1"), int(os.environ.get("REDIS_PORT", 6379)))],
+                "hosts": [REDIS_URL],
             },
         },
     }
 else:
-    # Development: fallback to in-memory layer
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer"
         }
     }
+
 
 WSGI_APPLICATION = "TechCampuss.wsgi.application"
 ASGI_APPLICATION = 'TechCampuss.asgi.application'
