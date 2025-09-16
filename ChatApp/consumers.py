@@ -4,12 +4,13 @@ import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.utils import timezone
-from TechApp.models import Conversation, Member, AdminLogin, Message
+
 
 logger = logging.getLogger(__name__)
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        from TechApp.models import Conversation, Member, AdminLogin, Message
         try:
             # Extract URL kwargs
             self.conversation_id = self.scope['url_route']['kwargs']['conversation_id']
