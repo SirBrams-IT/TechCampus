@@ -322,6 +322,8 @@
                         {% for mentor in mentors %}
                             <li>
                                 <a class="dropdown-item" href="javascript:void(0);" onclick="startDmWithMentor({{ mentor.id }})">
+                                   <img src="{% if mentor.profile_image and mentor.profile_image.url %}{{ mentor.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
+                                     alt="Profile"class="rounded-circle me-2" style="width:18px; height:18px; object-fit:cover;">
                                     {{ mentor.name }}
                                 </a>
                             </li>

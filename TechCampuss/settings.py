@@ -19,7 +19,7 @@ GETOTP_API_KEY = config("GETOTP_API_KEY")
 GETOTP_AUTH_TOKEN = config("GETOTP_AUTH_TOKEN")
 
 # 🚨 Security
-DEBUG = True
+DEBUG = False
 
 USE_X_FORWARDED_HOST = True
 ALLOWED_HOSTS = [
@@ -37,8 +37,9 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "channels", #chanel for messaging
     "django.contrib.staticfiles",
+    "channels",
+    "daphne",
     "TechApp",
     "cloudinary",
     "cloudinary_storage",

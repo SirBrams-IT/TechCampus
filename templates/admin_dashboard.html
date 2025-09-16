@@ -593,11 +593,33 @@
                     <button onclick="createNewForum()" class="btn btn-sm btn-success me-2">
                         <i class="bi bi-chat-square-text"></i> Create Forum
                     </button>
-                    <button onclick="showStudentsList()" class="btn btn-sm btn-primary">
-                        <i class="bi bi-plus-circle"></i> New Message
-                    </button>
+
+                    <!-- New Message Dropdown -->
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-primary dropdown-toggle" type="button" 
+                                id="studentsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-lines-fill"></i> Message a Student
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="studentsDropdown">
+                            {% for student in member %}
+                               <li>
+                               <a class="dropdown-item d-flex align-items-center" 
+                                 href="javascript:void(0);" 
+                                onclick="startDmWithStudent({{ student.id }})">
+
+                             <img src="{% if student.profile_image and student.profile_image.url %}{{ student.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
+                            alt="Profile"class="rounded-circle me-2" style="width:18px; height:18px; object-fit:cover;">
+                             {{ student.name }}
+                          </a>
+                         </li>
+                            {% empty %}
+                                <li><span class="dropdown-item text-muted">No students available</span></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
             </div>
+
             <div class="card-body">
                 <div class="row">
                     <!-- Conversations List -->
@@ -647,47 +669,28 @@
     </div>
 </div>
 
-<!-- Modals for messaging -->
+{% if admininfo %}
+<script id="mentor-data" type="application/json">
+    { "id": {{ admininfo.id }} }
+</script>
+{% endif %}
+
+<!-- Students List Modal -->
 <div id="studentsModal" class="modal fade" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Select a Student to Message</h5>
+                <h5 class="modal-title text-info">Select a Student to Message</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div id="studentsList" style="max-height: 300px; overflow-y: auto;">
                     <div class="text-center py-3">
                         <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden text-secondary">Loading...</span>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="forumModal" class="modal fade" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create New Forum</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="forumName" class="form-label">Forum Name</label>
-                    <input type="text" class="form-control" id="forumName" placeholder="Enter forum name">
-                </div>
-                <div class="mb-3">
-                    <label for="forumMessage" class="form-label">Initial Message</label>
-                    <textarea class="form-control" id="forumMessage" rows="3" placeholder="Enter your message"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="submitForum()">Create Forum</button>
             </div>
         </div>
     </div>
@@ -744,8 +747,8 @@
   <!-- Template Main JS File -->
   <script src="{% static 'asset/js/main.js' %}"></script>
   <script src="{% static 'asset/js/chat.js' %}"></script>
-  <script>
-
+  <script>                          
+        
         // Progress bar for success message
         setTimeout(function() {
             var successDiv = document.getElementById("success-message");
