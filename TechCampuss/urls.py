@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     
     path('', include('TechApp.urls')),  
+    path('', include('ChatApp.urls')), 
 ]
 
 if settings.DEBUG:

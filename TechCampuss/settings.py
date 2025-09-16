@@ -11,6 +11,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 environ.Env.read_env()
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
+
+
 # 🔐 Secrets & API Keys
 SECRET_KEY = config("SECRET_KEY")
 
@@ -40,7 +55,8 @@ INSTALLED_APPS = [
     "daphne",
     "django.contrib.staticfiles",
     "channels",
-    "TechApp",
+    "TechApp", # Handles the rest of functionality
+    "ChatApp", #for messaging
     "cloudinary",
     "cloudinary_storage",
     
@@ -77,14 +93,26 @@ TEMPLATES = [
     },
 ]
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+# Detect environment
+ENVIRONMENT = os.environ.get("DJANGO_ENV", "development")  # default is development
+
+if ENVIRONMENT == "production":
+    # Production: use Redis
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [(os.environ.get("REDIS_HOST", "127.0.0.1"), int(os.environ.get("REDIS_PORT", 6379)))],
+            },
         },
-    },
-}
+    }
+else:
+    # Development: fallback to in-memory layer
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
 
 WSGI_APPLICATION = "TechCampuss.wsgi.application"
 ASGI_APPLICATION = 'TechCampuss.asgi.application'

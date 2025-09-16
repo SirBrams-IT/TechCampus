@@ -1133,6 +1133,17 @@ h6 {
   }
 }
 
+
+/* Rotate effect */
+.rotate {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .footer {
   padding: 20px 0;
   font-size: 14px;
