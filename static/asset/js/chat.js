@@ -1,4 +1,3 @@
-
 /* ---------- Helper functions ---------- */
 function getMentorData() {
   const el = document.getElementById("mentor-data");
@@ -39,7 +38,8 @@ class MentorChat {
   constructor() {
     this.socket = null;
     this.currentConversation = null;
-    this.conversationHistory = {}; // stores all chat history
+    this.conversationHistory = {};
+    this.page = {};
 
     const mentorData = getMentorData();
     this.mentorId = mentorData?.id || null;
@@ -54,6 +54,15 @@ class MentorChat {
 
     if (this.sendButton) this.sendButton.addEventListener('click', () => this.sendMessage());
     if (this.messageInput) this.messageInput.addEventListener('keypress', e=>{if(e.key==='Enter') this.sendMessage();});
+
+    // infinite scroll for older messages
+    if (this.chatMessages) {
+      this.chatMessages.addEventListener('scroll', () => {
+        if (this.chatMessages.scrollTop === 0) {
+          this.loadOlderMessages();
+        }
+      });
+    }
 
     if(this.mentorId) this.loadConversations();
   }
@@ -104,21 +113,9 @@ class MentorChat {
             <div class="small text-secondary">${lastTime}</div>
           </div>
         </div>
-        <div class="d-flex align-items-center gap-1">
-          ${c.unread_count>0?`<span class="badge bg-primary">${c.unread_count}</span>`:''}
-          <button class="btn btn-sm btn-outline-danger" onclick="window.mentorChat.removeConversation(${c.id},event)">
-            <i class="bi bi-trash"></i>
-          </button>
-        </div>
       </div>`;
     });
     this.conversationsContainer.innerHTML = html;
-  }
-
-  removeConversation(id,e){
-    e.stopPropagation();
-    const el = document.querySelector(`.conversation-item[data-id="${id}"]`);
-    if(el) el.remove();
   }
 
   async selectConversation(conv){
@@ -127,6 +124,7 @@ class MentorChat {
     if(el) el.classList.add('active');
 
     this.currentConversation = conv;
+    this.page[conv.id] = 1;
     this.chatHeader.innerHTML = `
       <h6 class="mb-0">
         <i class="bi bi-chat-left-text me-2"></i>${conv.name || 'Conversation'}
@@ -136,7 +134,7 @@ class MentorChat {
     if(this.sendButton) this.sendButton.disabled=false;
 
     this.connectToConversation(conv.id);
-    await this.loadMessages(conv.id);
+    await this.loadMessages(conv.id, 1);
   }
 
   connectToConversation(convId){
@@ -151,41 +149,51 @@ class MentorChat {
     this.socket.onmessage = e=>{
       try{
         const d=JSON.parse(e.data);
+        // Always display via server echo (avoid duplicates)
         this.displayMessage({
           message:d.message,
           sender_name:d.sender_name,
           timestamp:d.timestamp,
-          is_own:d.is_own
-        });
+          is_own:d.is_own,
+          status:d.status||"sent"
+        }, "append");
       }catch(err){console.error(err);}
     };
     this.socket.onerror = err=>console.error("WebSocket error",err);
     this.socket.onclose = ev=>console.warn("WebSocket closed",ev);
   }
 
-  async loadMessages(convId){
+  async loadMessages(convId, page=1){
     try{
-      const resp = await fetch(`/api/messages/${convId}/?user_type=mentor&user_id=${this.mentorId}`);
+      if(page===1){
+        this.chatMessages.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div> Loading...</div>`;
+      }
+
+      const resp = await fetch(`/api/messages/${convId}/?user_type=mentor&user_id=${this.mentorId}&page=${page}`);
       const data = await resp.json();
       if(data.error){ this.chatMessages.innerHTML=`<div class="text-center py-3 text-danger">Error loading messages</div>`; return; }
 
-      this.chatMessages.innerHTML='';
+      if(page===1 && !this.conversationHistory[convId]) this.chatMessages.innerHTML='';
+
       if(!data.messages || !data.messages.length){
-        this.chatMessages.innerHTML = `<div class="text-center py-4 text-muted">
-          <i class="bi bi-chat-left-text display-4"></i>
-          <p class="mt-2">No messages yet</p>
-          <p class="small">Start the conversation by sending a message</p>
-        </div>`;
+        if(page===1){
+          this.chatMessages.innerHTML = `<div class="text-center py-4 text-muted">
+            <i class="bi bi-chat-left-text display-4"></i>
+            <p class="mt-2">No messages yet</p>
+            <p class="small">Start the conversation by sending a message</p>
+          </div>`;
+        }
       }else{
         data.messages.forEach(msg=>{
           this.displayMessage({
             message: msg.content||msg.message||msg,
             sender_name: msg.sender_name,
             timestamp: msg.timestamp,
-            is_own: !!msg.is_own
-          });
+            is_own: !!msg.is_own,
+            status: msg.status || "delivered"
+          }, page===1 ? "append" : "prepend");
         });
-        this.chatMessages.scrollTop=this.chatMessages.scrollHeight;
+        if(page===1) this.chatMessages.scrollTop=this.chatMessages.scrollHeight;
       }
     }catch(err){
       console.error(err);
@@ -193,35 +201,78 @@ class MentorChat {
     }
   }
 
+  async loadOlderMessages(){
+    if(!this.currentConversation) return;
+    const convId = this.currentConversation.id;
+    this.page[convId] = (this.page[convId]||1) + 1;
+    const oldHeight = this.chatMessages.scrollHeight;
+    await this.loadMessages(convId, this.page[convId]);
+    const newHeight = this.chatMessages.scrollHeight;
+    this.chatMessages.scrollTop = newHeight - oldHeight;
+  }
+
   sendMessage(){
     if(!this.messageInput) return;
     const msg = this.messageInput.value.trim();
     if(!msg) return;
     if(this.socket && this.socket.readyState===WebSocket.OPEN){
-      this.socket.send(JSON.stringify({message:msg,sender_type:'mentor',sender_id:this.mentorId}));
+      const payload = {message:msg,sender_type:'mentor',sender_id:this.mentorId,status:"sent"};
+      this.socket.send(JSON.stringify(payload));
       this.messageInput.value='';
     }else{ alert('Connection error. Please try again.'); }
   }
 
-  displayMessage(data){
+  displayMessage(data, mode="append"){
     if(!this.chatMessages) return;
-    if(this.chatMessages.querySelector('.text-muted')) this.chatMessages.innerHTML='';
+
+    const exists = Array.from(this.chatMessages.querySelectorAll('.message')).some(el=>{
+      return el.dataset.timestamp === data.timestamp && el.dataset.sender === data.sender_name;
+    });
+    if(exists) {
+      // Update existing message status instead of duplicating
+      const existing = this.chatMessages.querySelector(`.message[data-timestamp="${data.timestamp}"][data-sender="${data.sender_name}"]`);
+      if(existing){
+        const statusEl = existing.querySelector('.msg-status');
+        if(statusEl) statusEl.innerHTML = this.getStatusIcon(data.status, data.is_own);
+      }
+      return;
+    }
 
     const div = document.createElement('div');
     div.className = `message mb-2 d-flex ${data.is_own?'justify-content-end':'justify-content-start'}`;
-    div.innerHTML = `<div class="${data.is_own?'bg-primary text-white':'bg-light text-dark'} p-2 rounded" style="max-width:70%;">
-      ${!data.is_own?`<div class="fw-semibold">${data.sender_name||''}</div>`:''}
+    div.dataset.timestamp = data.timestamp;
+    div.dataset.sender = data.sender_name;
+
+    const statusIcon = this.getStatusIcon(data.status, data.is_own);
+
+    div.innerHTML = `<div class="${data.is_own?'bg-primary text-white':'bg-light text-dark'} p-2 rounded shadow-sm" style="max-width:70%;">
       <div>${data.message}</div>
-      <div class="small text-muted text-end">${data.timestamp?new Date(data.timestamp).toLocaleTimeString():''}</div>
+      <div class="small text-muted text-end">
+        ${data.timestamp?new Date(data.timestamp).toLocaleTimeString():''} 
+        <span class="msg-status">${statusIcon}</span>
+      </div>
     </div>`;
-    this.chatMessages.appendChild(div);
-    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+
+    if(mode==="prepend"){
+      this.chatMessages.insertBefore(div,this.chatMessages.firstChild);
+    }else{
+      this.chatMessages.appendChild(div);
+      this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
 
     if(this.currentConversation){
       const cid = this.currentConversation.id;
       if(!this.conversationHistory[cid]) this.conversationHistory[cid]=[];
       this.conversationHistory[cid].push(data);
     }
+  }
+
+  getStatusIcon(status, isOwn){
+    if(!isOwn) return "";
+    if(status==="sent") return `<i class="bi bi-check"></i>`;
+    if(status==="delivered") return `<i class="bi bi-check2-all"></i>`;
+    if(status==="read") return `<i class="bi bi-check2-all text-primary"></i>`;
+    return "";
   }
 }
 
