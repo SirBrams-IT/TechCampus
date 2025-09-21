@@ -183,6 +183,13 @@
     </li>
 
     <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'mycourses' studentinfo.id %}">
+          <i class="bi bi-journal-bookmark"></i>
+          <span>My Courses</span>
+        </a>
+      </li>
+
+    <li class="nav-item">
         <a class="nav-link collapsed" href="{% url 'learning' studentinfo.id %}">
             <i class="bi bi-book"></i><span>Learning</span>
         </a>

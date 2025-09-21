@@ -268,13 +268,6 @@ def logout_mentor(request):
 def courses(request):
         return render(request, 'login.html')
 
-def available_courses(request,user_id):
-    studentinfo = get_object_or_404(Member, id=user_id)
-    return render(request,'available_courses.html',{'studentinfo':studentinfo})
-
-def payment(request,user_id):
-    studentinfo = get_object_or_404(Member, id=user_id)
-    return render(request, 'payment.html',{'studentinfo':studentinfo})
 
 def main(request):
     return render(request, 'main.html')
@@ -454,14 +447,43 @@ def delete_account_view(request, id):
 
     return redirect('register')
 
+# available courses
+def available_courses(request,user_id):
+    courses = Course.objects.select_related("mentor").all()
+    studentinfo = get_object_or_404(Member, id=user_id)
+    return render(request,'available_courses.html',{'studentinfo':studentinfo, 'courses':courses})
 
-def stk(request):
+#payments
+def payment(request, user_id, course_id):
+    studentinfo = get_object_or_404(Member, id=user_id)
+    course = get_object_or_404(Course, id=course_id)  # fetch course
+    return render(request, 'payment.html', {
+        'studentinfo': studentinfo,
+        'course': course,
+        'user_id': user_id,
+        'course_id': course_id
+        
+    })    
+
+#stk push 
+def stk(request, user_id, course_id):
+    student = get_object_or_404(Member, id=user_id)
+    course = get_object_or_404(Course, id=course_id)
+
     if request.method == "POST":
-        phone = request.POST['phone']
-        amount = request.POST['amount']
+        phone = request.POST.get('phone')
+        amount = course.amount  # ✅ fetch price from course model
+
+        # Convert Decimal → int
+        try:
+            amount = int(float(amount))
+        except Exception:
+            amount = 1  # fallback for safety
+
         access_token = MpesaAccessToken.validated_mpesa_access_token
         api_url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
-        headers = {"Authorization": "Bearer %s" % access_token}
+        headers = {"Authorization": f"Bearer {access_token}"}
+        
         payment_request = {
             "BusinessShortCode": LipanaMpesaPpassword.Business_short_code,
             "Password": LipanaMpesaPpassword.decode_password,
@@ -472,20 +494,24 @@ def stk(request):
             "PartyB": LipanaMpesaPpassword.Business_short_code,
             "PhoneNumber": phone,
             "CallBackURL": "https://sandbox.safaricom.co.ke/mpesa/",
-            "AccountReference": "SirBrams Tech Virtual Campus",
-            "TransactionDesc": "Virtual Campus Charges"
+            "AccountReference": f" SirBrams Tech Virtual Campus. For-{course.title}-{course.code}",   # ✅ course reference
+            "TransactionDesc": f"Payment for {course.title}-{course.code}",  # ✅ dynamic desc
         }
+
         response = requests.post(api_url, json=payment_request, headers=headers)
 
-        # Check the response status for success or failure
         if response.status_code == 200:
-            # Redirect to payment page with a success message
-            return redirect('/courses?status=success')
+            # ✅ Success → go to dashboard
+            return redirect('student_dashboard')
         else:
-            # Redirect to payment page with a failure message
-            return redirect('/payment?status=failure')
+            # ❌ Failure → reload payment page
+            return redirect(reverse('payment', args=[user_id, course_id]))
 
-    return render(request, 'payment.html')
+    # GET → render payment page with course details
+    return render(request, 'payment.html', {
+        "studentinfo": student,
+        "course": course
+    })
 
 
 def records(request, user_id):
@@ -532,6 +558,11 @@ def mentor_viewstatus(request):
         'form': form
     })
 
+#enrolled courses
+def enrolled_courses(request,user_id):
+    courses = Course.objects.select_related("student").all()
+    studentinfo = get_object_or_404(Member, id=user_id)
+    return render(request,'enrolled_courses.html',{'studentinfo':studentinfo, 'courses':courses})
 
 def student_assignments(request):
     # Fetch all assignments
@@ -868,25 +899,22 @@ def mentor_courses(request, user_id):
     courses = Course.objects.filter(mentor=admininfo)
 
     if request.method == "POST" and "add_course" in request.POST:
-        title = request.POST.get("title")
-        description = request.POST.get("description")
-
-        if title and description:
-            Course.objects.create(
-                title=title,
-                description=description,
-                mentor=admininfo,
-            )
+        form = CourseForm(request.POST, request.FILES)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.mentor = admininfo
+            course.save()
             messages.success(request, "Course added successfully!")
         else:
-            messages.error(request, "Please fill in all required fields.")
-
+            messages.error(request, "Please correct the errors below.")
         return redirect("mentor_courses", user_id=admininfo.id)
 
+    form = CourseForm()
     return render(request, "upload_courses.html", {
         "courses": courses,
         "admininfo": admininfo,
-        "user": admininfo,  # 👈 Added so admin_main.html works
+        "user": admininfo,  # for admin_main.html
+        "form": form,
     })
 
 # Add a new course

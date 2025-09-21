@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import models
 from cloudinary.models import CloudinaryField
-from django.contrib.auth.hashers import make_password, check_password,is_password_usable
+from django.contrib.auth.hashers import make_password, check_password, identify_hasher
 
 
 def generate_otp():
@@ -146,7 +146,7 @@ def validate_age(value):
     if age < 30 or age > 75:
         raise ValidationError(f'Age must be between 30 and 75 years. Current age: {age} years.')
 
-#mentor/admin model
+# Admin/Mentor Model
 class AdminLogin(models.Model):
     name = models.CharField(max_length=100)
     username = models.CharField(max_length=50, unique=True)
@@ -154,12 +154,14 @@ class AdminLogin(models.Model):
     id_number = models.CharField(max_length=20, unique=True)
     email = models.EmailField(unique=True)
     date_of_birth = models.DateField(validators=[validate_age])
-    gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')])
+    gender = models.CharField(
+        max_length=10,
+        choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')]
+    )
     profile_image = CloudinaryField('image', folder='admin_profiles', blank=True, null=True)
     password = models.CharField(max_length=250)
-    
 
-    # OTP Fields
+    # OTP fields
     otp_code = models.CharField(max_length=6, blank=True, null=True)
     otp_expires_at = models.DateTimeField(blank=True, null=True)
 
@@ -167,16 +169,17 @@ class AdminLogin(models.Model):
     def set_password(self, raw_password):
         """Hashes and sets the password."""
         self.password = make_password(raw_password)
-        self.save(update_fields=["password"])
 
     def check_password(self, raw_password):
         """Verifies a password against the stored hash."""
         return check_password(raw_password, self.password)
 
     def save(self, *args, **kwargs):
-        # Only hash if it's not already a valid hashed password
-        if not is_password_usable(self.password):
-            self.password = make_password(self.password)
+        # Ensure password is always hashed before saving
+        try:
+            identify_hasher(self.password)  # If it's a valid hash, fine
+        except ValueError:
+            self.password = make_password(self.password)  # Hash raw text
         super().save(*args, **kwargs)
 
     # 🔑 OTP methods
@@ -199,18 +202,18 @@ class AdminLogin(models.Model):
         self.otp_expires_at = None
         self.save(update_fields=["otp_code", "otp_expires_at"])
 
-     # methods for messaging
+    # Messaging methods
     def get_conversations(self):
         return self.conversations.all()
     
     def get_unread_count(self):
+        from messaging.models import Message  # import here to avoid circular import
         return Message.objects.filter(
             conversation__in=self.conversations.all()
-        ).exclude(sender_admin=self).filter(read=False).count()    
+        ).exclude(sender_admin=self).filter(read=False).count()
 
     def __str__(self):
         return self.name
-
 
 class Assignment(models.Model):
     title = models.CharField(max_length=255)
@@ -285,8 +288,11 @@ class Course(models.Model):
     description = models.TextField()
     code = models.CharField(max_length=20, unique=True, blank=True, null=True)
     mentor = models.ForeignKey("AdminLogin", on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Course fee in KES")
+    duration = models.CharField(max_length=50, help_text="e.g. '3 months', '10 weeks'")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True) 
+    course_images = CloudinaryField('image', folder='course_images', null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.code:
@@ -296,7 +302,8 @@ class Course(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.title} ({self.code})"
+        return f"{self.title} ({self.code}) - KES {self.amount}"
+
 
 
 class Module(models.Model):

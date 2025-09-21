@@ -106,7 +106,27 @@ class EnrollmentForm(forms.ModelForm):
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ["title", "description"]
+        fields = ["title", "description", "amount", "duration", "course_images"]
+
+        widgets = {
+            "title": forms.Select(choices=[
+                ("", "-- Select Course --"),
+                ("Web Development", "Web Development"),
+                ("Android Development", "Android Development"),
+                ("IT Support", "IT Support"),
+                ("Graphic Design", "Graphic Design"),
+                ("Cybersecurity", "Cybersecurity"),
+                ("Advanced Excel", "Advanced Excel"),
+                ("CCTV Installation", "CCTV Installation"),
+                ("Project Management System", "Project Management System"),
+                ("AI", "AI"),
+                ("Cloud Computing", "Cloud Computing"),
+            ], attrs={"class": "form-select", "required": True}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 4, "required": True}),
+            "amount": forms.NumberInput(attrs={"class": "form-control", "placeholder": "Enter fee in KES", "required": True}),
+            "duration": forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. 3 months", "required": True}),
+            "course_images": forms.ClearableFileInput(attrs={"class": "form-control"}),
+        }
 
 
 class ModuleForm(forms.ModelForm):

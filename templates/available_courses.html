@@ -1,139 +1,37 @@
 {% extends 'student-main.html' %}
 {% load static %}
-{% block  body %}
+{% block body %}
 
- <div class="container mt-2 ">
-    <h1 class="text-center text-primary mb-3">Our Courses</h1>
+<div class="container mt-2">
+    <h1 class="text-center text-primary mb-3">Our Courses</h1> 
 
     <!-- Premium Courses Section -->
     <div class="card mb-5 shadow-lg">
         <div class="card-header bg-primary text-white">
             <h2 class="card-title mb-0">Premium Courses</h2>
         </div>
-        <div class="card-body">
+        <div class="card-body mt-2">
             <div class="row">
-                <!-- IT Support -->
+
+                {% for course in courses %}
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card h-100 border-info">
+                        <!-- course image -->
+                        {% if course.course_images %}
+                            <img src="{{ course.course_images.url }}" alt="{{ course.title }}" class="img-fluid rounded shadow" style="height: 200px;">
+                        {% endif %}
 
                         <div class="card-body">
+                            <h5 class="card-title text-info">{{ course.title }}</h5>
+                            <p><strong>Price:</strong> Ksh {{ course.amount }}</p>
+                            <p><strong>Duration:</strong> {{ course.duration }}</p>
+                            <p><strong>Instructor:</strong> {{ course.mentor.name }}</p>
+                            <a href="{% url 'payment' studentinfo.id course.id %}" class="btn btn-info w-100">Enroll Now</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
 
-                            <img src="{% static 'assets/img/it.png' %}" class="card-img-top" alt="IT Support">
-                            <h5 class="card-title text-info">IT Support</h5>
-                            <p><strong>Price:</strong> Ksh 1200</p>
-                            <p><strong>Duration:</strong> 4 weeks</p>
-                            <p><strong>Instructor:</strong> John Wafula</p>
-                            <a href="{% url 'payment' studentinfo.id %}" class="btn btn-info w-100">Enroll Now</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Advanced Excel -->
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 border-primary">
-                        <img src="{% static 'assets/img/advance.jpeg' %}" class="card-img-top" alt="Android Development">
-                        <div class="card-body">
-                            <h5 class="card-title text-primary">Advanced Excel</h5>
-                            <p><strong>Price:</strong> Ksh 1250</p>
-                            <p><strong>Duration:</strong> 4 weeks</p>
-                            <p><strong>Instructor:</strong> Alex Kimathi</p>
-                            <a href="{% url 'payment' studentinfo.id %}" class="btn btn-info w-100">Enroll Now</a>
-                        </div>
-                    </div>
-                </div>
-
-                 <!-- Graphic Design -->
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 border-danger">
-                        <img src="{% static 'assets/img/graphic.png' %}" class="card-img-top" alt="Graphic Design">
-                        <div class="card-body">
-                            <h5 class="card-title text-danger">Graphic Design</h5>
-                            <p><strong>Price:</strong> Ksh 2000</p>
-                            <p><strong>Duration:</strong> 6 weeks</p>
-                            <p><strong>Instructor:</strong> Esther Kimutai</p>
-                            <a href="{% url 'payment' studentinfo.id %}" class="btn btn-info w-100">Enroll Now</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- CCTV Installation -->
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 border-success">
-                        <img src="{% static 'assets/img/cctv.jpeg' %}" class="card-img-top" alt="CCTV Installation">
-                        <div class="card-body">
-                            <h5 class="card-title text-success">CCTV Installation</h5>
-                            <p><strong>Price:</strong> Ksh 2000</p>
-                            <p><strong>Duration:</strong> 3 weeks</p>
-                            <p><strong>Instructor:</strong> Mark masika</p>
-                            <a href="{% url 'payment' studentinfo.id %}" class="btn btn-info w-100">Enroll Now</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Project Management System -->
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 border-warning">
-                        <img src="{% static 'assets/img/project.jpeg' %}" class="card-img-top" alt="Project Management System">
-                        <div class="card-body">
-                            <h5 class="card-title text-warning">Project Management System</h5>
-                            <p><strong>Price:</strong> Ksh 3000</p>
-                            <p><strong>Duration:</strong> 5 weeks</p>
-                            <p><strong>Instructor:</strong> Sarah Esther</p>
-                            <a href="{% url 'payment' studentinfo.id %}" class="btn btn-info w-100">Enroll Now</a>
-                        </div>
-                    </div>
-                </div>
-                 <!-- Web Development -->
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 border-primary">
-                        <img src="{% static 'assets/img/web.jpeg' %}" class="card-img-top" alt="Web Development">
-                        <div class="card-body">
-                            <h5 class="card-title text-primary">Web Development</h5>
-                            <p><strong>Price:</strong> Ksh 1150</p>
-                            <p><strong>Duration:</strong> 3 weeks</p>
-                            <p><strong>Instructor:</strong> Anaclet Situma</p>
-                            <a href="{% url 'payment' studentinfo.id %}" class="btn btn-info w-100">Enroll Now</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Cybersecurity -->
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 border-danger">
-                        <img src="{% static 'assets/img/cyber.jpeg' %}" class="card-img-top" alt="Cybersecurity">
-                        <div class="card-body">
-                            <h5 class="card-title text-danger">Cybersecurity</h5>
-                            <p><strong>Price:</strong> Ksh 1500</p>
-                            <p><strong>Duration:</strong> 6 weeks</p>
-                            <p><strong>Instructor:</strong> Marion Kariuki</p>
-                            <a href="{% url 'payment' studentinfo.id %}" class="btn btn-info w-100">Enroll Now</a>
-                        </div>
-                    </div>
-                </div>
-                   <!-- Artificial Intelligence -->
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 border-primary">
-                                   <img src="{% static 'assets/img/ai.jpeg' %}" class="card-img-top" alt="AI">
-                        <div class="card-body">
-                            <h5 class="card-title text-primary">Artificial Intelligence(AI)</h5>
-                            <p><strong>Price:</strong> Ksh 1500</p>
-                            <p><strong>Duration:</strong> 6 weeks</p>
-                            <p><strong>Instructor:</strong> SirBrams B.</p>
-                            <a href="{% url 'payment' studentinfo.id %}" class="btn btn-info w-100">Enroll Now</a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Cloud Computing -->
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 border-dark">
-                        <img src="{% static 'assets/img/cloud.jpeg' %}" class="card-img-top" alt="Cloud Computing">
-                        <div class="card-body">
-                            <h5 class="card-title text-dark">Cloud Computing</h5>
-                            <p><strong>Price:</strong> Ksh 2500</p>
-                            <p><strong>Duration:</strong> 6 weeks</p>
-                            <p><strong>Instructor:</strong> Sophia Odour</p>
-                            <a href="{% url 'payment' studentinfo.id %}" class="btn btn-info w-100">Enroll Now</a>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -169,46 +67,5 @@
         </div>
     </div>  
 </div> 
-
-<!-- Custom CSS -->
-<style>
-    body {
-        background-color: #f8f9fa;
-        font-family: 'Arial', sans-serif;
-    }
-
-    h1 {
-        font-weight: bold;
-    }
-
-    .card {
-        border-radius: 10px;
-    }
-
-    .card-body h5 {
-        font-size: 1.25rem;
-        font-weight: 600;
-    }
-
-    .list-group-item {
-        font-size: 1.1rem;
-        font-weight: 500;
-    }
-
-    .btn {
-        font-weight: bold;
-    }
-</style>
-
- <!-- Vendor JS Files -->
-  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
-  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
-  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
-  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
-  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
-
-  <!-- Main JS File -->
-  <script src="{% static 'assets/js/main.js' %}"></script>
 
 {% endblock %}

@@ -5,22 +5,39 @@
         {% for module in modules %}
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card module-card shadow-sm">
-                <div class="card-header module-header position-relative">
-                    <h5 class="card-title mb-0 text-truncate">{{ module.title }}</h5>
-                    <small class="d-block mt-1">Order: {{ module.order }}</small>
-                    <div class="module-actions">
+                
+                <!-- Card header with background image -->
+                <div class="card-header module-header position-relative text-white" 
+                     style="
+                        {% if course.course_images %}
+                            background: url('{{ course.course_images.url }}') center/cover no-repeat;
+                        {% else %}
+                            background-color: #f8f9fa;
+                        {% endif %}
+                        height: 200px;
+                        border-radius: .5rem .5rem 0 0;
+                     ">
+                    <div class="overlay position-absolute top-0 start-0 w-100 h-100" 
+                         style="background: rgba(0,0,0,0.45); border-radius: .5rem .5rem 0 0;">
+                    </div>
+                    <div class="position-relative">
+                        <h5 class="card-title mb-0 text-truncate">{{ module.title }}</h5>
+                        <small class="d-block mt-1">Order: {{ module.order }}</small>
+                    </div>
+                    <div class="module-actions position-absolute top-0 end-0 m-2">
                         <button class="btn btn-sm btn-light me-1 edit-module-btn" 
                                 data-module-id="{{ module.id }}"
                                 data-module-title="{{ module.title }}"
                                 data-module-order="{{ module.order }}">
                             <i class="fas fa-edit text-primary"> Edit</i>
                         </button>
-                        <button class="btn btn-sm btn-light delete-module-btn me-2" 
+                        <button class="btn btn-sm btn-light delete-module-btn" 
                                 data-module-id="{{ module.id }}">
                             <i class="fas fa-trash text-danger"> Delete</i>
                         </button>
                     </div>
                 </div>
+
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="badge bg-info">{{ module.topics.count }} Topic(s)</span>
@@ -64,13 +81,11 @@
         </div>
         {% endfor %}
     </div>
-{% else %}
+    {% else %}
     <div class="empty-state">
         <i class="fas fa-folder-open fa-3x"></i>
         <h5>No Modules Yet</h5>
         <p class="text-muted">Select a course and add your first module to get started.</p>
     </div>
-{% endif %}
-
+    {% endif %}
 </div>
-

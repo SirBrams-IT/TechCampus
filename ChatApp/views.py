@@ -222,11 +222,4 @@ def get_available_mentors(request):
         return JsonResponse({'mentors': mentors_data})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-#notifications
-def latest_messages(request):
-    messages_count = Contact.objects.count()  # or filter for unread if you track it
-    latest_messages = Contact.objects.order_by('-created_at')[:5]
-    return {
-        'messages_count': messages_count,
-        'latest_messages': latest_messages,
-    }    
+   
