@@ -1,0 +1,42 @@
+{% extends "student-main.html" %}
+{% block body %}
+
+<div class="text-center mt-5">
+  <h4 class="text-secondary">Processing Payment...</h4>
+  <p class="text-primary">Please complete the payment on your phone.</p>
+  <div class="spinner-border text-success" role="status"></div>
+  <p id="status-message" class="mt-3 text-muted">Waiting for confirmation...</p>
+</div>
+
+<script>
+  let pollInterval = null;
+
+  function checkStatus() {
+    fetch("{% url 'check_payment_status' user_id course_id checkout_id %}")
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "success") {
+          clearInterval(pollInterval);
+          document.getElementById("status-message").innerText = "Payment successful! Redirecting...";
+          setTimeout(() => { window.location.href = "{% url 'student_dashboard' %}"; }, 1200);
+        } else if (data.status === "failed") {
+          clearInterval(pollInterval);
+          document.getElementById("status-message").innerText = "Payment failed or cancelled. Redirecting to payment page...";
+          setTimeout(() => { window.location.href = "{% url 'payment' user_id=studentinfo.id course_id=course_id %}"; }, 1800);
+        } else {
+          // still pending
+          console.log("payment pending...");
+        }
+      })
+      .catch(err => {
+        console.error("poll error", err);
+      });
+  }
+
+  // start polling immediately and every 5s
+  checkStatus();
+  pollInterval = setInterval(checkStatus, 5000);
+</script>
+
+<br><br><br><br><br><br><br><br><br><br>
+{% endblock %}

@@ -24,139 +24,7 @@
   <link href="{% static 'asset/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
   <link href="{% static 'asset/vendor/simple-datatables/style.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="">
-  <link href="{% static 'asset/css/style.css' %}" rel="stylesheet">
-
-  <style>
-    /* Custom enhancements */
-    .dashboard-card {
-      transition: transform 0.3s, box-shadow 0.3s;
-      border-radius: 12px;
-      border: none;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
-    }
-    
-    .dashboard-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
-    }
-    
-    .dashboard-card .card-body {
-      padding: 1.5rem;
-    }
-    
-    .progress-bar {
-      border-radius: 20px;
-    }
-    
-    .course-card {
-      border-radius: 10px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      height: 100%;
-    }
-    
-    .course-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    }
-    
-    .course-progress {
-      height: 6px;
-      border-radius: 3px;
-    }
-    
-    .upcoming-activities .list-group-item {
-      border-left: none;
-      border-right: none;
-      padding: 0.75rem 1.25rem;
-      transition: background-color 0.2s;
-    }
-    
-    .upcoming-activities .list-group-item:hover {
-      background-color: #f8f9fa;
-    }
-    
-    .current-time {
-      font-weight: 500;
-      padding: 0.25rem 0.75rem;
-      border-radius: 4px;
-      display: inline-block;
-    }
-    
-    .chat-messages {
-      background-color: #f8f9fa;
-      border-radius: 8px;
-    }
-    
-    .conversation-item {
-      transition: background-color 0.2s;
-      cursor: pointer;
-      border-radius: 8px;
-      margin-bottom: 5px;
-    }
-    
-    .conversation-item:hover, .conversation-item.active {
-      background-color: #e9ecef;
-    }
-    
-    .notification-item:hover {
-      background-color: #f8f9fa;
-    }
-    
-    .profile-img {
-      object-fit: cover;
-    }
-    
-    .status-dot {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: 2px solid white;
-    }
-    
-    .badge-notification {
-      font-size: 0.65rem;
-    }
-    
-    .sidebar {
-      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    }
-    
-    .sidebar-nav .nav-link {
-      border-radius: 6px;
-      margin: 4px 8px;
-      padding: 0.6rem 1rem;
-    }
-    
-    .sidebar-nav .nav-link:hover {
-      background-color: #f0f4ff;
-    }
-    
-    .breadcrumb {
-      background-color: transparent;
-      padding: 0;
-    }
-    
-    .search-bar .search-form input {
-      border-radius: 20px;
-      padding-left: 20px;
-    }
-    
-    .search-bar .search-form button {
-      position: absolute;
-      right: 5px;
-      top: 5px;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  </style>
+  <link href="{% static 'asset/css/style.css' %}" rel="stylesheet"> 
 
 </head>
 
@@ -174,7 +42,7 @@
     <!-- title for desktops -->
     <div class="d-flex">
         <a href="#" class="logo d-flex align-items-center d-none d-lg-block">
-            <span class="text-uppercase text-white fw-bold fs-5">SirBrams Tech Virtual Campus</span>
+            <img src="{% static 'asset/img/image.png' %}" alt="title" class="text-uppercase text-white " id="titles">
         </a>
     </div>
 
@@ -184,10 +52,10 @@
     </div>
 
     <!-- Search Bar -->
-    <div class="search-bar ms-3 ms-lg-4">
-        <form class="search-form d-flex align-items-center position-relative" method="POST" action="#">
-            <input type="text" name="query" placeholder="Search courses, materials..." title="Enter search keyword" class="pe-5">
-            <button type="submit" title="Search" class="position-absolute border-0 bg-transparent"><i class="bi bi-search"></i></button>
+    <div class="search-bar " style="margin-left: 100px;">
+        <form class="search-form d-flex align-items-center" method="POST" action="#">
+            <input type="text" name="query" placeholder="Search" title="Enter search keyword">
+            <button type="submit" title="Search"><i class="bi bi-search"></i></button>
         </form>
     </div>
      
@@ -424,7 +292,7 @@
               <i class="bi bi-journal-bookmark display-6 text-success mb-3"></i>
               <h5 class="card-title">Enrolled Courses</h5>
               <p class="card-text"> Track course and continue Learning.</p>
-              <a href="{% url 'student_assignments' %}" class="btn btn-success btn-sm">View My Courses</a>
+              <a href="#" class="btn btn-success btn-sm">View My Courses</a>
             </div>
           </div>
         </div>
@@ -436,7 +304,7 @@
               <i class="bi bi-pencil-square display-6 text-danger mb-3"></i>
               <h5 class="card-title">Assignments</h5>
               <p class="card-text">Track and submit your assignments.</p>
-              <a href="{% url 'student_assignments' %}" class="btn btn-danger btn-sm">View Assignments</a>
+              <a href="#" class="btn btn-danger btn-sm">View Assignments</a>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 from datetime import date
 
 from django import forms
-from TechApp.models import Course, Enrollment, Member,Assignment,Submission,AdminLogin, Lesson,Module
+from TechApp.models import Course, Enrollment, Member,AdminLogin, Lesson,Module
 
 
 class StudentForm(forms.ModelForm):
@@ -34,42 +34,11 @@ class StudentForm(forms.ModelForm):
             raise forms.ValidationError("This ID number is already in use.")
         return id_number
 
-
-class AssignmentForm(forms.ModelForm):
-    def __init__(self, *args, user=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        if user:
-            mentor = AdminLogin.objects.filter(username=user.username).first()  # Avoid exception
-            if mentor:
-                self.fields['mentor'].queryset = AdminLogin.objects.filter(username=user.username)
-                self.fields['mentor'].initial = mentor
-                self.fields['mentor'].disabled = True  # Prevent modification
-
-    class Meta:
-        model = Assignment
-        fields = ['title', 'description', 'file', 'due_date', 'mentor']
-        widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter assignment title'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter detailed description', 'rows': 4}),
-            'file': forms.ClearableFileInput(attrs={'class': 'form-control'}),
-            'due_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-        }
-
-
 class RegistrationForm(forms.ModelForm):
     class Meta:
         model = Member
         fields = '__all__'
 
-class SubmissionForm(forms.ModelForm):
-    class Meta:
-        model = Submission
-        fields = ['submitted_file']
-        widgets = {
-            'submitted_file': forms.ClearableFileInput(attrs={
-                'class': 'form-control',
-            }),
-        }
 
 class AdminForm(forms.ModelForm):
     profile_image = forms.ImageField(required=False)
@@ -95,14 +64,9 @@ class AdminForm(forms.ModelForm):
         if age < 30 or age > 75:
             raise forms.ValidationError("Age must be between 30 and 75 years.")
 
-        return dob
+        return dob    
 
-class EnrollmentForm(forms.ModelForm):
-    class Meta:
-        model = Enrollment
-        fields = ['student', 'course', 'learning_status']     
-
-
+# course form
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course

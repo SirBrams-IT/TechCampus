@@ -1,8 +1,11 @@
 import json
+import logging
 from django.http import FileResponse
 from django.db import transaction
 from django.utils import timezone
 import requests
+from django.conf import settings
+from decimal import Decimal
 from django.db.models import Q 
 from datetime import timedelta
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -17,8 +20,8 @@ from TechApp.credentials import MpesaAccessToken, LipanaMpesaPpassword
 from django.shortcuts import  redirect,render, get_object_or_404
 from django.contrib.auth import logout, authenticate
 from django.contrib import messages
-from TechApp.forms import  EnrollmentForm, StudentForm,StudentEditForm, MentorEditForm, AssignmentForm,SubmissionForm,AdminForm, CourseForm, ModuleForm, LessonForm
-from TechApp.models import Course, Member, Contact, AdminLogin, Assignment, Submission ,Module, Lesson,Topic, Subtopic
+from TechApp.forms import  StudentForm,StudentEditForm, MentorEditForm,AdminForm, CourseForm, ModuleForm, LessonForm
+from TechApp.models import Course, Member, Enrollment, Contact, AdminLogin,Module, Lesson,Topic, Subtopic
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 import random
@@ -27,6 +30,8 @@ from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -43,6 +48,7 @@ def generate_otp():
     """Generate a 6-digit OTP."""
     return str(random.randint(100000, 999999))
 
+#student registration view
 def register(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -453,37 +459,36 @@ def available_courses(request,user_id):
     studentinfo = get_object_or_404(Member, id=user_id)
     return render(request,'available_courses.html',{'studentinfo':studentinfo, 'courses':courses})
 
-#payments
+# Payment form
 def payment(request, user_id, course_id):
-    studentinfo = get_object_or_404(Member, id=user_id)
-    course = get_object_or_404(Course, id=course_id)  # fetch course
+    student = get_object_or_404(Member, id=user_id)
+    course = get_object_or_404(Course, id=course_id)
+
     return render(request, 'payment.html', {
-        'studentinfo': studentinfo,
+        'studentinfo': student,
         'course': course,
         'user_id': user_id,
         'course_id': course_id
-        
-    })    
+    })
 
-#stk push 
+
+# STK push
 def stk(request, user_id, course_id):
     student = get_object_or_404(Member, id=user_id)
     course = get_object_or_404(Course, id=course_id)
 
     if request.method == "POST":
-        phone = request.POST.get('phone')
-        amount = course.amount  # ✅ fetch price from course model
-
-        # Convert Decimal → int
-        try:
-            amount = int(float(amount))
-        except Exception:
-            amount = 1  # fallback for safety
+        phone = request.POST.get("phone")
+        amount = int(float(course.amount)) if course.amount else 1
 
         access_token = MpesaAccessToken.validated_mpesa_access_token
         api_url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
         headers = {"Authorization": f"Bearer {access_token}"}
-        
+
+        # Build a callback URL that includes student_id & course_id as query params
+        # (this ensures the server-to-server callback can map to student/course)
+        callback_url = f"https://techcampus-r82w.onrender.com/mpesa/callback/?student_id={student.id}&course_id={course.id}"
+
         payment_request = {
             "BusinessShortCode": LipanaMpesaPpassword.Business_short_code,
             "Password": LipanaMpesaPpassword.decode_password,
@@ -493,70 +498,183 @@ def stk(request, user_id, course_id):
             "PartyA": phone,
             "PartyB": LipanaMpesaPpassword.Business_short_code,
             "PhoneNumber": phone,
-            "CallBackURL": "https://sandbox.safaricom.co.ke/mpesa/",
-            "AccountReference": f" SirBrams Tech Virtual Campus. For-{course.title}-{course.code}",   # ✅ course reference
-            "TransactionDesc": f"Payment for {course.title}-{course.code}",  # ✅ dynamic desc
+            "CallBackURL": callback_url,
+            "AccountReference": f"{student.id}|{course.id}",
+            "TransactionDesc": f"Payment for {course.title}-{course.code}",
         }
 
-        response = requests.post(api_url, json=payment_request, headers=headers)
+        response = requests.post(api_url, json=payment_request, headers=headers).json()
+        logger.info("STK Push Response: %s", response)
 
-        if response.status_code == 200:
-            # ✅ Success → go to dashboard
-            return redirect('student_dashboard')
-        else:
-            # ❌ Failure → reload payment page
-            return redirect(reverse('payment', args=[user_id, course_id]))
+        checkout_id = response.get("CheckoutRequestID")
 
-    # GET → render payment page with course details
-    return render(request, 'payment.html', {
-        "studentinfo": student,
-        "course": course
+        # STK initiated successfully
+        if response.get("ResponseCode") in ("0", 0) and checkout_id:
+            # store checkout ID in session so the polling page can use it
+            request.session["checkout_id"] = checkout_id
+            return redirect("payment_status", user_id=user_id, course_id=course_id)
+
+        messages.error(request, "Failed to initiate payment. Try again.")
+        return redirect("payment", user_id=student.id, course_id=course.id)
+
+    # If GET, show payment form
+    return render(request, "payment.html", {"student": student, "course": course})
+
+
+#payment status
+def payment_status(request, user_id, course_id):
+    studentinfo = get_object_or_404(Member, id=user_id)
+    course = get_object_or_404(Course, id=course_id)
+
+    return render(request, "payment_status.html", {
+        "studentinfo": studentinfo,
+        "user_id": studentinfo.id,  # make sure this is not empty
+        "course": course,
+        "course_id": course.id,
+        "checkout_id": request.session.get("checkout_id"),
     })
 
+#check payment status
+def check_payment_status(request, user_id, course_id, checkout_id):
+    student = get_object_or_404(Member, id=user_id)
+    course = get_object_or_404(Course, id=course_id)
 
+    # 1) If enrollment exists and is paid/approved -> success
+    enrollment = Enrollment.objects.filter(student=student, course=course).first()
+    if enrollment and enrollment.status in ("paid", "approved", "paid_pending_approval"):
+        return JsonResponse({"status": "success"})
+
+    # 2) Check transient cache set by callback
+    status = cache.get(checkout_id)
+    if status == "completed":
+        # make sure Enrollment exists (callback may have created it already)
+        Enrollment.objects.update_or_create(
+            student=student,
+            course=course,
+            defaults={
+                "mentor_name": getattr(course, "mentor").name if getattr(course, "mentor", None) else "",
+                "student_name": student.name,
+                "course_title": course.title,
+                "course_code": course.code,
+                "amount": getattr(course, "amount", 0),
+                "duration": getattr(course, "duration", ""),
+                "checkout_request_id": checkout_id,
+                "status": "paid",
+            }
+        )
+        return JsonResponse({"status": "success"})
+
+    if status == "failed":
+        return JsonResponse({"status": "failed"})
+
+    # default: still pending
+    return JsonResponse({"status": "pending"})
+
+
+
+# Callback handler (called by Safaricom)
+@csrf_exempt
+@csrf_exempt
+def mpesa_callback(request):
+    """
+    Daraja will post JSON here. We:
+      - read CheckoutRequestID and ResultCode
+      - map to student/course from query params or fallback to AccountReference
+      - on success: create/update Enrollment and set cache[checkout_id] = 'completed'
+      - on failure: set cache[checkout_id] = 'failed' (no DB Enrollment)
+    """
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+        logger.info("Received mpesa callback: %s", payload)
+
+        stk = payload.get("Body", {}).get("stkCallback", {})
+        checkout_id = stk.get("CheckoutRequestID")
+        result_code = stk.get("ResultCode", 1)
+        merchant_request_id = stk.get("MerchantRequestID")
+
+        # Try to get student/course from query params (CallBackURL included them)
+        student_id = request.GET.get("student_id")
+        course_id = request.GET.get("course_id")
+
+        # Fallback: try find AccountReference inside CallbackMetadata items
+        if not (student_id and course_id):
+            items = stk.get("CallbackMetadata", {}).get("Item", [])
+            for item in items:
+                if item.get("Name") == "AccountReference":
+                    # expected form "student_id|course_id"
+                    ar = str(item.get("Value", ""))
+                    if "|" in ar:
+                        student_id, course_id = ar.split("|")
+                        break
+
+        # if still not present, log and accept (can't map)
+        if not (student_id and course_id):
+            logger.warning("Callback missing mapping for checkout %s", checkout_id)
+            # Inform Daraja we've processed to avoid retries
+            return JsonResponse({"ResultCode": 0, "ResultDesc": "Accepted (no mapping)"})
+
+        # ensure ints
+        try:
+            student = Member.objects.get(id=int(student_id))
+            course = Course.objects.get(id=int(course_id))
+        except Exception as e:
+            logger.exception("Invalid mapping in callback: %s", e)
+            return JsonResponse({"ResultCode": 0, "ResultDesc": "Accepted (invalid mapping)"})
+
+        # parse metadata for amount, receipt, phone
+        callback_items = stk.get("CallbackMetadata", {}).get("Item", [])
+        mpesa_receipt = None
+        amount = None
+        phone = None
+        for item in callback_items:
+            name = item.get("Name")
+            if name == "MpesaReceiptNumber":
+                mpesa_receipt = item.get("Value")
+            elif name == "Amount":
+                amount = item.get("Value")
+            elif name == "PhoneNumber":
+                phone = item.get("Value")
+
+        # RESULT: Success -> create Enrollment (idempotent)
+        if result_code == 0:
+            Enrollment.objects.update_or_create(
+                student=student,
+                course=course,
+                defaults={
+                    "mentor_name": getattr(course, "mentor").name if getattr(course, "mentor", None) else "",
+                    "student_name": student.name,
+                    "course_title": course.title,
+                    "course_code": course.code,
+                    "amount": amount or course.amount,
+                    "duration": getattr(course, "duration", ""),
+                    "merchant_request_id": merchant_request_id,
+                    "checkout_request_id": checkout_id,
+                    "transaction_code": mpesa_receipt or "",
+                    "status": "paid",
+                }
+            )
+            # Short-lived cache so the frontend polling sees completion
+            cache.set(checkout_id, "completed", timeout=60 * 60 * 6)  # e.g. 6 hours
+            logger.info("Payment completed: %s -> %s", checkout_id, student)
+        else:
+            # Failure or cancellation: do NOT create Enrollment.
+            cache.set(checkout_id, "failed", timeout=60 * 60)  # e.g. 1 hour
+            logger.info("Payment failed/cancelled for checkout %s", checkout_id)
+
+        # respond to Daraja
+        return JsonResponse({"ResultCode": 0, "ResultDesc": "Accepted"})
+
+    except Exception as e:
+        logger.exception("Error processing mpesa callback")
+        # still return 0 to avoid Daraja retry storms; adjust if you want retries
+        return JsonResponse({"ResultCode": 0, "ResultDesc": "Error processed"})
+    
+ #records   
 def records(request, user_id):
     allmembers = Member.objects.all()
     admininfo = get_object_or_404(AdminLogin, id=user_id)
     return render(request,'records.html',{'member':allmembers,'admininfo':admininfo})
 
-def add_cours(request):
-    if request.method == "POST":
-        form = AssignmentForm(request.POST, request.FILES, user=request.user)  # Pass user to form
-        if form.is_valid():
-            assignment = form.save(commit=False)  # Don't save yet
-            assignment.mentor = AdminLogin.objects.get(username=request.user.username)  # Assign correct mentor
-            assignment.save()  # Now save
-            return redirect('/mentor_viewstatus')
-
-    else:
-        form = AssignmentForm(user=request.user)  # Pass user here
-
-    return render(request, 'add_cours.html', {'form': form})
-
-
-def mentor_viewstatus(request):
-    if not request.user.is_authenticated:
-        return redirect('/mentor_login/')  # Redirects to login page
-
-    assignments = Assignment.objects.filter(mentor=request.user)
-    submissions = Submission.objects.filter(assignment__in=assignments)
-
-    if request.method == 'POST':
-        submission_id = request.POST.get('submission_id')
-        submission = get_object_or_404(Submission, id=submission_id)
-        form = SubmissionForm(request.POST, instance=submission)
-        if form.is_valid():
-            submission.marked = True
-            form.save()
-            return redirect('mentor_viewstatus')
-
-    else:
-        form = SubmissionForm()
-
-    return render(request, 'mentor_viewstatus.html', {
-        'submissions': submissions,
-        'form': form
-    })
 
 #enrolled courses
 def enrolled_courses(request,user_id):
@@ -564,47 +682,7 @@ def enrolled_courses(request,user_id):
     studentinfo = get_object_or_404(Member, id=user_id)
     return render(request,'enrolled_courses.html',{'studentinfo':studentinfo, 'courses':courses})
 
-def student_assignments(request):
-    # Fetch all assignments
-    studentinfo = Member.objects.filter(username=request.POST.get('username')).first()
-    assignments = Assignment.objects.all()
-    submissions = Submission.objects.filter(student=request.user)
-
-    if request.method == 'POST':
-        assignment_id = request.POST.get('assignment_id')
-        action = request.POST.get('action')
-
-        # Fetch assignment
-        assignment = get_object_or_404(Assignment, id=assignment_id)
-
-        # Check if submission exists for this assignment
-        submission = submissions.filter(assignment=assignment).first()
-
-        if action == 'submit':
-            form = SubmissionForm(request.POST, request.FILES, instance=submission)
-            if form.is_valid():
-                submission = form.save(commit=False)
-                submission.student = request.user
-                submission.assignment = assignment
-                submission.submitted_at = timezone.now()
-                submission.save()
-                return redirect('student_assignments')
-        elif action == 'redo' and submission:
-            submission.marked = False  # Unmark for re-evaluation
-            submission.save()
-            return redirect('student_assignments')
-        elif action == 'delete' and submission:
-            submission.delete()
-            return redirect('student_assignments')
-
-    return render(request, 'student_assignments.html', {
-        'studentinfo': studentinfo,
-        'assignments': assignments,
-        'submissions': submissions,
-        'submission_form': SubmissionForm(),
-    })
-
-
+#mentor update student info view
 def updates(request, id):
     updatestudent = get_object_or_404(Member, id=id)
     if request.method == 'POST':
@@ -619,8 +697,6 @@ def updates(request, id):
         form = StudentForm(instance=updatestudent)
 
     return render(request, 'admin_dashboard.html', {'form': form, 'member_u': updatestudent})
-
-
 
 def delete_member(request,id):
     member= Member.objects.get(id  = id )
@@ -879,16 +955,6 @@ def edit_student(request):
         return JsonResponse({"success": "Student information updated successfully!"})
 
     return JsonResponse({"error": "Invalid request."})
-
-def enroll_course(request):
-    if request.method == 'POST':
-        form = EnrollmentForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('student_dashboard')
-    else:
-        form = EnrollmentForm()
-    return render(request, 'enroll_course.html', {'form': form})
 
 def course_list(request):
     courses = Course.objects.all()
@@ -1185,10 +1251,11 @@ def student_profile(request, studentinfo):
     return render(request, 'profiles/student_profile.html', {
         'form': form,
         'infos': infos,
-        'studentinfo': infos   # 👈 add this line
+        'studentinfo': infos, 
+        
     })
 
-
+# student change password
 def change_password_s(request, id):
     infos = get_object_or_404(Member, id=id)
 

@@ -2,10 +2,20 @@
 {% load static %}
 {% block  body %}
 
+ {% if messages %}
+        <div>
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
    <div id="mpesa-payment-container" >
         <img src="{% static 'assets/img/mpesa.png' %}" alt="mpesa" style="width: 100%">
          <h3 class="text-secondary"> Payment for: <b class="text-primary">{{course.code}} </b></h3>
-        <form action="{% url 'stk' user_id course_id  %}" method="POST" id="mpesa-payment-form ">
+        <form action="{% url 'stk' user_id course_id %}" method="POST" id="mpesa-payment-form">
           {% csrf_token %}
             <!-- Phone Number -->
             <div class="form-group">
@@ -87,6 +97,60 @@
         }
 
     </style>
+
+    <!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+      <h5 class="modal-title">Processing Payment...</h5>
+      <div class="modal-body">
+        <p>Please complete the payment on your phone. Waiting for confirmation...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById("payForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let formData = new FormData(this);
+    fetch(this.action, {
+        method: "POST",
+        body: formData,
+        headers: {"X-CSRFToken": "{{ csrf_token }}"}
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "initiated") {
+            // Show modal
+            let modal = new bootstrap.Modal(document.getElementById("paymentModal"));
+            modal.show();
+
+            // Start polling
+            let checkUrl = `/check-payment/${data.enrollment_id}/`;
+            let interval = setInterval(() => {
+                fetch(checkUrl)
+                .then(r => r.json())
+                .then(result => {
+                    if (result.status === "paid_pending_approval") {
+                        clearInterval(interval);
+                        modal.hide();
+                        window.location.href = "{% url 'student_dashboard' %}";
+                    } else if (result.status === "failed") {
+                        clearInterval(interval);
+                        modal.hide();
+                        alert("Payment failed. Please try again.");
+                    }
+                });
+            }, 4000); // check every 4s
+        } else {
+            alert("Error initiating payment. Try again.");
+        }
+    });
+});
+</script>
+
 
   {% endblock %}
 <br><br><br>

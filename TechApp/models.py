@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.db import models
 from cloudinary.models import CloudinaryField
 from django.contrib.auth.hashers import make_password, check_password, identify_hasher
+from decimal import Decimal
 
 
 def generate_otp():
@@ -215,74 +216,8 @@ class AdminLogin(models.Model):
     def __str__(self):
         return self.name
 
-class Assignment(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    file = CloudinaryField('file', folder='assignments')
-    due_date = models.DateTimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    mentor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='assigned_assignments')
 
-    def __str__(self):
-        return self.title
-
-
-class Submission(models.Model):
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')
-    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
-    submitted_file = CloudinaryField('file', folder='submissions', null=True, blank=True)
-    submitted_at = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=[
-        ('Not Submitted', 'Not Submitted'),
-        ('Submitted', 'Submitted'),
-        ('Due', 'Due'),
-        ('Late', 'Late')
-    ], default='Not Submitted')
-    marked = models.BooleanField(default=False)
-    grade = models.IntegerField(null=True, blank=True)
-    feedback = models.TextField(null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        if self.submitted_at and self.submitted_at > self.assignment.due_date:
-            self.status = 'Late'
-        elif self.submitted_at:
-            self.status = 'Submitted'
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"Submission by {self.student.username} for {self.assignment.title}"
-
-
-class CourseStatus(models.Model):
-    STATUS_CHOICES = [
-        ('Enrolled', 'Enrolled'),
-        ('Submitted', 'Submitted'),
-        ('Due', 'Due'),
-        ('Marked', 'Marked'),
-    ]
-    user = models.ForeignKey('Member', on_delete=models.CASCADE, related_name='course_statuses')
-    course_name = models.CharField(max_length=100)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Enrolled')
-    last_updated = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.course_name}: {self.status}"
-
-
-COURSE_CHOICES = [
-    ('Web Development', 'WD111'),
-    ('Android Development', 'AD111'),
-    ('IT Support', 'IT111'),
-    ('Graphic Design', 'GD111'),
-    ('Cybersecurity', 'CS111'),
-    ('Advanced Excel', 'AE111'),
-    ('CCTV Installation', 'CCTV111'),
-    ('Project Management System', 'PMS111'),
-    ('AI', 'AI111'),
-    ('Cloud Computing', 'CC111'),
-]
-
-
+#course model
 class Course(models.Model):
     title = models.CharField(max_length=200, unique=True)
     description = models.TextField()
@@ -305,7 +240,7 @@ class Course(models.Model):
         return f"{self.title} ({self.code}) - KES {self.amount}"
 
 
-
+#module model
 class Module(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="modules")
     title = models.CharField(max_length=200)
@@ -318,7 +253,7 @@ class Module(models.Model):
     def __str__(self):
         return self.title
 
-
+#topic model
 class Topic(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="topics")
     title = models.CharField(max_length=200)
@@ -344,7 +279,7 @@ class Subtopic(models.Model):
     def __str__(self):
         return self.title
 
-
+# lesson model
 class Lesson(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="lessons")
     title = models.CharField(max_length=200)
@@ -389,14 +324,38 @@ class Lesson(models.Model):
         return f"{self.module} - {self.title}"
 
 
+STATUS_CHOICES = [
+    ('initiated', 'Initiated (STK started)'),
+    ('paid_pending_approval', 'Paid (Pending Mentor Approval)'),
+    ('approved', 'Approved (Accessible to Student)'),
+    ('failed', 'Payment Failed'),
+    ('rejected', 'Rejected by Mentor'),
+]
 
 class Enrollment(models.Model):
-    student = models.ForeignKey('Member', on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    learning_status = models.CharField(max_length=20, choices=[
-        ('Not Started', 'Not Started'),
-        ('Started', 'Started')
-    ], default='Not Started')
+    student = models.ForeignKey('TechApp.Member', on_delete=models.CASCADE, related_name='enrollments')
+    course = models.ForeignKey('TechApp.Course', on_delete=models.CASCADE, related_name='enrollments')
+
+    # Snapshots for easy display + history
+    mentor_name = models.CharField(max_length=255)
+    student_name = models.CharField(max_length=255)
+    course_title = models.CharField(max_length=255)
+    course_code = models.CharField(max_length=50)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    duration = models.CharField(max_length=50, blank=True, null=True)
+
+    # MPESA info
+    merchant_request_id = models.CharField(max_length=255, blank=True, null=True)
+    checkout_request_id = models.CharField(max_length=255, blank=True, null=True)
+    transaction_code = models.CharField(max_length=255, blank=True, null=True)
+
+    status = models.CharField(max_length=40, choices=STATUS_CHOICES, default='initiated')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.student} - {self.course.title} ({self.learning_status})"
+        return f"{self.student_name} -> {self.course_title} ({self.status})"
