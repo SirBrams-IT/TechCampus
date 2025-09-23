@@ -20,8 +20,8 @@ urlpatterns = [
     path("payment-status/<int:user_id>/<int:course_id>/", views.payment_status, name="payment_status"), #payment status
     path("check-status/<int:user_id>/<int:course_id>/<str:checkout_id>/", views.check_payment_status, name="check_payment_status"),
     path("mpesa/callback/", views.mpesa_callback, name="mpesa_callback"), # callback
+    path('mpesa/test-callback/', views.test_callback, name='test_callback'),
     path('My courses/<int:user_id>/', views.enrolled_courses, name='mycourses'), #enrolled courses
-    path('token/', views.token, name='token'),
     path('main/', views.main, name='main-page'),
     path('contact/', views.contact, name='contact'),
     path('contacts/', views.contacts, name='contacts'),
@@ -76,6 +76,7 @@ urlpatterns = [
     
     #notification
     path('latest_messages', views.latest_messages, name='latest_messages'),
+    
     ]
 
 

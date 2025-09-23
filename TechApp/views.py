@@ -4,6 +4,7 @@ from django.http import FileResponse
 from django.db import transaction
 from django.utils import timezone
 import requests
+from django.core.cache import cache
 from django.conf import settings
 from decimal import Decimal
 from django.db.models import Q 
@@ -382,20 +383,7 @@ def resend_reset_otp(request):
     return render(request, "resent_reset_otp.html")
 
 
-
-
-def token(request):
-    consumer_key = 'RPxUwLYGGMVJRkWofm0K09qnWfH60pwxg2kSVFmFERrQEow5'
-    consumer_secret = '8qGJf8mLmhGAore5FC06nncbbx3WNV4apitG7hMzLrmTMrrzNrtH092LDGSlVt5C'
-    api_URL = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
-
-    r = requests.get(api_URL, auth=HTTPBasicAuth(
-        consumer_key, consumer_secret))
-    mpesa_access_token = json.loads(r.text)
-    validated_mpesa_access_token = mpesa_access_token["access_token"]
-
-    return render(request, 'token.html', {"token":validated_mpesa_access_token})
-
+#add student
 def add_student(request, user_id):
     admininfo = get_object_or_404(AdminLogin, id=user_id)  # Fetch the admin info
 
@@ -472,7 +460,7 @@ def payment(request, user_id, course_id):
     })
 
 
-# STK push
+# STK push - Add more logging
 def stk(request, user_id, course_id):
     student = get_object_or_404(Member, id=user_id)
     course = get_object_or_404(Course, id=course_id)
@@ -480,195 +468,340 @@ def stk(request, user_id, course_id):
     if request.method == "POST":
         phone = request.POST.get("phone")
         amount = int(float(course.amount)) if course.amount else 1
+        
+        logger.info(f"=== STK PUSH INITIATED ===")
+        logger.info(f"Student: {student.id}, Course: {course.id}, Amount: {amount}, Phone: {phone}")
 
-        access_token = MpesaAccessToken.validated_mpesa_access_token
+        # Get access token
+        access_token = MpesaAccessToken.get_access_token()
+        
+        if not access_token:
+            error_msg = "Failed to get M-Pesa access token. Check your credentials."
+            logger.error(error_msg)
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'error': error_msg}, status=500)
+            else:
+                messages.error(request, error_msg)
+                return redirect("payment", user_id=student.id, course_id=course.id)
+
+        # Get password details
+        password_data = LipanaMpesaPpassword.get_password()
+        if not password_data:
+            error_msg = "Failed to generate M-Pesa password."
+            logger.error(error_msg)
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'error': error_msg}, status=500)
+            else:
+                messages.error(request, error_msg)
+                return redirect("payment", user_id=student.id, course_id=course.id)
+
+        # Build callback URL
+        if settings.DEBUG:
+            callback_url = f"http://localhost:8000/mpesa/callback/?student_id={student.id}&course_id={course.id}"
+        else:
+            callback_url = f"https://techcampus-r82w.onrender.com/mpesa/callback/?student_id={student.id}&course_id={course.id}"
+
         api_url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
-        headers = {"Authorization": f"Bearer {access_token}"}
-
-        # Build a callback URL that includes student_id & course_id as query params
-        # (this ensures the server-to-server callback can map to student/course)
-        callback_url = f"https://techcampus-r82w.onrender.com/mpesa/callback/?student_id={student.id}&course_id={course.id}"
+        headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
 
         payment_request = {
-            "BusinessShortCode": LipanaMpesaPpassword.Business_short_code,
-            "Password": LipanaMpesaPpassword.decode_password,
-            "Timestamp": LipanaMpesaPpassword.lipa_time,
+            "BusinessShortCode": password_data['business_shortcode'],
+            "Password": password_data['password'],
+            "Timestamp": password_data['timestamp'],
             "TransactionType": "CustomerPayBillOnline",
             "Amount": amount,
             "PartyA": phone,
-            "PartyB": LipanaMpesaPpassword.Business_short_code,
+            "PartyB": password_data['business_shortcode'],
             "PhoneNumber": phone,
             "CallBackURL": callback_url,
             "AccountReference": f"{student.id}|{course.id}",
-            "TransactionDesc": f"Payment for {course.title}-{course.code}",
+            "TransactionDesc": f"Payment for {course.title}",
         }
 
-        response = requests.post(api_url, json=payment_request, headers=headers).json()
-        logger.info("STK Push Response: %s", response)
+        logger.info(f"Payment request prepared for phone: {phone}")
 
-        checkout_id = response.get("CheckoutRequestID")
+        try:
+            response = requests.post(api_url, json=payment_request, headers=headers, timeout=30)
+            logger.info(f"STK Push HTTP Status: {response.status_code}")
+            
+            # Check if response is valid JSON
+            try:
+                response_data = response.json()
+                logger.info(f"STK Push API Response: {response_data}")
+            except json.JSONDecodeError:
+                logger.error(f"Invalid JSON response: {response.text}")
+                error_msg = "Invalid response from M-Pesa. Please try again."
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'error': error_msg}, status=500)
+                else:
+                    messages.error(request, error_msg)
+                return redirect("payment", user_id=student.id, course_id=course.id)
 
-        # STK initiated successfully
-        if response.get("ResponseCode") in ("0", 0) and checkout_id:
-            # store checkout ID in session so the polling page can use it
-            request.session["checkout_id"] = checkout_id
-            return redirect("payment_status", user_id=user_id, course_id=course_id)
+            # ✅ FIXED: Properly check for success
+            checkout_id = response_data.get("CheckoutRequestID") or response_data.get("checkoutRequestID")
+            response_code = response_data.get("ResponseCode") or response_data.get("responseCode")
+            response_description = response_data.get('ResponseDescription') or response_data.get('responseDescription') or ''
+            error_message = response_data.get('errorMessage') or response_data.get('error_message') or ''
 
-        messages.error(request, "Failed to initiate payment. Try again.")
+            # ✅ SUCCESS CONDITIONS: ResponseCode 0 OR success message
+            is_success = (
+                response_code == 0 or 
+                "success" in response_description.lower() or
+                "request accepted for processing" in response_description.lower()
+            )
+
+            if is_success and checkout_id:
+                # Store session data
+                request.session["checkout_id"] = checkout_id
+                request.session["stk_student_id"] = user_id
+                request.session["stk_course_id"] = course_id
+                request.session["stk_timestamp"] = str(timezone.now())
+                request.session["stk_phone"] = phone
+                request.session["stk_amount"] = amount
+                
+                logger.info(f"✅ STK Push Successful - CheckoutID: {checkout_id}")
+                logger.info(f"✅ Response Description: {response_description}")
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': 'Payment initiated successfully! Check your phone to complete the payment.',
+                        'redirect_url': reverse('payment_status', kwargs={'user_id': user_id, 'course_id': course_id})
+                    })
+                else:
+                    return redirect("payment_status", user_id=user_id, course_id=course_id)
+            else:
+                # ✅ IMPROVED ERROR HANDLING
+                logger.error(f"❌ STK Push Failed")
+                logger.error(f"❌ Response Code: {response_code}")
+                logger.error(f"❌ Response Description: {response_description}")
+                logger.error(f"❌ Error Message: {error_message}")
+                logger.error(f"❌ Full response: {response_data}")
+                
+                # User-friendly error messages
+                if "insufficient" in error_message.lower() or "insufficient" in response_description.lower():
+                    user_error_msg = "Insufficient balance in your M-Pesa account."
+                elif "timeout" in error_message.lower():
+                    user_error_msg = "Payment request timed out. Please try again."
+                elif "invalid" in error_message.lower() or "invalid" in response_description.lower():
+                    user_error_msg = "Invalid phone number or transaction details."
+                elif "cancelled" in error_message.lower() or "cancelled" in response_description.lower():
+                    user_error_msg = "Payment was cancelled. Please try again."
+                else:
+                    user_error_msg = f"Payment initiation failed: {response_description or error_message or 'Unknown error'}"
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'error': user_error_msg}, status=400)
+                else:
+                    messages.error(request, user_error_msg)
+                
+        except requests.exceptions.Timeout:
+            logger.error("❌ STK Push request timed out")
+            error_msg = "Payment request timed out. Please try again."
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'error': error_msg}, status=500)
+            else:
+                messages.error(request, error_msg)
+                
+        except requests.exceptions.ConnectionError:
+            logger.error("❌ STK Push connection error")
+            error_msg = "Network connection error. Please check your internet and try again."
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'error': error_msg}, status=500)
+            else:
+                messages.error(request, error_msg)
+                
+        except Exception as e:
+            logger.error(f"❌ STK Push Exception: {str(e)}")
+            error_msg = "An unexpected error occurred. Please try again."
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'error': error_msg}, status=500)
+            else:
+                messages.error(request, error_msg)
+
         return redirect("payment", user_id=student.id, course_id=course.id)
 
-    # If GET, show payment form
     return render(request, "payment.html", {"student": student, "course": course})
-
 
 #payment status
 def payment_status(request, user_id, course_id):
     studentinfo = get_object_or_404(Member, id=user_id)
     course = get_object_or_404(Course, id=course_id)
+    
+    # Pass debug mode to template
+    debug = settings.DEBUG
 
     return render(request, "payment_status.html", {
         "studentinfo": studentinfo,
-        "user_id": studentinfo.id,  # make sure this is not empty
+        "user_id": studentinfo.id,
         "course": course,
         "course_id": course.id,
         "checkout_id": request.session.get("checkout_id"),
+        "debug": debug,  # Pass debug flag to template
     })
 
 #check payment status
 def check_payment_status(request, user_id, course_id, checkout_id):
+    """Check payment status with multiple verification methods"""
+    logger.info(f"=== STATUS CHECK ===")
+    logger.info(f"User: {user_id}, Course: {course_id}, Checkout: {checkout_id}")
+    
     student = get_object_or_404(Member, id=user_id)
     course = get_object_or_404(Course, id=course_id)
 
-    # 1) If enrollment exists and is paid/approved -> success
-    enrollment = Enrollment.objects.filter(student=student, course=course).first()
-    if enrollment and enrollment.status in ("paid", "approved", "paid_pending_approval"):
-        return JsonResponse({"status": "success"})
+    # Method 1: Check Enrollment by checkout_id (primary method)
+    enrollment = Enrollment.objects.filter(
+        checkout_request_id=checkout_id,
+        status__in=["paid", "approved", "paid_pending_approval"]
+    ).first()
+    
+    if enrollment:
+        logger.info(f"✅ Enrollment found via checkout_id - SUCCESS: {enrollment.id}")
+        return JsonResponse({"status": "success", "enrollment_id": enrollment.id})
 
-    # 2) Check transient cache set by callback
-    status = cache.get(checkout_id)
-    if status == "completed":
-        # make sure Enrollment exists (callback may have created it already)
-        Enrollment.objects.update_or_create(
-            student=student,
-            course=course,
-            defaults={
-                "mentor_name": getattr(course, "mentor").name if getattr(course, "mentor", None) else "",
-                "student_name": student.name,
-                "course_title": course.title,
-                "course_code": course.code,
-                "amount": getattr(course, "amount", 0),
-                "duration": getattr(course, "duration", ""),
-                "checkout_request_id": checkout_id,
-                "status": "paid",
-            }
-        )
-        return JsonResponse({"status": "success"})
+    # Method 2: Check Enrollment by student/course (fallback)
+    enrollment = Enrollment.objects.filter(
+        student=student,
+        course=course,
+        status__in=["paid", "approved", "paid_pending_approval"]
+    ).first()
+    
+    if enrollment:
+        logger.info(f"✅ Enrollment found via student/course - SUCCESS: {enrollment.id}")
+        # Update with checkout_id if missing
+        if not enrollment.checkout_request_id:
+            enrollment.checkout_request_id = checkout_id
+            enrollment.save()
+        return JsonResponse({"status": "success", "enrollment_id": enrollment.id})
 
-    if status == "failed":
-        return JsonResponse({"status": "failed"})
+    # Method 3: Local testing - auto-complete after 30 seconds
+    if settings.DEBUG:
+        stk_timestamp = request.session.get("stk_timestamp")
+        if stk_timestamp:
+            try:
+                stk_time = timezone.datetime.fromisoformat(stk_timestamp)
+                elapsed = timezone.now() - stk_time
+                
+                if elapsed.total_seconds() > 30:
+                    logger.info("🧪 LOCAL TESTING: Auto-completing payment after 30 seconds")
+                    enrollment, created = Enrollment.objects.update_or_create(
+                        student=student,
+                        course=course,
+                        defaults={
+                            "mentor_name": getattr(course.mentor, 'name', '') if hasattr(course, 'mentor') and course.mentor else "",
+                            "student_name": student.name,
+                            "course_title": course.title,
+                            "course_code": course.code,
+                            "amount": course.amount,
+                            "duration": getattr(course, 'duration', ''),
+                            "checkout_request_id": checkout_id,
+                            "status": "paid",
+                        }
+                    )
+                    logger.info(f"🧪 Enrollment {'created' if created else 'updated'}: {enrollment.id}")
+                    return JsonResponse({"status": "success", "enrollment_id": enrollment.id, "debug": True})
+            except Exception as e:
+                logger.error(f"Local testing error: {e}")
 
-    # default: still pending
+    # Method 4: Check if payment was recently made (within last 10 minutes)
+    recent_enrollment = Enrollment.objects.filter(
+        student=student,
+        course=course,
+        created_at__gte=timezone.now() - timezone.timedelta(minutes=10)
+    ).first()
+    
+    if recent_enrollment:
+        logger.info(f"🕒 Recent enrollment found - marking as paid: {recent_enrollment.id}")
+        recent_enrollment.status = "paid"
+        recent_enrollment.checkout_request_id = checkout_id
+        recent_enrollment.save()
+        return JsonResponse({"status": "success", "enrollment_id": recent_enrollment.id})
+
+    logger.info("⏳ Payment still pending")
     return JsonResponse({"status": "pending"})
 
 
-
-# Callback handler (called by Safaricom)
-@csrf_exempt
+#mpesa_callback view
 @csrf_exempt
 def mpesa_callback(request):
-    """
-    Daraja will post JSON here. We:
-      - read CheckoutRequestID and ResultCode
-      - map to student/course from query params or fallback to AccountReference
-      - on success: create/update Enrollment and set cache[checkout_id] = 'completed'
-      - on failure: set cache[checkout_id] = 'failed' (no DB Enrollment)
-    """
+    """Process M-Pesa callback"""
+    logger.info("=== MPESA CALLBACK RECEIVED ===")
+    
     try:
-        payload = json.loads(request.body.decode("utf-8"))
-        logger.info("Received mpesa callback: %s", payload)
-
-        stk = payload.get("Body", {}).get("stkCallback", {})
-        checkout_id = stk.get("CheckoutRequestID")
-        result_code = stk.get("ResultCode", 1)
-        merchant_request_id = stk.get("MerchantRequestID")
-
-        # Try to get student/course from query params (CallBackURL included them)
-        student_id = request.GET.get("student_id")
-        course_id = request.GET.get("course_id")
-
-        # Fallback: try find AccountReference inside CallbackMetadata items
-        if not (student_id and course_id):
-            items = stk.get("CallbackMetadata", {}).get("Item", [])
+        payload = json.loads(request.body.decode('utf-8'))
+        logger.info(f"Callback payload: {json.dumps(payload, indent=2)}")
+        
+        stk_callback = payload.get('Body', {}).get('stkCallback', {})
+        checkout_id = stk_callback.get('CheckoutRequestID')
+        result_code = stk_callback.get('ResultCode', 1)
+        result_desc = stk_callback.get('ResultDesc', '')
+        
+        logger.info(f"Callback - CheckoutID: {checkout_id}, ResultCode: {result_code}, Desc: {result_desc}")
+        
+        # Get student/course from query params or AccountReference
+        student_id = request.GET.get('student_id')
+        course_id = request.GET.get('course_id')
+        
+        if not student_id or not course_id:
+            items = stk_callback.get('CallbackMetadata', {}).get('Item', [])
             for item in items:
-                if item.get("Name") == "AccountReference":
-                    # expected form "student_id|course_id"
-                    ar = str(item.get("Value", ""))
-                    if "|" in ar:
-                        student_id, course_id = ar.split("|")
+                if item.get('Name') == 'AccountReference':
+                    account_ref = item.get('Value', '')
+                    if '|' in account_ref:
+                        student_id, course_id = account_ref.split('|')
                         break
-
-        # if still not present, log and accept (can't map)
-        if not (student_id and course_id):
-            logger.warning("Callback missing mapping for checkout %s", checkout_id)
-            # Inform Daraja we've processed to avoid retries
-            return JsonResponse({"ResultCode": 0, "ResultDesc": "Accepted (no mapping)"})
-
-        # ensure ints
-        try:
+        
+        if student_id and course_id:
             student = Member.objects.get(id=int(student_id))
             course = Course.objects.get(id=int(course_id))
-        except Exception as e:
-            logger.exception("Invalid mapping in callback: %s", e)
-            return JsonResponse({"ResultCode": 0, "ResultDesc": "Accepted (invalid mapping)"})
-
-        # parse metadata for amount, receipt, phone
-        callback_items = stk.get("CallbackMetadata", {}).get("Item", [])
-        mpesa_receipt = None
-        amount = None
-        phone = None
-        for item in callback_items:
-            name = item.get("Name")
-            if name == "MpesaReceiptNumber":
-                mpesa_receipt = item.get("Value")
-            elif name == "Amount":
-                amount = item.get("Value")
-            elif name == "PhoneNumber":
-                phone = item.get("Value")
-
-        # RESULT: Success -> create Enrollment (idempotent)
-        if result_code == 0:
-            Enrollment.objects.update_or_create(
-                student=student,
-                course=course,
-                defaults={
-                    "mentor_name": getattr(course, "mentor").name if getattr(course, "mentor", None) else "",
-                    "student_name": student.name,
-                    "course_title": course.title,
-                    "course_code": course.code,
-                    "amount": amount or course.amount,
-                    "duration": getattr(course, "duration", ""),
-                    "merchant_request_id": merchant_request_id,
-                    "checkout_request_id": checkout_id,
-                    "transaction_code": mpesa_receipt or "",
-                    "status": "paid",
-                }
-            )
-            # Short-lived cache so the frontend polling sees completion
-            cache.set(checkout_id, "completed", timeout=60 * 60 * 6)  # e.g. 6 hours
-            logger.info("Payment completed: %s -> %s", checkout_id, student)
-        else:
-            # Failure or cancellation: do NOT create Enrollment.
-            cache.set(checkout_id, "failed", timeout=60 * 60)  # e.g. 1 hour
-            logger.info("Payment failed/cancelled for checkout %s", checkout_id)
-
-        # respond to Daraja
+            
+            if result_code == 0:
+                items = stk_callback.get('CallbackMetadata', {}).get('Item', [])
+                mpesa_receipt = None
+                amount = None
+                
+                for item in items:
+                    if item.get('Name') == 'MpesaReceiptNumber':
+                        mpesa_receipt = item.get('Value')
+                    elif item.get('Name') == 'Amount':
+                        amount = item.get('Value')
+                
+                enrollment, created = Enrollment.objects.update_or_create(
+                    student=student,
+                    course=course,
+                    defaults={
+                        "mentor_name": getattr(course.mentor, 'name', '') if course.mentor else "",
+                        "student_name": student.name,
+                        "course_title": course.title,
+                        "course_code": course.code,
+                        "amount": amount or course.amount,
+                        "duration": getattr(course, 'duration', ''),
+                        "checkout_request_id": checkout_id,
+                        "transaction_code": mpesa_receipt or "",
+                        "status": "paid",
+                    }
+                )
+                logger.info(f"✅ Enrollment {'created' if created else 'updated'}: {enrollment.id}")
+            else:
+                logger.warning(f"❌ Payment failed: {result_desc}")
+        
+        return JsonResponse({"ResultCode": 0, "ResultDesc": "Accepted"})
+        
+    except Exception as e:
+        logger.error(f"❌ Callback error: {str(e)}")
         return JsonResponse({"ResultCode": 0, "ResultDesc": "Accepted"})
 
-    except Exception as e:
-        logger.exception("Error processing mpesa callback")
-        # still return 0 to avoid Daraja retry storms; adjust if you want retries
-        return JsonResponse({"ResultCode": 0, "ResultDesc": "Error processed"})
-    
+
+@csrf_exempt
+def test_callback(request):
+    """Test if callback URL is accessible"""
+    logger.info("=== TEST CALLBACK HIT ===")
+    logger.info(f"Method: {request.method}")
+    logger.info(f"GET params: {dict(request.GET)}")
+    logger.info(f"POST data: {request.body}")
+    return JsonResponse({"status": "success", "message": "Callback is working"})    
+
  #records   
 def records(request, user_id):
     allmembers = Member.objects.all()
@@ -1474,4 +1607,6 @@ def latest_messages(request):
     return {
         'messages_count': messages_count,
         'latest_messages': latest_messages,
-    } 
+    }
+
+

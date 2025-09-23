@@ -4,38 +4,174 @@
 <div class="text-center mt-5">
   <h4 class="text-secondary">Processing Payment...</h4>
   <p class="text-primary">Please complete the payment on your phone.</p>
-  <div class="spinner-border text-success" role="status"></div>
-  <p id="status-message" class="mt-3 text-muted">Waiting for confirmation...</p>
+  
+  <!-- Animated progress indicator -->
+  <div class="d-flex justify-content-center align-items-center mb-3">
+    <div class="spinner-border text-success" role="status" id="main-spinner"></div>
+    <div class="ms-3">
+      <div class="progress" style="width: 200px; height: 8px;">
+        <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+             role="progressbar" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+  
+  <p id="status-message" class="mt-3 text-muted">Waiting for payment confirmation...</p>
+  
+  <!-- Debug info -->
+  <div class="mt-3 small text-muted">
+    <p>Transaction ID: <code id="checkout-id">{{ checkout_id }}</code></p>
+    <p>Elapsed time: <span id="elapsed-time">0</span> seconds</p>
+  </div>
+</div>
+
+<!-- Manual fallback section (hidden initially) -->
+<div id="manual-fallback" style="display: none;" class="mt-4 p-3 border rounded bg-light text-center">
+  <h5 class="text-warning">Having issues?</h5>
+  <p class="mb-3">If you've completed the payment but still see this message:</p>
+  <a href="{% url 'student_dashboard' %}" class="btn btn-primary me-2">Check Dashboard</a>
+  <button onclick="location.reload()" class="btn btn-secondary me-2">Refresh Page</button>
+  <a href="{% url 'payment' user_id=studentinfo.id course_id=course.id %}" class="btn btn-outline-warning">Try Again</a>
 </div>
 
 <script>
   let pollInterval = null;
+  let pollCount = 0;
+  const maxPolls = 120; // 10 minutes max (120 * 5s = 10 minutes)
+  let startTime = new Date();
+  let elapsedSeconds = 0;
+
+  // Update elapsed time
+  function updateElapsedTime() {
+    elapsedSeconds = Math.floor((new Date() - startTime) / 1000);
+    document.getElementById('elapsed-time').textContent = elapsedSeconds;
+    
+    // Update progress bar (0-100% over 10 minutes)
+    const progressPercent = Math.min((elapsedSeconds / 600) * 100, 100);
+    document.getElementById('progress-bar').style.width = progressPercent + '%';
+  }
+
+  // Update elapsed time every second
+  setInterval(updateElapsedTime, 1000);
 
   function checkStatus() {
+    pollCount++;
+    updateElapsedTime();
+    
+    // Show manual fallback after 3 minutes
+    if (pollCount > 36) { // 36 * 5s = 3 minutes
+      document.getElementById('manual-fallback').style.display = 'block';
+    }
+    
+    // Stop after max polls
+    if (pollCount > maxPolls) {
+      clearInterval(pollInterval);
+      showManualFallback();
+      return;
+    }
+
     fetch("{% url 'check_payment_status' user_id course_id checkout_id %}")
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then(data => {
+        console.log("Poll response:", data);
+        
         if (data.status === "success") {
           clearInterval(pollInterval);
-          document.getElementById("status-message").innerText = "Payment successful! Redirecting...";
-          setTimeout(() => { window.location.href = "{% url 'student_dashboard' %}"; }, 1200);
+          showSuccess();
         } else if (data.status === "failed") {
           clearInterval(pollInterval);
-          document.getElementById("status-message").innerText = "Payment failed or cancelled. Redirecting to payment page...";
-          setTimeout(() => { window.location.href = "{% url 'payment' user_id=studentinfo.id course_id=course_id %}"; }, 1800);
+          showFailure();
         } else {
-          // still pending
-          console.log("payment pending...");
+          // Still pending - update status message occasionally
+          if (pollCount % 6 === 0) { // Every 30 seconds
+            const messages = [
+              "Still waiting for payment confirmation...",
+              "Payment processing...",
+              "Checking payment status...",
+              "Please wait while we confirm your payment..."
+            ];
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            document.getElementById("status-message").textContent = randomMessage;
+          }
         }
       })
       .catch(err => {
-        console.error("poll error", err);
+        console.error("Poll error:", err);
+        if (pollCount % 12 === 0) { // Show connection error every minute
+          document.getElementById("status-message").innerHTML = 
+            "<span class='text-warning'>⚠️ Connection issue. Still checking...</span>";
+        }
       });
   }
 
-  // start polling immediately and every 5s
+  function showSuccess() {
+    document.getElementById("main-spinner").classList.remove("spinner-border", "text-success");
+    document.getElementById("main-spinner").classList.add("text-success");
+    document.getElementById("main-spinner").innerHTML = "✅";
+    
+    document.getElementById("progress-bar").classList.remove("progress-bar-animated");
+    document.getElementById("progress-bar").classList.add("bg-success");
+    document.getElementById("progress-bar").style.width = "100%";
+    
+    document.getElementById("status-message").innerHTML = 
+      "<span class='text-success fw-bold'>✅ Payment successful! Redirecting to dashboard...</span>";
+    
+    setTimeout(() => { 
+      window.location.href = "{% url 'student_dashboard' %}"; 
+    }, 2000);
+  }
+
+  function showFailure() {
+    document.getElementById("main-spinner").classList.remove("spinner-border", "text-success");
+    document.getElementById("main-spinner").classList.add("text-danger");
+    document.getElementById("main-spinner").innerHTML = "❌";
+    
+    document.getElementById("progress-bar").classList.remove("progress-bar-animated");
+    document.getElementById("progress-bar").classList.add("bg-danger");
+    document.getElementById("progress-bar").style.width = "100%";
+    
+    document.getElementById("status-message").innerHTML = 
+      "<span class='text-danger fw-bold'>❌ Payment failed or cancelled.</span>" +
+      "<p class='text-muted mt-2'>Redirecting to payment page...</p>";
+    
+    setTimeout(() => { 
+      window.location.href = "{% url 'payment' user_id=studentinfo.id course_id=course.id %}"; 
+    }, 4000);
+  }
+
+  function showManualFallback() {
+    document.getElementById("main-spinner").classList.remove("spinner-border", "text-success");
+    document.getElementById("main-spinner").classList.add("text-warning");
+    document.getElementById("main-spinner").innerHTML = "⏰";
+    
+    document.getElementById("progress-bar").classList.remove("progress-bar-animated");
+    document.getElementById("progress-bar").classList.add("bg-warning");
+    
+    document.getElementById("status-message").innerHTML = 
+      "<span class='text-warning fw-bold'>⏰ Payment check timeout.</span>" +
+      "<p class='text-muted'>Please check your dashboard or try again.</p>";
+    
+    document.getElementById('manual-fallback').style.display = 'block';
+  }
+
+  // Start polling immediately
   checkStatus();
-  pollInterval = setInterval(checkStatus, 5000);
+  pollInterval = setInterval(checkStatus, 5000); // Check every 5 seconds
+
+  // Add a manual check button for debugging
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add a manual check button for testing
+    const manualCheckBtn = document.createElement('button');
+    manualCheckBtn.textContent = 'Check Now';
+    manualCheckBtn.className = 'btn btn-sm btn-outline-info mt-2';
+    manualCheckBtn.onclick = checkStatus;
+    document.querySelector('.text-muted').appendChild(manualCheckBtn);
+  });
 </script>
 
 <br><br><br><br><br><br><br><br><br><br>

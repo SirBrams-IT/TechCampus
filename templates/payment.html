@@ -1,158 +1,254 @@
 {% extends 'student-main.html' %}
 {% load static %}
-{% block  body %}
+{% block body %}
 
- {% if messages %}
-        <div>
-            {% for message in messages %}
-            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endfor %}
+<div id="mpesa-payment-container">
+    <img src="{% static 'assets/img/mpesa.png' %}" alt="mpesa" style="width: 100%">
+    <h3 class="text-secondary"> Payment for: <b class="text-primary">{{course.code}} </b></h3>
+    
+    <!-- Messages Container -->
+    <div id="message-container"></div>
+    
+    <form action="{% url 'stk' user_id course_id %}" method="POST" id="mpesa-payment-form">
+        {% csrf_token %}
+        <!-- Phone Number -->
+        <div class="form-group">
+            <label for="phone">Phone Number:</label>
+            <input
+                type="text"
+                id="phone"
+                name="phone"
+                value="254"
+                class="form-control"
+                placeholder="Enter M-Pesa phone number"
+                required>
         </div>
-        {% endif %}
-   <div id="mpesa-payment-container" >
-        <img src="{% static 'assets/img/mpesa.png' %}" alt="mpesa" style="width: 100%">
-         <h3 class="text-secondary"> Payment for: <b class="text-primary">{{course.code}} </b></h3>
-        <form action="{% url 'stk' user_id course_id %}" method="POST" id="mpesa-payment-form">
-          {% csrf_token %}
-            <!-- Phone Number -->
-            <div class="form-group">
-                <label for="phone">Phone Number:</label>
-                <input
-                    type="text"
-                    id="phone"
-                    name="phone"
-                      value="254"
-                    class="form-control"
-                    placeholder="Enter M-Pesa phone number"
-                    required>
+
+        <!-- Amount -->
+        <div class="form-group">
+            <label for="amount">Amount (KES):</label>
+            <input
+                type="number"
+                id="amount"
+                name="amount"
+                class="form-control"
+                value="{{ course.amount }}"
+                readonly>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-success" id="pay-button">
+            <span id="button-text">Pay Now</span>
+            <div id="button-spinner" class="spinner-border spinner-border-sm" role="status" style="display: none;">
+                <span class="visually-hidden">Loading...</span>
             </div>
-
-            <!-- Amount -->
-            <div class="form-group">
-                <label for="amount">Amount (KES):</label>
-                <input
-                    type="number"
-                    id="amount"
-                    name="amount"
-                    class="form-control"
-                    value="{{ course.amount }}"
-                    readonly>
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-success">Pay Now</button>
-        </form>
-    </div>
-
-    <!-- Inline Scoped Styling -->
-    <style>
-        #mpesa-payment-container {
-            max-width: 400px;
-            margin-top: 40px ;
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 2px 4px green;
-        }
-
-        #mpesa-payment-container h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        #mpesa-payment-container .form-group {
-            margin-bottom: 15px;
-        }
-
-        #mpesa-payment-container label {
-            font-size: 14px;
-            color: #333;
-        }
-
-        #mpesa-payment-container .form-control {
-            width: 100%;
-            padding: 10px;
-            font-size: 14px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        #mpesa-payment-container .btn {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            color: #fff;
-            background-color: #28a745;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #mpesa-payment-container .btn:hover {
-            background-color: #218838;
-        }
-
-    </style>
-
-    <!-- Payment Modal -->
-<div class="modal fade" id="paymentModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content p-3">
-      <h5 class="modal-title">Processing Payment...</h5>
-      <div class="modal-body">
-        <p>Please complete the payment on your phone. Waiting for confirmation...</p>
-      </div>
-    </div>
-  </div>
+        </button>
+    </form>
 </div>
 
+<style>
+    #mpesa-payment-container {
+        max-width: 400px;
+        margin-top: 40px ;
+        background: white;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 2px 4px green;
+    }
+
+    #mpesa-payment-container h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    #mpesa-payment-container .form-group {
+        margin-bottom: 15px;
+    }
+
+    #mpesa-payment-container label {
+        font-size: 14px;
+        color: #333;
+    }
+
+    #mpesa-payment-container .form-control {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        margin-top: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    #mpesa-payment-container .btn {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        color: #fff;
+        background-color: #28a745;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    #mpesa-payment-container .btn:hover {
+        background-color: #218838;
+    }
+
+    #mpesa-payment-container .btn:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+    }
+
+    .alert {
+        padding: 12px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .alert-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+</style>
+
 <script>
-document.getElementById("payForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    let formData = new FormData(this);
-    fetch(this.action, {
-        method: "POST",
+document.getElementById('mpesa-payment-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent normal form submission
+    
+    const form = e.target;
+    const button = document.getElementById('pay-button');
+    const buttonText = document.getElementById('button-text');
+    const spinner = document.getElementById('button-spinner');
+    const messageContainer = document.getElementById('message-container');
+    
+    // Clear previous messages
+    messageContainer.innerHTML = '';
+    
+    // Show loading state
+    button.disabled = true;
+    buttonText.textContent = 'Processing...';
+    spinner.style.display = 'inline-block';
+    
+    // Get form data
+    const formData = new FormData(form);
+    
+    // Submit via AJAX
+    fetch(form.action, {
+        method: 'POST',
         body: formData,
-        headers: {"X-CSRFToken": "{{ csrf_token }}"}
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === "initiated") {
-            // Show modal
-            let modal = new bootstrap.Modal(document.getElementById("paymentModal"));
-            modal.show();
-
-            // Start polling
-            let checkUrl = `/check-payment/${data.enrollment_id}/`;
-            let interval = setInterval(() => {
-                fetch(checkUrl)
-                .then(r => r.json())
-                .then(result => {
-                    if (result.status === "paid_pending_approval") {
-                        clearInterval(interval);
-                        modal.hide();
-                        window.location.href = "{% url 'student_dashboard' %}";
-                    } else if (result.status === "failed") {
-                        clearInterval(interval);
-                        modal.hide();
-                        alert("Payment failed. Please try again.");
-                    }
-                });
-            }, 4000); // check every 4s
-        } else {
-            alert("Error initiating payment. Try again.");
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
         }
+    })
+    .then(response => {
+        // First, check if it's a redirect
+        if (response.redirected) {
+            // If it's a redirect, follow it immediately
+            window.location.href = response.url;
+            return;
+        }
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return response.json();
+        } else {
+            // If not JSON, it might be HTML (error page)
+            throw new Error('Invalid response from server');
+        }
+    })
+    .then(data => {
+        if (data) {
+            if (data.redirect_url) {
+                // Redirect to payment status page
+                showMessage('✅ Payment initiated successfully! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 1500);
+            } else if (data.success) {
+                // Show success message and redirect
+                showMessage('✅ ' + data.success, 'success');
+                setTimeout(() => {
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        // Fallback redirect
+                        window.location.href = "{% url 'payment_status' user_id course_id %}";
+                    }
+                }, 2000);
+            } else if (data.error) {
+                // Show error message
+                showMessage('❌ ' + data.error, 'error');
+                // Reset button
+                resetButton();
+            } else {
+                // Unknown response format
+                showMessage('❌ Unexpected response from server', 'error');
+                resetButton();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('❌ An error occurred. Please try again.', 'error');
+        resetButton();
     });
+    
+    function resetButton() {
+        button.disabled = false;
+        buttonText.textContent = 'Pay Now';
+        spinner.style.display = 'none';
+    }
+});
+
+function showMessage(message, type) {
+    const messageContainer = document.getElementById('message-container');
+    const alertClass = type === 'error' ? 'alert-error' : 
+                      type === 'success' ? 'alert-success' : 'alert-info';
+    
+    messageContainer.innerHTML = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    
+    // Auto-dismiss after 5 seconds for success messages
+    if (type === 'success') {
+        setTimeout(() => {
+            const alert = messageContainer.querySelector('.alert');
+            if (alert) {
+                alert.remove();
+            }
+        }, 5000);
+    }
+}
+
+// Check if there are Django messages and display them
+document.addEventListener('DOMContentLoaded', function() {
+    {% if messages %}
+        {% for message in messages %}
+            showMessage("{{ message }}", "{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}");
+        {% endfor %}
+    {% endif %}
 });
 </script>
 
-
-  {% endblock %}
 <br><br><br>
-
-
+{% endblock %}

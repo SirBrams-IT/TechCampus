@@ -6,6 +6,7 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env()
@@ -93,6 +94,14 @@ TEMPLATES = [
     },
 ]
 
+# Use database cache as it's more reliable than local memory cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache_table',
+    }
+}
+
 # Detect environment
 ENVIRONMENT = os.environ.get("DJANGO_ENV", "development")  # default is development
 
@@ -175,6 +184,12 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=False, cast=bool)
+
+# M-Pesa Configuration
+MPESA_CONSUMER_KEY = config("MPESA_CONSUMER_KEY", default="")
+MPESA_CONSUMER_SECRET = config("MPESA_CONSUMER_SECRET", default="")
+MPESA_BUSINESS_SHORTCODE = config("MPESA_BUSINESS_SHORTCODE", default="174379")
+MPESA_PASSKEY = config("MPESA_PASSKEY", default="bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919")
 
 # 🔐 CSRF
 CSRF_TRUSTED_ORIGINS = [
