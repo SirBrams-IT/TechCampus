@@ -333,8 +333,12 @@ STATUS_CHOICES = [
 ]
 
 class Enrollment(models.Model):
-    student = models.ForeignKey('TechApp.Member', on_delete=models.CASCADE, related_name='enrollments')
-    course = models.ForeignKey('TechApp.Course', on_delete=models.CASCADE, related_name='enrollments')
+    student = models.ForeignKey(
+        'TechApp.Member', on_delete=models.CASCADE, related_name='enrollments'
+    )
+    course = models.ForeignKey(
+        'TechApp.Course', on_delete=models.CASCADE, related_name='enrollments'
+    )
 
     # Snapshots for easy display + history
     mentor_name = models.CharField(max_length=255)
@@ -356,6 +360,7 @@ class Enrollment(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        unique_together = ('student', 'course')  # 🚨 prevents duplicate payments per course per student
 
     def __str__(self):
         return f"{self.student_name} -> {self.course_title} ({self.status})"

@@ -2,70 +2,323 @@
 {% load static %}
 {% block body %}
 
-<div class="container mt-2">
-    <h1 class="text-center text-primary mb-3">Our Courses</h1> 
+<style>
+       .course-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .course-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 123, 255, 0.2) !important;
+    }
+    
+    .price-tag {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .free-badge {
+        background: linear-gradient(135deg, #6c757d, #a0a0a0);
+    }
+    
+    .enrolled-badge {
+        background: linear-gradient(135deg, #17a2b8, #6f42c1);
+    }
+    
+    .course-image {
+        height: 200px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .course-card:hover .course-image {
+        transform: scale(1.05);
+    }
+    
+    .mentor-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e9ecef;
+    }
+    
+    .section-header {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border-radius: 15px 15px 0 0;
+        padding: 1.5rem;
+    }
+    
+    .feature-badge {
+        background: rgba(0, 123, 255, 0.1);
+        color: #007bff;
+        border: 1px solid rgba(0, 123, 255, 0.2);
+        border-radius: 8px;
+        padding: 3px 10px;
+        font-size: 0.8rem;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+</style>
+<div class="container-fluid mt-4">
+    <!-- Page Messages -->
+    {% if messages %}
+        {% for msg in messages %}
+            <div class="alert alert-{{ msg.tags }} alert-dismissible fade show mt-2" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>{{ msg }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Header Section -->
+    <div class="row mb-2">
+        <div class="col-12 text-center">
+            <h1 class="display-5 fw-bold text-primary mb-3">Discover Our Courses</h1>
+            <p class="lead text-muted">Choose from our carefully curated selection of premium and free courses</p>
+        </div>
+    </div>
 
     <!-- Premium Courses Section -->
-    <div class="card mb-5 shadow-lg">
-        <div class="card-header bg-primary text-white">
-            <h2 class="card-title mb-0">Premium Courses</h2>
+    <div class="card mb-5 shadow-lg border-0">
+        <div class="section-header text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="card-title mb-1 fw-bold">
+                        <i class="bi bi-star-fill me-2"></i>Premium Courses
+                    </h2>
+                    <p class="mb-0 opacity-75">Professional courses with expert mentorship</p>
+                </div>
+                <span class="badge bg-light text-primary fs-6 px-3 py-2">
+                    {{ courses|length }} Courses Available
+                </span>
+            </div>
         </div>
-        <div class="card-body mt-2">
-            <div class="row">
-
+        <div class="card-body p-4">
+            {% if courses %}
+            <div class="row g-4">
                 {% for course in courses %}
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 border-info">
-                        <!-- course image -->
-                        {% if course.course_images %}
-                            <img src="{{ course.course_images.url }}" alt="{{ course.title }}" class="img-fluid rounded shadow" style="height: 200px;">
-                        {% endif %}
-
-                        <div class="card-body">
-                            <h5 class="card-title text-info">{{ course.title }}</h5>
-                            <p><strong>Price:</strong> Ksh {{ course.amount }}</p>
-                            <p><strong>Duration:</strong> {{ course.duration }}</p>
-                            <p><strong>Instructor:</strong> {{ course.mentor.name }}</p>
-                            <a href="{% url 'payment' studentinfo.id course.id %}" class="btn btn-info w-100">Enroll Now</a>
+                <div class="col-xl-4 col-lg-6 col-md-6">
+                    <div class="card course-card h-100 shadow-sm">
+                        <div class="position-relative overflow-hidden">
+                            {% if course.course_images %}
+                                <img src="{{ course.course_images.url }}" 
+                                     alt="{{ course.title }}" 
+                                     class="course-image w-100">
+                            {% else %}
+                                <div class="course-image w-100 bg-gradient-primary d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-book display-4 text-white"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="price-tag">
+                                Ksh {{ course.amount }}
+                            </div>
+                            
+                            {% if course.id in enrolled_ids %}
+                                <div class="position-absolute top-15 left-15">
+                                    <span class="badge enrolled-badge px-3 py-2">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Enrolled
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column p-4">
+                            <div class="mb-3">
+                                <h5 class="card-title fw-bold text-dark mb-2 line-clamp-2">
+                                    {{ course.title }}
+                                </h5>
+                                <div class="d-flex flex-wrap mb-2">
+                                    <span class="feature-badge">
+                                        <i class="bi bi-clock me-1"></i>{{ course.duration }}
+                                    </span>
+                                    <span class="feature-badge">
+                                        <i class="bi bi-person me-1"></i>Mentor-led
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <p class="card-text text-muted small flex-grow-1 mb-3">
+                                {{ course.description|default:"Comprehensive course with expert guidance"|truncatewords:20 }}
+                            </p>
+                            
+                            <div class="d-flex align-items-center justify-content-between mt-auto">
+                                <div class="d-flex align-items-center">
+                                    {% if course.mentor.profile_picture %}
+                                        <img src="{{ course.mentor.profile_picture.url }}" 
+                                             alt="{{ course.mentor.name }}" 
+                                             class="mentor-avatar me-2">
+                                    {% else %}
+                                        <div class="mentor-avatar bg-secondary d-flex align-items-center justify-content-center me-2">
+                                            <i class="bi bi-person text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                    <small class="text-muted">{{ course.mentor.name|default:"Expert Mentor" }}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                {% if course.id in enrolled_ids %}
+                                    <a href="{% url 'mycourses' studentinfo.id %}" 
+                                       class="btn btn-success w-100 rounded-2 fw-semibold py-2">
+                                        <i class="bi bi-play-circle me-2"></i>Enrolled Course
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'payment' studentinfo.id course.id %}" 
+                                       class="btn btn-primary w-100 rounded-2 fw-semibold py-2">
+                                        <i class="bi bi-lock-fill me-2"></i>Enroll Now - Ksh {{ course.amount }}
+                                    </a>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
-
             </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-star display-1 text-muted"></i>
+                </div>
+                <h5 class="text-muted">No Premium Courses Available</h5>
+                <p class="text-muted">Check back later for new course offerings</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 
     <!-- Free Courses Section -->
-    <div class="card shadow-lg">
-        <div class="card-header bg-primary text-white">
-            <h2 class="card-title mb-0">Free Courses</h2>
+    <div class="card shadow-lg border-0">
+        <div class="section-header text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="card-title mb-1 fw-bold">
+                        <i class="bi bi-gift-fill me-2"></i>Free Courses
+                    </h2>
+                    <p class="mb-0 opacity-75">Start learning with our free course offerings</p>
+                </div>
+                <span class="badge bg-light text-primary fs-6 px-3 py-2">
+                    6 Courses Available
+                </span>
+            </div>
         </div>
-        <div class="card-body">
-            <ul class="list-group">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    Basic Networking
-                    <a href="#" class="btn btn-outline-primary btn-sm">Free</a>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    Introduction to Computers
-                    <a href="#" class="btn btn-outline-primary btn-sm">Free</a>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    Digital Marketing
-                    <a href="#" class="btn btn-outline-primary btn-sm">Free</a>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    Time Management Skills
-                    <a href="#" class="btn btn-outline-primary btn-sm">Free</a>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    Career Planning Basics
-                    <a href="#" class="btn btn-outline-primary btn-sm">Free</a>
-                </li>
-            </ul>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body d-flex align-items-center p-4">
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold text-dark mb-1">Basic Networking</h6>
+                                <small class="text-muted">Learn fundamental networking concepts</small>
+                            </div>
+                            <a href="#" class="btn btn-outline-primary rounded-2 px-3">
+                                Start Free
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body d-flex align-items-center p-4">
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold text-dark mb-1">Introduction to Computers</h6>
+                                <small class="text-muted">Computer basics for beginners</small>
+                            </div>
+                            <a href="#" class="btn btn-outline-primary rounded-2 px-3">
+                                Start Free
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body d-flex align-items-center p-4">
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold text-dark mb-1">Digital Marketing</h6>
+                                <small class="text-muted">Essential digital marketing skills</small>
+                            </div>
+                            <a href="#" class="btn btn-outline-primary rounded-2 px-3">
+                                Start Free
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body d-flex align-items-center p-4">
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold text-dark mb-1">Time Management Skills</h6>
+                                <small class="text-muted">Boost your productivity</small>
+                            </div>
+                            <a href="#" class="btn btn-outline-primary rounded-2 px-3">
+                                Start Free
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body d-flex align-items-center p-4">
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold text-dark mb-1">Career Planning Basics</h6>
+                                <small class="text-muted">Plan your career path</small>
+                            </div>
+                            <a href="#" class="btn btn-outline-primary rounded-2 px-3">
+                                Start Free
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body d-flex align-items-center p-4">
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold text-dark mb-1">Communication Skills</h6>
+                                <small class="text-muted">Improve your communication</small>
+                            </div>
+                            <a href="#" class="btn btn-outline-primary rounded-2 px-3">
+                                Start Free
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>  
-</div> 
+    </div>
+</div>
+
+<script>
+    // Add smooth animations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate cards on scroll
+        const cards = document.querySelectorAll('.course-card');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cards.forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+    });
+</script>
 
 {% endblock %}

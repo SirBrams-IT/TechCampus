@@ -1,0 +1,66 @@
+   .course-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .course-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 123, 255, 0.2) !important;
+    }
+    
+    .price-tag {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .free-badge {
+        background: linear-gradient(135deg, #6c757d, #a0a0a0);
+    }
+    
+    .enrolled-badge {
+        background: linear-gradient(135deg, #17a2b8, #6f42c1);
+    }
+    
+    .course-image {
+        height: 200px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .course-card:hover .course-image {
+        transform: scale(1.05);
+    }
+    
+    .mentor-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e9ecef;
+    }
+    
+    .section-header {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        border-radius: 15px 15px 0 0;
+        padding: 1.5rem;
+    }
+    
+    .feature-badge {
+        background: rgba(0, 123, 255, 0.1);
+        color: #007bff;
+        border: 1px solid rgba(0, 123, 255, 0.2);
+        border-radius: 8px;
+        padding: 3px 10px;
+        font-size: 0.8rem;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }

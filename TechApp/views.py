@@ -442,21 +442,62 @@ def delete_account_view(request, id):
     return redirect('register')
 
 # available courses
-def available_courses(request,user_id):
-    courses = Course.objects.select_related("mentor").all()
+def available_courses(request, user_id):
     studentinfo = get_object_or_404(Member, id=user_id)
-    return render(request,'available_courses.html',{'studentinfo':studentinfo, 'courses':courses})
+    courses = Course.objects.select_related("mentor").all()
+
+    # get enrolled course IDs for this student
+    enrolled_ids = Enrollment.objects.filter(
+        student=studentinfo
+    ).values_list("course_id", flat=True)
+
+    return render(request, 'available_courses.html', {
+        'studentinfo': studentinfo,
+        'courses': courses,
+        'enrolled_ids': set(enrolled_ids),  # pass set for fast lookup
+    })
+
 
 # Payment form
 def payment(request, user_id, course_id):
-    student = get_object_or_404(Member, id=user_id)
+    studentinfo = get_object_or_404(Member, id=user_id)
     course = get_object_or_404(Course, id=course_id)
 
-    return render(request, 'payment.html', {
-        'studentinfo': student,
-        'course': course,
-        'user_id': user_id,
-        'course_id': course_id
+    # ✅ Check if enrollment already exists
+    existing_enrollment = Enrollment.objects.filter(
+        student=studentinfo, course=course,
+    ).first()
+
+    if existing_enrollment:
+    # Fetch all enrollments for consistency
+       enrollments = Enrollment.objects.filter(student=studentinfo).select_related("course")
+    
+       return render(request, "enrolled_courses.html", {
+        "studentinfo": studentinfo,
+        "enrollments": enrollments,
+        "message": f"You are already enrolled in {course.title}."
+       })
+
+    # If not enrolled, continue to payment page
+    return render(request, "payment.html", {
+        "studentinfo": studentinfo,
+        "course": course,
+        "user_id": user_id,
+        "course_id": course_id
+    })
+
+# enrolled courses
+def enrolled_courses(request, user_id):
+    studentinfo = get_object_or_404(Member, id=user_id)
+
+    # Fetch all enrollments for this student (not just approved)
+    enrollments = Enrollment.objects.filter(
+        student=studentinfo
+    ).select_related("course")
+
+    return render(request, 'enrolled_courses.html', {
+        'studentinfo': studentinfo,
+        'enrollments': enrollments
     })
 
 
@@ -497,7 +538,8 @@ def stk(request, user_id, course_id):
                 messages.error(request, error_msg)
                 return redirect("payment", user_id=student.id, course_id=course.id)
 
-        # Build callback URL
+        # Build callback                      
+
         if settings.DEBUG:
             callback_url = f"http://localhost:8000/mpesa/callback/?student_id={student.id}&course_id={course.id}"
         else:
@@ -791,29 +833,13 @@ def mpesa_callback(request):
     except Exception as e:
         logger.error(f"❌ Callback error: {str(e)}")
         return JsonResponse({"ResultCode": 0, "ResultDesc": "Accepted"})
-
-
-@csrf_exempt
-def test_callback(request):
-    """Test if callback URL is accessible"""
-    logger.info("=== TEST CALLBACK HIT ===")
-    logger.info(f"Method: {request.method}")
-    logger.info(f"GET params: {dict(request.GET)}")
-    logger.info(f"POST data: {request.body}")
-    return JsonResponse({"status": "success", "message": "Callback is working"})    
+   
 
  #records   
 def records(request, user_id):
     allmembers = Member.objects.all()
     admininfo = get_object_or_404(AdminLogin, id=user_id)
     return render(request,'records.html',{'member':allmembers,'admininfo':admininfo})
-
-
-#enrolled courses
-def enrolled_courses(request,user_id):
-    courses = Course.objects.select_related("student").all()
-    studentinfo = get_object_or_404(Member, id=user_id)
-    return render(request,'enrolled_courses.html',{'studentinfo':studentinfo, 'courses':courses})
 
 #mentor update student info view
 def updates(request, id):

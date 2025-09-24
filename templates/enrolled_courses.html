@@ -1,102 +1,170 @@
 {% extends 'student-main.html' %}
 {% load static %}
-{% block  body %}
+{% block body %}
 
 <div class="row mt-3">
-        <!-- Enrolled Courses Section -->
-        <div class="col-lg-8">
-          <div class="card dashboard-card">
-            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-              <h5 class="card-title mb-0 text-primary">My Enrolled Courses</h5>
-              <a href="{% url 'available_courses' studentinfo.id %}" class="btn btn-sm btn-outline-primary">View All</a>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                {% if course %}
-                  {% for enrolled_courses in course %}
-                  <div class="col-md-6 mb-3">
-                    <div class="card course-card h-100">
-                      <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                          <h6 class="card-title mb-0">{{ enrolled_courses.title }}</h6>
-                          <span class="badge bg-{% if course.status == 'Completed' %}success{% elif course.status == 'In Progress' %}primary{% else %}warning{% endif %}">
-                            {{ enrolled_courses.status }}
-                          </span>
-                        </div>
-                        <p class="card-text text-muted small">{{ enrolled_courses.description|truncatewords:15 }}</p>
-                        <div class="mb-2">
-                          <small class="text-muted">Progress: {{ enrolled_courses.progress }}%</small>
-                          <div class="progress course-progress mt-1">
-                            <div class="progress-bar bg-{% if course.progress > 75 %}success{% elif course.progress > 50 %}info{% elif course.progress > 25 %}warning{% else %}danger{% endif %}" 
-                                 role="progressbar" style="width: {{ course.progress }}%" 
-                                 aria-valuenow="{{ course.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                          <small class="text-muted">{{ enrolled_courses.lessons_completed }}/{{ enrolled_courses.total_lessons }} lessons</small>
-                          <a href="{% url 'course_detail' course.id %}" class="btn btn-sm btn-outline-primary">Continue</a>
-                        </div>
+  <!-- Enrolled Courses Section -->
+  <div class="col-lg-8">
+    <div class="card dashboard-card shadow-sm border-0 rounded-3">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center border-bottom">
+        <h5 class="card-title mb-0 text-primary fw-bold">
+          <i class="bi bi-book me-2"></i> My Enrolled Courses
+        </h5>
+        <a href="{% url 'available_courses' studentinfo.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+          <i class="bi bi-plus-circle me-1"></i> Browse Courses
+        </a>
+      </div>
+      <div class="card-body">
+        <div class="row">
+         
+          {% if enrollments %}
+            {% for enrollment in enrollments %}
+              <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm border-0 rounded-3 hover-shadow transition">
+                  
+                  <!-- Course Image -->
+                  {% if enrollment.course.course_images %}
+                    <img src="{{ enrollment.course.course_images.url }}" 
+                         alt="{{ enrollment.course.title }}" 
+                         class="card-img-top rounded-top" 
+                         style="height: 150px; object-fit: cover;">
+                     {% endif %}
+                  <div class="card-body d-flex flex-column p-3">
+                    
+                    <!-- Title + Status -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <h6 class="fw-bold mb-1 text-primary">{{ enrollment.course_title }}</h6>
+                        <small class="text-muted text-center">({{ enrollment.course_code }})</small>
                       </div>
+                      <span class="badge rounded-pill px-3 py-2
+                        {% if enrollment.status == 'approved' %} bg-success
+                        {% else %} bg-warning text-dark {% endif %}">
+                        {% if enrollment.status == 'approved' %}
+                          <i class="bi bi-check-circle me-1"></i> Approved
+                        {% else %}
+                          <i class="bi bi-clock me-1"></i> Pending
+                        {% endif %}
+                      </span>
+                    </div>
+
+                    <!-- Description -->
+                    <p class="text-muted small flex-grow-1 mb-0 ">
+                      {{ enrollment.course.description|default:"No description available"|truncatewords:18}}
+                    </p>
+
+                    <!-- Metadata -->
+                    <div class="mb-2">
+                      <small class="d-block text-muted">
+                        <i class="bi bi-clock me-1 text-primary"></i> Duration: {{ enrollment.duration }}
+                      </small>
+                      <small class="d-block text-muted">
+                        <i class="bi bi-person me-1 text-primary"></i> Mentor: {{ enrollment.mentor_name }}
+                      </small>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <div class="mt-auto">
+                      {% if enrollment.status == "approved" %}
+                        <a href="{% url 'course_detail' enrollment.course.id %}" 
+                           class="btn btn-primary w-100 btn-sm rounded-pill">
+                          <i class="bi bi-play-circle me-1"></i> Continue Learning
+                        </a>
+                      {% else %}
+                        <button class="btn btn-secondary w-100 btn-sm rounded-pill" disabled>
+                          <i class="bi bi-clock me-1"></i> Pending Mentor Approval
+                        </button>
+                      {% endif %}
                     </div>
                   </div>
-                  {% endfor %}
-                {% else %}
-                  <div class="col-12 text-center py-4">
-                    <i class="bi bi-book display-4 text-muted"></i>
-                    <p class="text-muted mt-3">You haven't enrolled in any courses yet.</p>
-                    <a href="{% url 'available_courses' studentinfo.id %}" class="btn btn-primary">Browse Courses</a>
-                  </div>
-                {% endif %}
+                </div>
               </div>
+            {% endfor %}
+          {% else %}
+            <div class="col-12 text-center py-5">
+              <div class="mb-4">
+                <i class="bi bi-book display-1 text-primary bg-light rounded-circle p-4 shadow-sm"></i>
+              </div>
+              <h5 class="text-muted">No Enrolled Courses Yet</h5>
+              <p class="text-muted mb-4">Start your learning journey by enrolling in available courses.</p>
+              <a href="{% url 'available_courses' studentinfo.id %}" class="btn btn-primary px-4 rounded-pill">
+                <i class="bi bi-search me-2"></i> Browse Available Courses
+              </a>
             </div>
-          </div>
+          {% endif %}
         </div>
+      </div>
+    </div>
+  </div>
 
-        <!-- Upcoming Activities -->
-        <div class="col-lg-4">
-          <div class="card dashboard-card">
-            <div class="card-header bg-transparent">
-              <h5 class="card-title mb-0 text-primary">Upcoming Activities</h5>
+  <!-- Sidebar -->
+  <div class="col-lg-4">
+    <!-- Upcoming Activities -->
+    <div class="card dashboard-card shadow-sm border-0 rounded-3 mb-4">
+      <div class="card-header bg-white border-bottom">
+        <h5 class="card-title mb-0 text-primary fw-bold">
+          <i class="bi bi-calendar-event me-2"></i> Upcoming Activities
+        </h5>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex align-items-center py-3 border-0">
+            <i class="bi bi-clock-fill text-warning fs-5"></i>
+            <div class="ms-3">
+              <span class="fw-medium d-block">Assignment 1 due in 2 days</span>
+              <small class="text-muted">Web Development Fundamentals</small>
             </div>
-            <div class="card-body p-0">
-              <ul class="list-group list-group-flush upcoming-activities">
-                <li class="list-group-item d-flex align-items-center">
-                  <i class="bi bi-clock text-warning me-2"></i>
-                  <div>
-                    <span class="d-block">Assignment 1 due in 2 days</span>
-                    <small class="text-muted">Web Development Fundamentals</small>
-                  </div>
-                </li>
-                <li class="list-group-item d-flex align-items-center">
-                  <i class="bi bi-calendar-event text-info me-2"></i>
-                  <div>
-                    <span class="d-block">Live session: "Web Design Basics"</span>
-                    <small class="text-muted">Tomorrow at 3 PM</small>
-                  </div>
-                </li>
-                <li class="list-group-item d-flex align-items-center">
-                  <i class="bi bi-flag text-danger me-2"></i>
-                  <div>
-                    <span class="d-block">Project submission deadline</span>
-                    <small class="text-muted">Friday</small>
-                  </div>
-                </li>
-                {% if mentor %}
-                <li class="list-group-item d-flex align-items-center">
-                  <i class="bi bi-person text-success me-2"></i>
-                  <div>
-                    <span class="d-block">Mentor meeting with {{ mentor.member.name }}</span>
-                    <small class="text-muted">Friday at 10 AM</small>
-                  </div>
-                </li>
-                {% endif %}
-              </ul>
+          </li>
+          <li class="list-group-item d-flex align-items-center py-3 border-0">
+            <i class="bi bi-calendar-check text-info fs-5"></i>
+            <div class="ms-3">
+              <span class="fw-medium d-block">Live session: "Web Design Basics"</span>
+              <small class="text-muted">Tomorrow at 3 PM</small>
             </div>
-            <div class="card-footer bg-transparent text-center">
-              <a href="#" class="btn btn-sm btn-outline-primary">View All Activities</a>
+          </li>
+          <li class="list-group-item d-flex align-items-center py-3 border-0">
+            <i class="bi bi-flag-fill text-danger fs-5"></i>
+            <div class="ms-3">
+              <span class="fw-medium d-block">Project submission deadline</span>
+              <small class="text-muted">Friday</small>
             </div>
-          </div>
+          </li>
+          {% if mentor %}
+          <li class="list-group-item d-flex align-items-center py-3 border-0">
+            <i class="bi bi-person-check text-success fs-5"></i>
+            <div class="ms-3">
+              <span class="fw-medium d-block">Mentor meeting with {{ mentor.member.name }}</span>
+              <small class="text-muted">Friday at 10 AM</small>
+            </div>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+      <div class="card-footer bg-white text-center border-0">
+        <a href="#" class="btn btn-sm btn-outline-primary rounded-pill">
+          <i class="bi bi-list-ul me-1"></i> View All Activities
+        </a>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="card shadow-sm border-0 rounded-3">
+      <div class="card-header bg-white border-bottom">
+        <h5 class="card-title mb-0 text-primary fw-bold">
+          <i class="bi bi-graph-up me-2"></i> Learning Progress
+        </h5>
+      </div>
+      <div class="card-body text-center py-4">
+        <div class="progress mx-auto" style="height: 12px; width: 80%;">
+          <div class="progress-bar bg-success rounded-pill" role="progressbar" style="width: 65%;" 
+               aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
-      </div> <br><br><br>
+        <h4 class="text-primary mt-3">65%</h4>
+        <p class="text-muted small mb-0">Overall course completion</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-{%endblock %}
+<br><br><br>
+{% endblock %}

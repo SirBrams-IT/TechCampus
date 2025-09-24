@@ -22,6 +22,7 @@
   <div class="mt-3 small text-muted">
     <p>Transaction ID: <code id="checkout-id">{{ checkout_id }}</code></p>
     <p>Elapsed time: <span id="elapsed-time">0</span> seconds</p>
+    <p id="countdown-timer" class="fw-bold text-danger">Time remaining: 5:00</p>
   </div>
 </div>
 
@@ -37,36 +38,39 @@
 <script>
   let pollInterval = null;
   let pollCount = 0;
-  const maxPolls = 120; // 10 minutes max (120 * 5s = 10 minutes)
+  const maxPolls = 60; // 5 minutes max (60 * 5s = 5 minutes)
+  const totalTime = 300; // 5 minutes = 300 seconds
   let startTime = new Date();
   let elapsedSeconds = 0;
 
-  // Update elapsed time
+  // Update elapsed time and countdown
   function updateElapsedTime() {
     elapsedSeconds = Math.floor((new Date() - startTime) / 1000);
     document.getElementById('elapsed-time').textContent = elapsedSeconds;
-    
-    // Update progress bar (0-100% over 10 minutes)
-    const progressPercent = Math.min((elapsedSeconds / 600) * 100, 100);
+
+    // Countdown
+    let remaining = Math.max(totalTime - elapsedSeconds, 0);
+    let minutes = Math.floor(remaining / 60);
+    let seconds = remaining % 60;
+    document.getElementById('countdown-timer').textContent =
+      `Time remaining: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    // Update progress bar (0-100% over 5 minutes = 300s)
+    const progressPercent = Math.min((elapsedSeconds / totalTime) * 100, 100);
     document.getElementById('progress-bar').style.width = progressPercent + '%';
   }
 
-  // Update elapsed time every second
+  // Update every second
   setInterval(updateElapsedTime, 1000);
 
   function checkStatus() {
     pollCount++;
     updateElapsedTime();
-    
-    // Show manual fallback after 3 minutes
-    if (pollCount > 36) { // 36 * 5s = 3 minutes
-      document.getElementById('manual-fallback').style.display = 'block';
-    }
-    
-    // Stop after max polls
+
+    // Stop after max polls (5 minutes)
     if (pollCount > maxPolls) {
       clearInterval(pollInterval);
-      showManualFallback();
+      showTimeout();
       return;
     }
 
@@ -79,7 +83,7 @@
       })
       .then(data => {
         console.log("Poll response:", data);
-        
+
         if (data.status === "success") {
           clearInterval(pollInterval);
           showSuccess();
@@ -102,8 +106,8 @@
       })
       .catch(err => {
         console.error("Poll error:", err);
-        if (pollCount % 12 === 0) { // Show connection error every minute
-          document.getElementById("status-message").innerHTML = 
+        if (pollCount % 6 === 0) { // Show connection issue every 30s
+          document.getElementById("status-message").innerHTML =
             "<span class='text-warning'>⚠️ Connection issue. Still checking...</span>";
         }
       });
@@ -113,16 +117,16 @@
     document.getElementById("main-spinner").classList.remove("spinner-border", "text-success");
     document.getElementById("main-spinner").classList.add("text-success");
     document.getElementById("main-spinner").innerHTML = "✅";
-    
+
     document.getElementById("progress-bar").classList.remove("progress-bar-animated");
     document.getElementById("progress-bar").classList.add("bg-success");
     document.getElementById("progress-bar").style.width = "100%";
-    
-    document.getElementById("status-message").innerHTML = 
+
+    document.getElementById("status-message").innerHTML =
       "<span class='text-success fw-bold'>✅ Payment successful! Redirecting to dashboard...</span>";
-    
-    setTimeout(() => { 
-      window.location.href = "{% url 'student_dashboard' %}"; 
+
+    setTimeout(() => {
+      window.location.href = "{% url 'student_dashboard' %}";
     }, 2000);
   }
 
@@ -130,49 +134,43 @@
     document.getElementById("main-spinner").classList.remove("spinner-border", "text-success");
     document.getElementById("main-spinner").classList.add("text-danger");
     document.getElementById("main-spinner").innerHTML = "❌";
-    
+
     document.getElementById("progress-bar").classList.remove("progress-bar-animated");
     document.getElementById("progress-bar").classList.add("bg-danger");
     document.getElementById("progress-bar").style.width = "100%";
-    
-    document.getElementById("status-message").innerHTML = 
+
+    document.getElementById("status-message").innerHTML =
       "<span class='text-danger fw-bold'>❌ Payment failed or cancelled.</span>" +
       "<p class='text-muted mt-2'>Redirecting to payment page...</p>";
-    
-    setTimeout(() => { 
-      window.location.href = "{% url 'payment' user_id=studentinfo.id course_id=course.id %}"; 
-    }, 4000);
+
+    setTimeout(() => {
+      window.location.href = "{% url 'payment' user_id=studentinfo.id course_id=course.id %}";
+    }, 2000);
   }
 
-  function showManualFallback() {
+  function showTimeout() {
     document.getElementById("main-spinner").classList.remove("spinner-border", "text-success");
     document.getElementById("main-spinner").classList.add("text-warning");
     document.getElementById("main-spinner").innerHTML = "⏰";
-    
+
     document.getElementById("progress-bar").classList.remove("progress-bar-animated");
     document.getElementById("progress-bar").classList.add("bg-warning");
-    
-    document.getElementById("status-message").innerHTML = 
-      "<span class='text-warning fw-bold'>⏰ Payment check timeout.</span>" +
-      "<p class='text-muted'>Please check your dashboard or try again.</p>";
-    
-    document.getElementById('manual-fallback').style.display = 'block';
+    document.getElementById("progress-bar").style.width = "100%";
+
+    document.getElementById("status-message").innerHTML =
+      "<span class='text-warning fw-bold'>⏰ No payments made.</span>" +
+      "<p class='text-muted'>Redirecting to payment page...</p>";
+
+    setTimeout(() => {
+      window.location.href = "{% url 'payment' user_id=studentinfo.id course_id=course.id %}";
+    }, 3000);
   }
 
   // Start polling immediately
   checkStatus();
   pollInterval = setInterval(checkStatus, 5000); // Check every 5 seconds
-
-  // Add a manual check button for debugging
-  document.addEventListener('DOMContentLoaded', function() {
-    // Add a manual check button for testing
-    const manualCheckBtn = document.createElement('button');
-    manualCheckBtn.textContent = 'Check Now';
-    manualCheckBtn.className = 'btn btn-sm btn-outline-info mt-2';
-    manualCheckBtn.onclick = checkStatus;
-    document.querySelector('.text-muted').appendChild(manualCheckBtn);
-  });
 </script>
 
-<br><br><br><br><br><br><br><br><br><br>
+
+<br><br><br><br><br><br>
 {% endblock %}
