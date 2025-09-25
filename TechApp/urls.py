@@ -21,6 +21,7 @@ urlpatterns = [
     path("check-status/<int:user_id>/<int:course_id>/<str:checkout_id>/", views.check_payment_status, name="check_payment_status"),
     path("mpesa/callback/", views.mpesa_callback, name="mpesa_callback"), # callback
     path('My courses/<int:user_id>/', views.enrolled_courses, name='mycourses'), #enrolled courses
+    path("enrollment/<int:enrollment_id>/receipt/", views.enrollment_receipt, name="enrollment_receipt"), #Receipt
     path('main/', views.main, name='main-page'),
     path('contact/', views.contact, name='contact'),
     path('contacts/', views.contacts, name='contacts'),
@@ -75,6 +76,13 @@ urlpatterns = [
     
     #notification
     path('latest_messages', views.latest_messages, name='latest_messages'),
+
+    # Manage Enrollments (mentor/admin view)
+    path("manage_enrollments/", views.manage_enrollments, name="manage_enrollments"),
+    path("enrollment/<int:enrollment_id>/approve/", views.approve_enrollment, name="approve_enrollment"),
+    path("enrollment/<int:enrollment_id>/reject/", views.reject_enrollment, name="reject_enrollment"),
+    # Print all Enrollments
+    path("print-enrollments/", views.print_enrollments, name="print_enrollments"),
     
     ]
 

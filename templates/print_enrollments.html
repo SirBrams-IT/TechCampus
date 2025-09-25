@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+ {% load static%}   
+ 
+  <title>Student Enrollments Report</title>
+  <style>
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 15mm;
+      }
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      background: #fff;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #2c5f9e;
+    }
+    
+    .header h1 {
+      color: #2c5f9e;
+      margin: 0 0 5px 0;
+      font-size: 24px;
+    }
+    
+    .header .subtitle {
+      color: #666;
+      font-size: 14px;
+      margin: 0;
+    }
+    
+    .report-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 12px;
+      box-shadow: 0 0 0 1px #ddd;
+    }
+    
+    th {
+      background: #2c5f9e;
+      color: white;
+      padding: 10px 8px;
+      text-align: left;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1px solid #1a4a7a;
+    }
+    
+    td {
+      padding: 8px;
+      border: 1px solid #e0e0e0;
+      vertical-align: top;
+    }
+    
+    tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+    
+    .status-approved { color: #28a745; font-weight: 600; }
+    .status-pending { color: #ffc107; font-weight: 600; }
+    .status-rejected { color: #dc3545; font-weight: 600; }
+    
+    .amount {
+      text-align: right;
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+    }
+    
+    .text-center { text-align: center; }
+    
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 11px;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+    }
+    
+    .summary {
+      background: #f8f9fa;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-left: 4px solid #2c5f9e;
+      font-size: 13px;
+    }
+    
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 10px;
+    }
+    
+    .summary-item {
+      text-align: center;
+      padding: 10px;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .summary-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2c5f9e;
+    }
+    
+    .summary-label {
+      font-size: 11px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body onload="window.print()">
+  <div class="header">
+    <img src="{% static 'assets/img/logo.png' %}" alt="logo"
+     class="d-none d-lg-inline"
+     style="height:45px; width:45px; background-color:dodgerblue; padding:4px; border-radius:50%; object-fit:contain;">
+
+    <h1>Student Enrollments & Payments Report</h1>
+    <p class="subtitle">Generated on {{ current_date|date:"F j, Y H:i" }}</p>
+  </div>
+  
+  <div class="report-info">
+    <div>Total Records: <strong>{{ enrollments|length }}</strong></div>
+    <div>Page 1 of 1</div>
+  </div>
+  
+  <!-- Summary Section -->
+<div class="summary">
+  <strong>Report Summary</strong>
+  <div class="summary-grid">
+    <div class="summary-item">
+      <div class="summary-value">{{ total_amount|floatformat:2 }}</div>
+      <div class="summary-label">Total Amount (KES)</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-value">{{ approved_count }}</div>
+      <div class="summary-label">Active Courses (Approved)</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-value">{{ total_student_count }}</div>
+      <div class="summary-label">Total Students</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-value">{{ rejected_count }}</div>
+      <div class="summary-label">Rejected</div>
+    </div>
+  </div>
+</div>
+  <table>
+    <thead>
+      <tr>
+        <th width="40">#</th>
+        <th>Student Information</th>
+        <th width="100">Phone</th>
+        <th>Course Details</th>
+        <th width="100" class="text-center">Amount (KES)</th>
+        <th width="120">Transaction Code</th>
+        <th width="120">Date Paid</th>
+        <th width="100" class="text-center">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in enrollments %}
+      <tr>
+        <td class="text-center">{{ forloop.counter }}</td>
+        <td>
+          <strong>{{ e.student.name }}</strong><br>
+          <small style="color: #666;">ID: {{ e.student.id }}</small>
+        </td>
+        <td>{{ e.student.phone }}</td>
+        <td>
+          <strong>{{ e.course.title }}</strong><br>
+          <small style="color: #666;">Code: {{ e.course.code }}</small>
+        </td>
+        <td class="amount">{{ e.amount|floatformat:2 }}</td>
+        <td><code style="background: #f1f1f1; padding: 2px 5px; border-radius: 3px;">{{ e.transaction_code }}</code></td>
+        <td>{{ e.created_at|date:"M j, Y H:i" }}</td>
+        <td class="text-center status-{{ e.status }}">
+          {% if e.status == "approved" %}
+            ✓ Approved
+          {% elif e.status == "rejected" %}
+            ✗ Rejected
+          {% else %}
+            ⏳ Pending
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="text-center" style="padding: 20px; color: #666;">
+          No enrollment records found
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  <div class="footer">
+    <p>This is an auto-generated report from Student Management System</p>
+    <p>Confidential Document - For Internal Use Only</p>
+  </div>
+</body>
+</html>

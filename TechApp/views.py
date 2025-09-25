@@ -31,14 +31,21 @@ from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.colors import Color, black, white, darkblue, lightgrey
+from reportlab.lib.units import inch
+from reportlab.lib.utils import ImageReader
+import os
+from django.db.models import Sum, Count
 
 logger = logging.getLogger(__name__)
 
-
-
+#home page
 def home(request):
     return render(request, 'index.html')
 
+#about page
 def about(request):
     return render(request, 'about.html')
 
@@ -184,10 +191,10 @@ def login(request):
 
     return render(request, 'login.html')
 
+# student_dashboard
 def student_dashboard(request):
     username = request.session.get('username')
     
-
     if not username:
         return redirect('login')
 
@@ -197,10 +204,28 @@ def student_dashboard(request):
         messages.error(request, "User not found.")
         return redirect('login')
 
+    # ✅ Get all enrollments for this student
+    enrolled_courses = Enrollment.objects.filter(student=studentinfo)
+
+    # ✅ Count totals
+    enrolled_courses_count = enrolled_courses.count()  # all (pending + approved + rejected)
+    active_courses_count = enrolled_courses.filter(status="Approved").count()  # only approved
+
+    # ✅ Get all mentors
     mentors = AdminLogin.objects.all()
 
-    return render(request, 'student_dashboard.html', {'studentinfo': studentinfo, 'mentors':mentors})
+    context = {
+        'studentinfo': studentinfo,
+        'mentors': mentors,
+        'enrolled_courses': enrolled_courses,
+        'enrolled_courses_count': enrolled_courses_count,
+        'active_courses_count': active_courses_count,
+    }
 
+    return render(request, 'student_dashboard.html', context)
+
+
+#logout
 def logout_student(request):
     logout(request)
     messages.success(request, "You have successfully logged out.")
@@ -558,8 +583,8 @@ def stk(request, user_id, course_id):
             "PartyB": password_data['business_shortcode'],
             "PhoneNumber": phone,
             "CallBackURL": callback_url,
-            "AccountReference": f"{student.id}|{course.id}",
-            "TransactionDesc": f"Payment for {course.title}",
+            "AccountReference": f"SirBrams Tech Virtual Campus.For Name: {student.name}| Course: {course.title}",
+            "TransactionDesc": f"Payment for {course.title}-{course.code}",
         }
 
         logger.info(f"Payment request prepared for phone: {phone}")
@@ -765,6 +790,9 @@ def check_payment_status(request, user_id, course_id, checkout_id):
 
 
 #mpesa_callback view
+from django.core.mail import send_mail
+from django.conf import settings
+
 @csrf_exempt
 def mpesa_callback(request):
     """Process M-Pesa callback"""
@@ -825,6 +853,35 @@ def mpesa_callback(request):
                     }
                 )
                 logger.info(f"✅ Enrollment {'created' if created else 'updated'}: {enrollment.id}")
+
+                # ✅ Send Email Notifications
+                subject = f"Payment Successful - {course.title}"
+                student_message = (
+                    f"Hello {student.name},\n\n"
+                    f"Your payment of KES {amount} for '{course.title}' was successful. "
+                    f"Receipt No: {mpesa_receipt}.\n\n"
+                    "You are now enrolled. Wait for Mentor to Approve. 🎉\n\n"
+                    "Best regards,\nSirBrams Tech Virtual Campus"
+                )
+                mentor_message = (
+                    f"Hello {course.mentor.name if course.mentor else 'Mentor'},\n\n"
+                    f"{student.name} has successfully enrolled in '{course.title}'.\n"
+                    f"Payment Receipt: {mpesa_receipt}, Amount: KES {amount}.\n\n"
+                    "Please check your dashboard to approve the course.\n\n"
+                    "Best regards,\nSirBrams Tech Virtual Campus"
+                )
+
+                try:
+                    # Send to student
+                    if student.email:
+                        send_mail(subject, student_message, settings.DEFAULT_FROM_EMAIL, [student.email])
+                    
+                    # Send to mentor (if email exists)
+                    if getattr(course.mentor, 'email', None):
+                        send_mail(subject, mentor_message, settings.DEFAULT_FROM_EMAIL, [course.mentor.email])
+                except Exception as e:
+                    logger.error(f"❌ Email sending failed: {e}")
+
             else:
                 logger.warning(f"❌ Payment failed: {result_desc}")
         
@@ -833,8 +890,278 @@ def mpesa_callback(request):
     except Exception as e:
         logger.error(f"❌ Callback error: {str(e)}")
         return JsonResponse({"ResultCode": 0, "ResultDesc": "Accepted"})
-   
 
+
+#receipt
+def enrollment_receipt(request, enrollment_id):
+    enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+
+    # PDF response
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="receipt_{enrollment.transaction_code or enrollment.id}.pdf"'
+
+    # Setup PDF
+    p = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+
+    # Colors
+    primary_color = Color(0.2, 0.4, 0.6)  # Dark blue
+    accent_color = Color(0.9, 0.1, 0.1)   # Red for important info
+    header_color = Color(0.95, 0.95, 0.95)  # Light grey for headers
+
+    # Add logo (replace with your logo path)
+    try:
+        logo_path = os.path.join(os.path.dirname(__file__), 'static', 'asset','img', 'logo.png')
+        if os.path.exists(logo_path):
+            logo = ImageReader(logo_path)
+            p.drawImage(logo, 50, height - 80, width=60, height=60, mask='auto')
+    except:
+        pass  # Continue without logo if not found
+
+    # Header Section
+    p.setFillColor(primary_color)
+    p.setFont("Helvetica-Bold", 24)
+    p.drawString(130, height - 50, "SirBrams Tech Virtual Campus")
+    
+    p.setFillColor(black)
+    p.setFont("Helvetica", 10)
+    p.drawString(130, height - 70, "123 Tech Street, Nairobi, Kenya")
+    p.drawString(130, height - 82, "Phone: +254 742 524 370 | Email: sirbrams.b@gmail.com")
+
+    # Receipt Title
+    p.setFillColor(accent_color)
+    p.setFont("Helvetica-Bold", 20)
+    p.drawCentredString(width / 2, height - 120, "PAYMENT RECEIPT")
+    
+    # Receipt Number and Date
+    p.setFillColor(black)
+    p.setFont("Helvetica", 10)
+    p.drawString(width - 200, height - 140, f"Receipt No: RCPT{enrollment.id:06d}")
+    p.drawString(width - 200, height - 155, f"Date: {timezone.now().strftime('%Y-%m-%d %H:%M')}")
+
+    # Main content box
+    p.setStrokeColor(lightgrey)
+    p.setLineWidth(1)
+    p.rect(40, height - 400, width - 80, 280, stroke=1, fill=0)
+
+    # Student Information Section
+    y = height - 180
+    p.setFillColor(header_color)
+    p.rect(50, y - 25, width - 100, 25, stroke=0, fill=1)
+    
+    p.setFillColor(primary_color)
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(60, y - 18, "STUDENT INFORMATION")
+
+    p.setFillColor(black)
+    p.setFont("Helvetica", 11)
+    y -= 45
+    p.drawString(60, y, f"Full Name:")
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(150, y, f"{enrollment.student_name}")
+    
+    y -= 20
+    p.setFont("Helvetica", 11)
+    p.drawString(60, y, f"Phone Number:")
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(150, y, f"{getattr(enrollment.student, 'phone', 'N/A')}")
+    
+    y -= 20
+    p.setFont("Helvetica", 11)
+    p.drawString(60, y, f"Student ID:")
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(150, y, f"STU{enrollment.student.id:05d}")
+
+    # Payment Details Section
+    y -= 40
+    p.setFillColor(header_color)
+    p.rect(50, y - 25, width - 100, 25, stroke=0, fill=1)
+    
+    p.setFillColor(primary_color)
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(60, y - 18, "PAYMENT DETAILS")
+
+    p.setFillColor(black)
+    p.setFont("Helvetica", 11)
+    y -= 45
+    p.drawString(60, y, f"Course Title:")
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(150, y, f"{enrollment.course_title}")
+    
+    y -= 20
+    p.setFont("Helvetica", 11)
+    p.drawString(60, y, f"Course Code:")
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(150, y, f"{enrollment.course_code}")
+    
+    y -= 20
+    p.setFont("Helvetica", 11)
+    p.drawString(60, y, f"Mentor:")
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(150, y, f"{enrollment.mentor_name}")
+    
+    y -= 20
+    p.setFont("Helvetica", 11)
+    p.drawString(60, y, f"Duration:")
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(150, y, f"{enrollment.duration or 'Not specified'}")
+
+    # Transaction Details Section
+    y -= 40
+    p.setFillColor(header_color)
+    p.rect(50, y - 25, width - 100, 25, stroke=0, fill=1)
+    
+    p.setFillColor(primary_color)
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(60, y - 18, "TRANSACTION INFORMATION")
+
+    p.setFillColor(black)
+    p.setFont("Helvetica", 11)
+    y -= 45
+    p.drawString(60, y, f"Transaction ID:")
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(150, y, f"{enrollment.transaction_code or 'Pending'}")
+    
+    y -= 20
+    p.setFont("Helvetica", 11)
+    p.drawString(60, y, f"Payment Date:")
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(150, y, f"{enrollment.created_at.strftime('%B %d, %Y at %H:%M')}")
+    
+    y -= 20
+    p.setFont("Helvetica", 11)
+    p.drawString(60, y, f"Payment Status:")
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(150, y, f"{enrollment.status.upper()}")
+
+    # Amount Section (Highlighted)
+    y -= 40
+    p.setFillColor(accent_color)
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(60, y, f"TOTAL AMOUNT PAID:")
+    p.drawString(width - 150, y, f"KES {enrollment.amount:,.2f}")
+
+    # Footer Section
+    p.setFillColor(lightgrey)
+    p.rect(40, 30, width - 80, 60, stroke=0, fill=1)
+    
+    p.setFillColor(black)
+    p.setFont("Helvetica-Oblique", 9)
+    p.drawCentredString(width / 2, 70, "This is an official receipt from SirBrams Tech Virtual campus")
+    p.drawCentredString(width / 2, 55, "For any inquiries, please contact: sirbrams.b@gmail.com | +254 742 524 370")
+    p.drawCentredString(width / 2, 40, "Thank you for choosing SirBrams Tech Virtual Campus!")
+
+    # Add watermark for completed payments
+    if enrollment.status == 'completed':
+        p.setFillColor(Color(0.9, 0.9, 0.9, alpha=0.3))  # Light grey with transparency
+        p.setFont("Helvetica-Bold", 60)
+        p.rotate(45)
+        p.drawString(250, -150, "PAID")
+        p.rotate(-45)  # Reset rotation
+
+    p.showPage()
+    p.save()
+    return response
+
+#mentor Actions for student payments and enrollments
+def manage_enrollments(request):
+    admininfo = get_object_or_404(AdminLogin)
+
+    search_query = request.GET.get("q", "")
+
+    # Filter enrollments with student + course details
+    enrollments = Enrollment.objects.select_related("student", "course").all()
+
+    if search_query:
+        enrollments = enrollments.filter(
+            Q(student__name__icontains=search_query) |
+            Q(student__phone__icontains=search_query) |
+            Q(course__title__icontains=search_query) |
+            Q(course__code__icontains=search_query) |
+            Q(transaction_code__icontains=search_query) |   # ✅ match your Enrollment field
+            Q(status__icontains=search_query)
+        )
+
+    # Paginate (10 per page)
+    paginator = Paginator(enrollments, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "page_obj": page_obj,
+        "search_query": search_query,
+        "admininfo":admininfo
+    }
+    return render(request, "manage_enrollments.html", context)
+
+
+# ✅ Approve Enrollment
+def approve_enrollment(request, enrollment_id):
+    enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+    enrollment.status = "approved"
+    enrollment.save()
+
+    # ✅ Send email to student
+    subject = "Course Enrollment Approved"
+    message = (
+        f"Hello {enrollment.student.name},\n\n"
+        f"Your enrollment for the course '{enrollment.course.title}' has been approved. 🎉\n"
+        "You can now start learning.\n\n"
+        "Best regards,\nSirBrams Tech Virtual Campus"
+    )
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [enrollment.student.email])
+
+    messages.success(request, f"{enrollment.student.name}'s enrollment approved.")
+    return redirect("manage_enrollments")
+
+
+# ✅ Reject Enrollment
+def reject_enrollment(request, enrollment_id):
+    enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+    enrollment.status = "rejected"
+    enrollment.save()
+
+    # ✅ Send email to student
+    subject = "Course Enrollment Rejected"
+    message = (
+        f"Hello {enrollment.student.name},\n\n"
+        f"Unfortunately, your enrollment for the course '{enrollment.course.title}' "
+        "has been rejected. Please contact support for further assistance.\n\n"
+        "Best regards,\nSirBrams Tech Virtual Campus"
+    )
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [enrollment.student.email])
+
+    messages.error(request, f"{enrollment.student.name}'s enrollment rejected.")
+    return redirect("manage_enrollments")
+
+ #print  
+from django.template.loader import render_to_string
+def print_enrollments(request):
+    enrollments = Enrollment.objects.select_related("student", "course").all()
+
+    # ✅ Total amount from all enrollments
+    total_amount = enrollments.aggregate(total=Sum("amount"))["total"] or 0
+
+    # ✅ Count of approved enrollments (active courses)
+    approved_count = enrollments.filter(status="approved").count()
+
+    # ✅ Count of rejected enrollments
+    rejected_count = enrollments.filter(status="rejected").count()
+
+    # ✅ Unique students across enrollments
+    total_student_count = enrollments.values("student").distinct().count()
+
+    context = {
+        "enrollments": enrollments,
+        "total_amount": total_amount,
+        "approved_count": approved_count,
+        "rejected_count": rejected_count,
+        "total_student_count": total_student_count,
+    }
+
+    html = render_to_string("print_enrollments.html", context)
+    return HttpResponse(html)  # Browser print dialog will work
+   
  #records   
 def records(request, user_id):
     allmembers = Member.objects.all()

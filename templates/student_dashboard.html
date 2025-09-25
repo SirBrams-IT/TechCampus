@@ -254,13 +254,14 @@
                   <p class="mb-0 text-muted">Enrolled Courses</p>
                 </div>
                 <div class="col-md-3 col-6 border-end">
+                  <h4 class="fw-bold text-info">{{ active_courses_count|default:0 }}</h4>
+                  <p class="mb-0 text-muted bi bi-check-circle">Active Courses</p>
+                </div>
+                <div class="col-md-3 col-6 border-end">
                   <h4 class="fw-bold text-success">{{ completed_assignments|default:0 }}/{{ total_assignments|default:0 }}</h4>
                   <p class="mb-0 text-muted">Assignments Done</p>
                 </div>
-                <div class="col-md-3 col-6 border-end">
-                  <h4 class="fw-bold text-info">{{ active_courses_count|default:0 }}</h4>
-                  <p class="mb-0 text-muted">Active Courses</p>
-                </div>
+                
                 <div class="col-md-3 col-6">
                   <h4 class="fw-bold text-warning">{{ days_streak|default:0 }}</h4>
                   <p class="mb-0 text-muted">Day Streak</p>

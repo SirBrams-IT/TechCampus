@@ -1,0 +1,121 @@
+{% extends 'admin_main.html'%}
+{% load static%}
+{% block content%}
+
+<div class="container-fluid mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="card-header bg-primary text-white py-3 mt-2">
+            <div class="d-flex justify-content-between align-items-center ">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2"></i>Manage Enrollments</h4>
+                <a href="{% url 'print_enrollments' %}" target="_blank" class="btn btn-light btn-sm">
+                    <i class="bi bi-printer me-1"></i> Print
+                </a>
+            </div>
+        </div><br>
+
+      <!-- Search Form -->
+      <form method="get" class="row g-2 mb-4">
+        <div class="col-md-11 col-8">
+          <input type="text" name="q" class="form-control" 
+                 placeholder="Search student, phone, course, transaction..." 
+                 value="{{ search_query }}">
+        </div>
+        <div class="col-md-1 col-2 ">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </form>
+
+      <!-- Responsive Table -->
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle">
+          <thead class="table-dark">
+            <tr class="text-center">
+              <th>S/N</th>
+              <th>Student</th>
+              <th>Phone</th>
+              <th>Course</th>
+              <th>Amount (KES)</th>
+              <th>Transaction Code</th>
+              <th>Date Paid</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in page_obj %}
+            <tr>
+              <td class="text-center">{{ forloop.counter }}</td>
+              <td>{{ e.student.name }}</td>
+              <td>{{ e.student.phone }}</td>
+              <td>{{ e.course.title }} ({{ e.course.code }})</td>
+              <td class="text-end">{{ e.amount }}</td>
+              <td>{{ e.transaction_code }}</td>
+              <td>{{ e.created_at|date:"Y-m-d H:i" }}</td>
+              <td class="text-center">
+                {% if e.status == "approved" %}
+                  <span class="badge bg-success bi bi-check-circle"> Approved</span>
+                {% elif e.status == "rejected" %}
+                  <span class="badge bg-danger bi bi-x-circle-fill"> Rejected</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">{{ e.status }}</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    {% if e.status != "approved" %}
+                                    <a href="{% url 'approve_enrollment' e.id %}" 
+                                       class="btn btn-outline-success" 
+                                       title="Approve Enrollment">
+                                        <i class="bi bi-check-lg"></i> Approve
+                                    </a>
+                                    {% endif %}
+                                    
+                                    {% if e.status != "rejected" %}
+                                    <a href="{% url 'reject_enrollment' e.id %}" 
+                                       class="btn btn-outline-danger" 
+                                       title="Reject Enrollment">
+                                        <i class="bi bi-x-lg"></i> Reject
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="9" class="text-center text-muted">No enrollments found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <nav aria-label="Enrollment pagination">
+        <ul class="pagination justify-content-center flex-wrap">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}">Previous</a>
+            </li>
+          {% endif %}
+          
+          {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+              <a class="page-link" href="?page={{ num }}&q={{ search_query }}">{{ num }}</a>
+            </li>
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}">Next</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div><br>
+
+{% endblock %}
