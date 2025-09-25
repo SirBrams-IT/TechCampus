@@ -1065,12 +1065,13 @@ def enrollment_receipt(request, enrollment_id):
 
 #mentor Actions for student payments and enrollments
 def manage_enrollments(request):
-    admininfo = get_object_or_404(AdminLogin)
+    admininfo = get_object_or_404(AdminLogin, id=request.session.get("admin_id"))
+
 
     search_query = request.GET.get("q", "")
 
     # Filter enrollments with student + course details
-    enrollments = Enrollment.objects.select_related("student", "course").all()
+    enrollments = Enrollment.objects.select_related("student", "course").filter(course__mentor=admininfo)
 
     if search_query:
         enrollments = enrollments.filter(
@@ -1137,26 +1138,23 @@ def reject_enrollment(request, enrollment_id):
  #print  
 from django.template.loader import render_to_string
 def print_enrollments(request):
-    enrollments = Enrollment.objects.select_related("student", "course").all()
-
+    admininfo = get_object_or_404(AdminLogin, id=request.session.get("admin_id"))
+    enrollments = Enrollment.objects.select_related("student", "course").filter(course__mentor=admininfo)
     # ✅ Total amount from all enrollments
     total_amount = enrollments.aggregate(total=Sum("amount"))["total"] or 0
-
     # ✅ Count of approved enrollments (active courses)
     approved_count = enrollments.filter(status="approved").count()
-
     # ✅ Count of rejected enrollments
     rejected_count = enrollments.filter(status="rejected").count()
-
     # ✅ Unique students across enrollments
     total_student_count = enrollments.values("student").distinct().count()
-
     context = {
         "enrollments": enrollments,
         "total_amount": total_amount,
         "approved_count": approved_count,
         "rejected_count": rejected_count,
         "total_student_count": total_student_count,
+        "admininfo":admininfo,
     }
 
     html = render_to_string("print_enrollments.html", context)
