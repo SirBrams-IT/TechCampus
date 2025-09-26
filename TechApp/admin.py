@@ -1,5 +1,5 @@
 from django.contrib import admin
-from TechApp.models import Member, AdminLogin, Contact,Course,Enrollment,Lesson,Module,Topic,Subtopic,Message,Conversation
+from TechApp.models import Member, AdminLogin, Contact,Course,Enrollment,Lesson,Module,Topic,Subtopic,Message,Conversation,LessonProgress
 
 # Register your models here.
 
@@ -14,5 +14,6 @@ admin.site.register(Topic)
 admin.site.register(Subtopic)
 admin.site.register(Message)
 admin.site.register(Conversation)
+admin.site.register(LessonProgress)
 
 

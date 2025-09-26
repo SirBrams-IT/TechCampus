@@ -66,7 +66,7 @@
                     <!-- Footer Actions -->
                     <div class="mt-auto">
                       {% if enrollment.status == "approved" %}
-                        <a href="{% url 'learning' studentinfo.id %}" 
+                        <a href="{% url 'learning' studentinfo.id enrollment.course.id %}"
                            class="btn btn-primary w-100 btn-sm rounded-pill">
                           <i class="bi bi-play-circle me-1"></i> Continue Learning
                         </a>

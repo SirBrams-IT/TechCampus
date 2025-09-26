@@ -22,7 +22,7 @@ from django.shortcuts import  redirect,render, get_object_or_404
 from django.contrib.auth import logout, authenticate
 from django.contrib import messages
 from TechApp.forms import  StudentForm,StudentEditForm, MentorEditForm,AdminForm, CourseForm, ModuleForm, LessonForm
-from TechApp.models import Course, Member, Enrollment, Contact, AdminLogin,Module, Lesson,Topic, Subtopic
+from TechApp.models import Course, Member, Enrollment,LessonProgress, Contact, AdminLogin,Module, Lesson,Topic, Subtopic
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 import random
@@ -515,9 +515,9 @@ def payment(request, user_id, course_id):
 def enrolled_courses(request, user_id):
     studentinfo = get_object_or_404(Member, id=user_id)
 
-    # Fetch all enrollments for this student (not just approved)
+    # ✅ only approved enrollments
     enrollments = Enrollment.objects.filter(
-        student=studentinfo
+        student=studentinfo, status="approved"
     ).select_related("course")
 
     return render(request, 'enrolled_courses.html', {
@@ -525,6 +525,61 @@ def enrolled_courses(request, user_id):
         'enrollments': enrollments
     })
 
+#learning view
+def learning(request, student_id, course_id):
+    student = get_object_or_404(Member, id=student_id)
+    course = get_object_or_404(Course, id=course_id)
+
+    enrollment = Enrollment.objects.filter(
+        student=student, course=course, status="approved"
+    ).first()
+
+    if not enrollment:
+        return render(request, "available_courses.html", {
+            "course": course, 
+            "student": student
+        })
+
+    modules = course.modules.prefetch_related("topics__subtopics", "lessons").all()
+
+    # Calculate progress for each module and lesson
+    for module in modules:
+        total_lessons = module.lessons.count()
+
+        # ✅ count completed lessons using LessonProgress
+        completed_lessons = LessonProgress.objects.filter(
+            lesson__module=module,
+            student=student,
+            completed=True
+        ).count()
+
+        module.progress_percentage = (completed_lessons / total_lessons * 100) if total_lessons > 0 else 0
+        module.is_completed = completed_lessons == total_lessons
+        module.is_accessible = True  # (add logic later if you want to lock)
+
+        # ✅ attach lesson-level progress
+        for lesson in module.lessons.all():
+            progress = LessonProgress.objects.filter(
+                lesson=lesson, student=student, completed=True
+            ).first()
+            lesson.is_completed = bool(progress)
+            lesson.is_accessible = True  # (customize if needed)
+            lesson.is_current = False    # could mark one as "current"
+
+    # Calculate enrollment (course-level) progress
+    total_modules = modules.count()
+    completed_modules = sum(1 for module in modules if module.is_completed)
+
+    enrollment.progress_percentage = (completed_modules / total_modules * 100) if total_modules > 0 else 0
+    enrollment.completed_modules_count = completed_modules
+
+    return render(request, "learning_page.html", {
+        "student": student,
+        "studentinfo": student,
+        "course": course,
+        "modules": modules,
+        "enrollment": enrollment,
+    })
 
 # STK push - Add more logging
 def stk(request, user_id, course_id):
@@ -1650,9 +1705,7 @@ def get_module_lessons(request, module_id):
 
     return render(request, "upload_courses.html", context)
 
-def learning(request, studentinfo):
-    student = Member.objects.filter(id=studentinfo).first()
-    return render(request, "learning_page.html", {"studentinfo": student})
+
 
 import requests
 from django.http import HttpResponse, HttpResponseRedirect

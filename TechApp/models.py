@@ -323,6 +323,19 @@ class Lesson(models.Model):
     def __str__(self):
         return f"{self.module} - {self.title}"
 
+#lesson progress model
+class LessonProgress(models.Model):
+    student = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="lesson_progress")
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="lesson_progress")
+    completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("student", "lesson")
+
+    def __str__(self):
+        return f"{self.student} - {self.lesson} - {'Completed' if self.completed else 'Pending'}"
+
 
 STATUS_CHOICES = [
     ('initiated', 'Initiated (STK started)'),
