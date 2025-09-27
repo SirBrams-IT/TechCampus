@@ -72,6 +72,7 @@ class Message(models.Model):
 class Member(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
+    student_number = models.CharField(max_length=20, unique=True, blank=True, null=True)
     username = models.CharField(max_length=15, unique=True)
     password = models.CharField(max_length=100)
     phone = models.CharField(max_length=15, unique=True)
@@ -124,7 +125,18 @@ class Member(models.Model):
     def get_unread_count(self):
         return Message.objects.filter(
             conversation__in=self.conversations.all()
-        ).exclude(sender_member=self).filter(read=False).count()    
+        ).exclude(sender_member=self).filter(read=False).count() 
+
+    def save(self, *args, **kwargs):
+        if not self.student_number:
+            current_year = timezone.now().year
+            # Count only students admitted in the current year
+            count = Member.objects.filter(
+                student_numberr__endswith=f"/{current_year}"
+            ).count() + 1
+            # Format: STVC/0001/2025
+            self.student_number = f"STVC/{count:04d}/{current_year}"
+        super().save(*args, **kwargs)       
 
     def __str__(self):
         return self.email

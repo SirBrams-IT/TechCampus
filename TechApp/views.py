@@ -638,7 +638,7 @@ def stk(request, user_id, course_id):
             "PartyB": password_data['business_shortcode'],
             "PhoneNumber": phone,
             "CallBackURL": callback_url,
-            "AccountReference": f"SirBrams Tech Virtual Campus.For Name: {student.name}| Course: {course.title}",
+            "AccountReference": f"SirBrams Tech Virtual Campus.For Name: {student.name}| Student No: {student.student_number} | Course: {course.title}",
             "TransactionDesc": f"Payment for {course.title}-{course.code}",
         }
 
