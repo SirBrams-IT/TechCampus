@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>SirBrams Tech Virtual Campus</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+    {% load static %}
+
+  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
+
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{% static 'asset/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/quill/quill.snow.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/quill/quill.bubble.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
+  <link href="{% static 'asset/vendor/simple-datatables/style.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="">
+  <link href="{% static 'asset/css/style.css' %}" rel="stylesheet"> 
+
+</head>
+
+<body>
+
+ <header id="header" class="header fixed-top d-flex align-items-center justify-content-center" style="background-color: navy">
+
+    <i class="bi bi-list toggle-sidebar-btn me-2 text-white"></i>
+
+    <!-- logo-->
+    <img src="{% static 'assets/img/logo.png' %}" alt="logo"
+       class="me-2"
+         style="height:45px; width:45px; background-color:dodgerblue; padding:4px; border-radius:50%; object-fit:contain;">
+
+    <!-- title for desktops -->
+    <div class="d-flex">
+        <a href="#" class="logo d-flex align-items-center d-none d-lg-block">
+            <img src="{% static 'asset/img/image.png' %}" alt="title" class="text-uppercase text-white " id="titles">
+        </a>
+    </div>
+
+     <!-- title for mobiles -->
+    <div class="d-flex d-block d-lg-none">
+        <h1 class="text-uppercase text-white text-center mt-2 fs-6">STVC</h1>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar " style="margin-left: 100px;">
+        <form class="search-form d-flex align-items-center" method="POST" action="#">
+            <input type="text" name="query" placeholder="Search" title="Enter search keyword">
+            <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+        </form>
+    </div>
+     
+    <!-- Notification Dropdown -->
+    <div class="nav-item dropdown ms-3">
+      <a class="nav-link nav-icon position-relative" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-bell fs-5 text-white"></i>
+          {% if messages_count > 0 %}
+          <span class="badge bg-warning badge-notification position-absolute top-0 start-100 translate-middle rounded-pill">
+              {{ messages_count }}
+          </span>
+          {% endif %}
+      </a>
+
+      <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications shadow-lg mt-2">
+          <li class="dropdown-header bg-light p-3 border-bottom">
+              <strong>You have {{ messages_count }} unread messages</strong>
+              <a href="{% url 'latest_messages' %}" class="ms-2">
+                  <span class="badge rounded-pill bg-primary p-2 ms-1">View All</span>
+              </a>
+          </li>
+
+          {% if latest_messages %}
+              {% for msg in latest_messages %}
+              <li class="notification-item d-flex align-items-start p-3">
+                  <i class="bi bi-envelope text-primary fs-4 me-3"></i>
+                  <div>
+                      <h6 class="mb-1 text-black">{{ msg.name }}</h6>
+                      <p class="mb-1 text-muted" style="max-width: 400px;word-wrap: break-word">{{ msg.message|truncatewords:10 }}</p>
+                      <small class="text-secondary">{{ msg.created_at|timesince }} ago</small>
+                  </div>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              {% endfor %}
+          {% else %}
+              <li class="p-3 text-center text-muted">No new messages</li>
+          {% endif %}
+
+          <li class="dropdown-footer text-center p-2">
+              <a href="#" class="text-primary fw-bold">See all messages</a>
+          </li>
+      </ul>
+    </div>
+
+    <!-- Profile Dropdown -->
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+          <li class="nav-item dropdown pe-3 profile-container me-1">
+            <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+              <div class="position-relative d-inline-block">
+                <!-- Profile Image -->
+                <img src="{% if studentinfo.profile_image and studentinfo.profile_image.url %}{{ studentinfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
+                     alt="Profile" class="rounded-circle profile-img" width="40" height="40">
+                <!-- Status Dot -->
+                <span class="status-dot bg-success"></span>
+              </div>
+              <span class="d-md-block dropdown-toggle ps-2 me-3">Hi, {{ studentinfo.username }}</span>
+            </a>
+
+            <!-- Dropdown Menu -->
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+              <li class="dropdown-header">
+                <span class="text-warning">Hello, {{ studentinfo.username }}</span>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+
+              <li>
+                <a class="dropdown-item d-flex align-items-center" href="{% url 'student_profile'  studentinfo.id  %}">
+                  <i class="bi bi-person me-2"></i>
+                  <span>My Profile</span>
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+
+              <li>
+                <a class="dropdown-item d-flex align-items-center" href="{% url 'student_profile'  studentinfo.id  %}">
+                  <i class="bi bi-gear me-2"></i>
+                  <span>Account Settings</span>
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+
+              <li>
+                <a class="dropdown-item d-flex align-items-center text-danger" href="{% url 'logout_student' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                  <i class="bi bi-box-arrow-right me-2"></i>
+                  <span>Sign Out</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+      </ul>
+    </nav>
+
+  </header>
+
+  <aside id="sidebar" class="sidebar">
+    <span class=" bg-black text-white current-time ms-5" ></span>
+    <ul class="sidebar-nav" id="sidebar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'student_dashboard' %}">
+          <i class="bi bi-grid"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed profile-link" href="{% url 'student_profile'  studentinfo.id  %}">
+          <i class="bi bi-person-bounding-box"></i>
+          <span>My Profile</span>
+        </a>
+      </li>   
+      
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'available_courses' studentinfo.id %}">
+          <i class="bi bi-book"></i>
+          <span>Courses</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="{% url 'mycourses' studentinfo.id %}">
+          <i class="bi bi-journal-bookmark"></i>
+          <span>My Courses</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#">
+          <i class="bi bi-pencil-square"></i>
+          <span>Assignments</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#">
+          <i class="bi bi-list-check"></i>
+          <span>Activities</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#">
+          <i class="bi bi-chat-dots"></i>
+          <span>Messages</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#">
+          <i class="bi bi-envelope"></i>
+          <span>Contact</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed text-danger" href="{% url 'logout_student' %}" data-bs-toggle="modal" data-bs-target="#logoutModal">
+          <i class="bi bi-box-arrow-right text-danger"></i>
+          <span>Sign Out</span>
+        </a>
+      </li>
+    </ul>
+  </aside><!-- End Sidebar-->
+
+  <main id="main" class="main">
+    <div class="pagetitle">
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'student_dashboard' %}">Dashboard</a></li>
+          <li class="breadcrumb-item active">Student Dashboard</li>
+        </ol>
+      </nav>
+
+      <h1>
+        <span id="greeting"></span>, 
+        <b class="text-warning">{{ studentinfo.name|title }}</b>!
+        <span class="ms-5 bg-black text-white current-time d-none d-lg-inline"></span>
+      </h1>
+    </div><!-- End Page Title -->
+
+    <div class="container mt-4">
+      <!-- Dashboard Stats Overview -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card dashboard-card bg-primary bg-opacity-10 border-0">
+            <div class="card-body py-3">
+              <div class="row text-center">
+                <div class="col-md-3 col-6 border-end">
+                  <h4 class="fw-bold text-primary">{{ enrolled_courses_count|default:0 }}</h4>
+                  <p class="mb-0 text-muted">Enrolled Courses</p>
+                </div>
+                <div class="col-md-3 col-6 border-end">
+                  <h4 class="fw-bold text-info">{{ active_courses_count|default:0 }}</h4>
+                  <p class="mb-0 text-muted bi bi-check-circle">Active Courses</p>
+                </div>
+                <div class="col-md-3 col-6 border-end">
+                  <h4 class="fw-bold text-success">{{ completed_assignments|default:0 }}/{{ total_assignments|default:0 }}</h4>
+                  <p class="mb-0 text-muted">Assignments Done</p>
+                </div>
+                
+                <div class="col-md-3 col-6">
+                  <h4 class="fw-bold text-warning">{{ days_streak|default:0 }}</h4>
+                  <p class="mb-0 text-muted">Day Streak</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Dashboard Cards -->
+      <div class="row justify-content-center">
+        <!-- Courses Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card dashboard-card border-top border-top-4 border-primary">
+            <div class="card-body text-center">
+              <i class="bi bi-book display-6 text-primary mb-3"></i>
+              <h5 class="card-title">Courses</h5>
+              <p class="card-text">Explore available courses and enroll.</p>
+              <a href="{% url 'available_courses' studentinfo.id %}" class="btn btn-primary btn-sm">View Courses</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enrolled courses Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card dashboard-card border-top border-top-4 border-success">
+            <div class="card-body text-center">
+              <i class="bi bi-journal-bookmark display-6 text-success mb-3"></i>
+              <h5 class="card-title">Enrolled Courses</h5>
+              <p class="card-text"> Track course and continue Learning.</p>
+              <a href="#" class="btn btn-success btn-sm">View My Courses</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignments Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card dashboard-card border-top border-top-4 border-danger">
+            <div class="card-body text-center">
+              <i class="bi bi-pencil-square display-6 text-danger mb-3"></i>
+              <h5 class="card-title">Assignments</h5>
+              <p class="card-text">Track and submit your assignments.</p>
+              <a href="#" class="btn btn-danger btn-sm">View Assignments</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chats Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card dashboard-card border-top border-top-4 border-info">
+            <div class="card-body text-center">
+              <i class="bi bi-chat-dots display-6 text-info mb-3"></i>
+              <h5 class="card-title">Chats</h5>
+              <p class="card-text">Communicate with mentors and peers.</p>
+              <a href="#" class="btn btn-info btn-sm">Go to Chats</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messaging Section -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card dashboard-card">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0 text-info">Messaging Center</h5>
+              <div class="dropdown d-inline-block">
+                <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="mentorDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-person-lines-fill"></i> Message a Mentor
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="mentorDropdown">
+                  {% for mentor in mentors %}
+                    <li>
+                      <a class="dropdown-item" href="javascript:void(0);" onclick="startDmWithMentor({{ mentor.id }})">
+                        <img src="{% if mentor.profile_image and mentor.profile_image.url %}{{ mentor.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
+                            alt="Profile" class="rounded-circle me-2" style="width:18px; height:18px; object-fit:cover;">
+                        {{ mentor.name }}
+                      </a>
+                    </li>
+                  {% empty %}
+                    <li><span class="dropdown-item text-muted">No mentors available</span></li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <!-- Conversations List -->
+                <div class="col-md-4 border-end" style="max-height: 400px; overflow-y: auto;">
+                  <div class="conversation-search mb-3">
+                    <input type="text" class="form-control" placeholder="Search conversations..." 
+                          onkeyup="filterConversations(this.value)">
+                  </div>
+                  <div id="studentConversations">
+                    <div class="text-center py-4">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                      <p class="mt-2 text-muted">Loading conversations...</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Chat Area -->
+                <div class="col-md-8">
+                  <div id="studentChatHeader" class="chat-header p-3 border-bottom">
+                    <h6 class="mb-0 text-muted">Select a conversation to start messaging</h6>
+                  </div>
+                  
+                  <div id="studentChatMessages" class="chat-messages" style="height: 300px; overflow-y: auto;">
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                      <div class="text-center text-muted">
+                        <i class="bi bi-chat-left-text display-4"></i>
+                        <p class="mt-2">No conversation selected</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="chat-input p-3 border-top">
+                    <div class="input-group">
+                      <input type="text" id="studentMessageInput" class="form-control" 
+                            placeholder="Type a message..." disabled>
+                      <button id="studentSendButton" class="btn btn-primary" disabled>
+                        <i class="bi bi-send"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mentors List Modal -->
+      {% if studentinfo %}
+      <script id="student-data" type="application/json">
+        { "id": {{ studentinfo.id }} }
+      </script>
+      {% endif %}
+
+      <div id="mentorsModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title text-info">Select a Mentor to Message</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div id="mentorsList" style="max-height: 300px; overflow-y: auto;">
+                <div class="text-center py-3">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden text-secondary">Loading...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center text-danger">
+            Are you sure you want to log out?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <a href="{% url 'logout_student' %}" class="btn btn-danger">Yes, Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade text-center text-white" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="deleteConfirmLabel">
+              <i class="fas fa-exclamation-triangle"></i> Confirm Deletion
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <p class="fw-bold text-danger">Are you sure you want to delete your account?</p>
+            <p class="text-muted">This action cannot be undone.</p>
+          </div>
+          <div class="modal-footer me-2">
+            <button type="button" class="btn btn-secondary me-5" data-bs-dismiss="modal">Cancel</button>
+            <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Yes, Delete</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-navy text-white text-center py-3 mt-4">
+    <p class="mb-0">&copy; <span id="year"></span> SirBrams Tech Virtual Campus. All Rights Reserved.</p>
+  </footer>
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'asset/vendor/apexcharts/apexcharts.min.js' %}"></script>
+  <script src="{% static 'asset/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'asset/vendor/chart.js/chart.umd.js' %}"></script>
+  <script src="{% static 'asset/vendor/echarts/echarts.min.js' %}"></script>
+  <script src="{% static 'asset/vendor/quill/quill.js' %}"></script>
+  <script src="{% static 'asset/vendor/simple-datatables/simple-datatables.js' %}"></script>
+  <script src="{% static 'asset/vendor/tinymce/tinymce.min.js' %}"></script>
+  <script src="{% static 'asset/vendor/php-email-form/validate.js' %}"></script>
+
+  <!-- Template Main JS File -->
+  <script src="{% static 'asset/js/main.js' %}"></script>
+  <script src="{% static 'asset/js/chats.js' %}"></script>
+  
+  <script>
+    // Set current year for copyright
+    document.getElementById('year').textContent = new Date().getFullYear();
+    
+    // Time and greeting functionality
+    function updateTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      document.querySelectorAll('.current-time').forEach(el => {
+        el.textContent = timeString;
+      });
+      
+      const hour = now.getHours();
+      let greeting = "Good morning";
+      if (hour >= 12 && hour < 17) {
+        greeting = "Good afternoon";
+      } else if (hour >= 17) {
+        greeting = "Good evening";
+      }
+      document.getElementById('greeting').textContent = greeting;
+    }
+    
+    // Initialize time and greeting
+    updateTime();
+    setInterval(updateTime, 60000);
+    
+    // Delete confirmation function
+    function openDeleteModal(deleteUrl) {
+      var userConfirmation = prompt("Type DELETE to confirm deletion:");
+      
+      if (userConfirmation !== null && userConfirmation.toUpperCase() === "DELETE") {
+        document.getElementById('confirmDeleteBtn').href = deleteUrl;
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        deleteModal.show();
+      } else {
+        alert("Deletion cancelled or incorrect confirmation.");
+      }
+    }
+  </script>
+</body>
+</html>
