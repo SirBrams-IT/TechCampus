@@ -55,42 +55,236 @@
     display: none;
 }
 
+ /* --- Carousel caption & animation tweaks --- */
+        
+ .carousel-item {
+     transition: transform 1s ease-in-out
+}
 
-        .carousel {
-            height: 700px;
+/* keep caption vertical center but slightly higher to reduce space */
+   
+.carousel-caption {
+            top: 30%;
+            transform: translateY(-30%);
+            bottom: auto;
+            text-align: left;
+            max-width: 600px;
+            left: 10%;
+            opacity: 0;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            padding: 0.5rem 0.75rem;
         }
 
-        .carousel-inner, .carousel-item, .carousel-item img {
+        .carousel-item.active .carousel-caption {
+            opacity: 1;
+            transform: translateY(-45%) translateX(0);
+        }
+
+        .carousel-caption h2 {
+            font-size: 2.6rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.45);
+            transform: translateY(20px);
+            transition: transform 0.6s ease 0.2s;
+        }
+
+        .carousel-item.active .carousel-caption h2 {
+            transform: translateY(0);
+        }
+
+        .carousel-caption p {
+            font-size: 1.05rem;
+            margin-bottom: 1.2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.35);
+            transform: translateY(20px);
+            transition: transform 0.6s ease 0.35s;
+        }
+
+        .carousel-item.active .carousel-caption p {
+            transform: translateY(0);
+        }
+
+        .carousel-caption .btn {
+            transform: translateY(20px);
+            transition: transform 0.6s ease 0.45s;
+            padding: 0.6rem 1rem;
+            font-weight: 600;
+        }
+
+        .carousel-item.active .carousel-caption .btn {
+            transform: translateY(0);
+        }
+
+        /* --- Single static cards (replaces per-slide cards) --- */
+        .carousel-cards {
+            /* default looks like a subtle overlap on large screens */
+            position: absolute;
+            bottom: -90px;
+            left: 0;
+            width: 100%;
+            padding: 0 20px 30px;
+            z-index: 10;
+            transition: all 0.5s ease;
+            pointer-events: none; /* prevents accidental clicks on the overlay region outside cards */
+        }
+
+        .carousel-cards .container {
+            pointer-events: auto; /* allow interaction inside the cards */
+        }
+
+        .carousel-card {
+            background-color: rgba(0,0,0,0.6);
+            border-radius: 10px;
+            padding: 18px;
+            color: white;
+            text-align: center;
+            height: 100%;
+            transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        .carousel-card:hover {
+            transform: translateY(-6px);
+            background: navy;
+            color: white;
+        }
+
+        .carousel-card i {
+            font-size: 2.1rem;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .carousel-card h4 {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .carousel-card p {
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        /* --- Mobile adjustments: put cards below carousel and remove overlay --- */
+        @media (max-width: 768px) {
+            .carousel-caption {
+                left: 5%;
+                max-width: 90%;
+                top: 40%;
+                transform: translateY(-40%);
+            }
+
+            .carousel-caption h2 {
+                font-size: 1.6rem;
+            }
+
+            .carousel-caption p {
+                font-size: 0.95rem;
+            }
+
+            .carousel-cards {
+                position: relative;
+                bottom: 0;
+                padding: 18px 12px;
+                margin-top: 12px;
+                background: transparent;
+                z-index: 1;
+            }
+
+            .carousel-card {
+                background: #fff;
+                color: #111;
+            }
+
+            .carousel-card i {
+                color: #0d6efd;
+            }
+        }
+
+        /* --- Reduce spaces for stats/testimonials/footer to make it tighter --- */
+        .stats-section {
+            background: white;
+            color: navy;
+            padding: 50px 0;
+            border-radius: 5px;
+            box-shadow: 2px 2px 2px 2px gold;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 12px;
+        }
+
+        .stat-number {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .testimonials-section {
+            padding: 40px 0;
+            background-color: #f8f9fa;
+        }
+
+        .testimonial-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin: 10px;
+            position: relative;
             height: 100%;
         }
-
-        .carousel-item img {
-            width: 100%;
-            object-fit: cover; /* Ensures the image covers the entire area without distortion */
+        .testimonial-author{
+            justify-content: center;
         }
 
-        /* Overlay Positioning */
-        .carousel-item {
-            position: relative;
+        .testimonial-card:before {
+            content: '"';
+            position: absolute;
+            top: 8px;
+            right: 14px;
+            font-size: 3.2rem;
+            color: rgba(13,110,253,0.08);
+            font-family: Georgia, serif;
+            line-height: 1;
         }
 
-        .overlay {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-            color: white;
-            padding: 20px;
-            text-align: center;
+        /* smaller indicator offset so it doesn't interfere with overlay on larger screens */
+        .carousel-indicators {
+            bottom: 140px;
         }
 
-        .overlay .content {
-            max-width: 600px;
-            margin: 0 auto;
+        /* testimonial carousel layout tweaks */
+        @media (min-width: 992px) {
+            .testimonial-carousel .carousel-inner .carousel-item.active,
+            .testimonial-carousel .carousel-inner .carousel-item-next,
+            .testimonial-carousel .carousel-inner .carousel-item-prev {
+                display: flex;
+            }
         }
 
-        .toggle-sidebar-btn {
+    
+
+        /* small helper: slightly reduce main hero button sizes on small screens */
+        @media (max-width: 576px) {
+            .carousel-caption .btn {
+                padding: 0.45rem 0.7rem;
+                font-size: 0.95rem;
+            }
+            .carousel-indicators {
+                bottom: 110px;
+            }
+        }
+
+.toggle-sidebar-btn {
             color: white;
             font-size: 16px;
             cursor: pointer;

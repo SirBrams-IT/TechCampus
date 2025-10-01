@@ -1,80 +1,149 @@
-{% extends "main-page.html" %}
+{% extends 'main-page.html' %}
 {% load static %}
+
+
 {% block body %}
-<div class="container p-4 m-auto bg-info col-md-6 col-lg-4 mt-5 mb-5" style="border-radius: 20px;">
 
-    <form method="POST" action="{% url 'admin_login' %}">
-        {% csrf_token %}
+<div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-10 col-lg-8 col-xl-10 p-0 mx-3" style="border-radius: 20px; margin:5px auto; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <div class="row g-0 h-100">
+                <!-- Left Side - Image -->
+                <div class="col-md-6 d-none d-md-block p-0">
+                    <div class="h-100 d-flex align-items-center justify-content-center bg-light">
+                        <img src="{% static 'assets/img/login.png' %}" alt="login" class="img-fluid" style="max-height: 80%; width: auto;">
+                    </div>
+                </div>
+                
+                <!-- Right Side - Form -->
+                <div class="col-md-6 p-4 bg-white">
+                    <form method="POST" action="{% url 'admin_login' %}">
+                                {% csrf_token %}
 
- {% if messages %}
-    {% for message in messages %}
-        {% if message.tags == 'error' %}
-            <!-- Error message -->
-            <div id="error-message" class="alert alert-danger">
-                {{ message }}
-              <div class="progress mt-2">
-                    <div id="progress-bar" class="progress-bar bg-danger" style="width: 0%;"></div>
+                        {% if messages %}
+                            {% for message in messages %}
+                                {% if message.tags == 'error' %}
+                                    <!-- Error message -->
+                                    <div id="error-message" class="alert alert-danger">
+                                        {{ message }}
+                                    <div class="progress mt-2">
+                                            <div id="progress-bar" class="progress-bar bg-danger" style="width: 0%;"></div>
+                                        </div>
+                                    </div>
+
+                                {% elif message.tags == 'success' %}
+                                    <div id="logout-container" class="alert alert-success">
+                                        {{ message }}
+                                        <div class="progress mt-2">
+                                            <div id="progress-bar" class="progress-bar bg-success" style="width: 0%;"></div>
+                                        </div>
+                                    </div>
+
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+
+                        <div class="container d-flex justify-content-center align-items-center mb-3">
+                            <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
+                        </div>
+
+                        <h2 class="text-center">Mentor/Admin Login</h2>
+                        
+                        <!-- Username Input -->
+                        <div class="form-group mb-3">
+                             <label for="id_username">Username:</label>
+                          <input type="text" name="username" id="id_username" class="form-control" required>
+                        </div>
+
+                        <!-- Password Input -->
+                        <div class="form-group mb-3">
+                            <label for="password" class="form-label">Password:</label>
+                            <div class="input-group">
+                                <input type="password" name="password" id="id_password" class="form-control" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Forgot Password & Register Links -->
+                        <div class="form-group d-flex justify-content-between mb-4">
+                            <a href="{% url 'admin-reset-request' %}" class="text-danger text-decoration-none">Forgot Password?</a>
+            
+                        </div>
+
+                        <!-- Login Button -->
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-block">Login</button>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="d-flex align-items-center mb-3">
+                            <hr class="flex-grow-1">
+                            <span class="mx-3 text-muted">or</span>
+                            <hr class="flex-grow-1">
+                        </div>
+
+                        <!-- Google Login Button -->
+                        <div class="d-grid">
+                            <a href="#" class="btn btn-outline-primary btn-block">
+                                <i class="fab fa-google me-2"></i>Login with Google
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-        {% elif message.tags == 'success' %}
-            <div id="logout-container" class="alert alert-success">
-                {{ message }}
-                <div class="progress mt-2">
-                    <div id="progress-bar" class="progress-bar bg-success" style="width: 0%;"></div>
-                </div>
-            </div>
-
-        {% endif %}
-    {% endfor %}
-{% endif %}
-
-
-
-         <div class="container d-flex justify-content-center align-items-center mb-3">
-            <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
         </div>
-        <br>
-        <h2 class="text-center">Mentor/Admin Login</h2>
-        <div class="form-group">
-            <label for="id_username">Username:</label>
-            <input type="text" name="username" id="id_username" class="form-control" required>
-        </div>
-        <br>
-        <div class="form-group">
-            <label for="id_password">Password:</label>
-            <input type="password" name="password" id="id_password" class="form-control" required>
-        </div>
-        <br>
-        <a class="text-danger" href='{% url 'admin-reset-request' %}'>Rest Password</a>
-           <div class="d-grid pt-2">
-            <button type="submit" class="btn btn-primary btn-block">Login</button>
-        </div>
-
-        <br>
-
-    </form>
+    </div>
 </div>
-    <script>
 
-               setTimeout(function() {
-                    var errorDiv = document.getElementById("error-message");
-                    if (errorDiv) {
-                        errorDiv.style.display = "none";
-                    }
-                }, 5000);
+<br><br>
 
-                let progressBar = document.getElementById("progress-bar");
-                let logoutDiv = document.getElementById("logout-container");
-                let width = 0;
-                let interval = setInterval(function() {
-                    if (width >= 100) {
-                        clearInterval(interval);
-                        logoutDiv.style.display = "none";  // Hide logout message after 5s
-                    } else {
-                        width++;
-                        progressBar.style.width = width + "%";
-                    }
-                }, 50);
-            </script>
+<script>
+    // Toggle password visibility
+    const passwordInput = document.getElementById("password");
+    const togglePassword = document.getElementById("togglePassword");
+    const togglePasswordIcon = document.getElementById("togglePasswordIcon");
+
+    togglePassword.addEventListener("click", () => {
+        const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+        passwordInput.setAttribute("type", type);
+        
+        // Toggle eye icon
+        if (type === "password") {
+            togglePasswordIcon.classList.remove("fa-eye-slash");
+            togglePasswordIcon.classList.add("fa-eye");
+        } else {
+            togglePasswordIcon.classList.remove("fa-eye");
+            togglePasswordIcon.classList.add("fa-eye-slash");
+        }
+    });
+
+      setTimeout(function() {
+        var successDiv = document.getElementById("success-message");
+        if (successDiv) {
+            successDiv.style.display = "none";
+        }
+    }, 5000);
+
+    let progressBar = document.getElementById("progress-bar");
+    let logoutDiv = document.getElementById("logout-container");
+    if (progressBar && logoutDiv) {
+        let width = 0;
+        let interval = setInterval(function() {
+            if (width >= 100) {
+                clearInterval(interval);
+                logoutDiv.style.display = "none";  // Hide logout message after 5s
+            } else {
+                width++;
+                progressBar.style.width = width + "%";
+            }
+        }, 50);
+    }
+</script>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 {% endblock %}

@@ -1,94 +1,134 @@
 {% extends 'main-page.html' %}
 {% load static %}
 
+
 {% block body %}
 
+<div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-10 col-lg-8 col-xl-10 p-0 mx-3" style="border-radius: 20px; margin:5px auto; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <div class="row g-0 h-100">
+                <!-- Left Side - Image -->
+                <div class="col-md-6 d-none d-md-block p-0">
+                    <div class="h-100 d-flex align-items-center justify-content-center bg-light">
+                        <img src="{% static 'assets/img/login.png' %}" alt="login" class="img-fluid" style="max-height: 80%; width: auto;">
+                    </div>
+                </div>
+                
+                <!-- Right Side - Form -->
+                <div class="col-md-6 p-4 bg-white">
+                    <form method="POST" action="{% url 'login' %}">
+                        {% csrf_token %}
 
-<div class="container p- m-auto bg-info col-md-7 col-lg-4 " style="border-radius: 20px">
-    <!-- Login Form -->
-    <form method="POST" action="{% url 'login' %}">
-        {% csrf_token %}
+                        {% if messages %}
+                        <div>
+                            {% for message in messages %}
+                            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
 
-         {% if messages %}
-        <div>
-            {% for message in messages %}
-            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <div class="container d-flex justify-content-center align-items-center mb-3">
+                            <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
+                        </div>
+
+                        <h2 class="text-center mb-4">Student Login</h2>
+                        
+                        <!-- Username Input -->
+                        <div class="form-group mb-3">
+                            <label for="username" class="form-label">Username:</label>
+                            <input type="text" name="username" class="form-control" id="username" placeholder="Enter Username" required>
+                        </div>
+
+                        <!-- Password Input -->
+                        <div class="form-group mb-3">
+                            <label for="password" class="form-label">Password:</label>
+                            <div class="input-group">
+                                <input type="password" name="password" class="form-control" id="password" placeholder="Enter password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Forgot Password & Register Links -->
+                        <div class="form-group d-flex justify-content-between mb-4">
+                            <a href="{% url 'reset-request' %}" class="text-danger text-decoration-none">Forgot Password?</a>
+                            <a href="{% url 'register' %}" class="text-secondary text-decoration-none">Register</a>
+                        </div>
+
+                        <!-- Login Button -->
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-block">Login</button>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="d-flex align-items-center mb-3">
+                            <hr class="flex-grow-1">
+                            <span class="mx-3 text-muted">or</span>
+                            <hr class="flex-grow-1">
+                        </div>
+
+                        <!-- Google Login Button -->
+                        <div class="d-grid">
+                            <a href="#" class="btn btn-outline-primary btn-block">
+                                <i class="fab fa-google me-2"></i>Login with Google
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-<div class="container d-flex justify-content-center align-items-center mb-3">
-            <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
-        </div>
-
-        <h2 class="text-center">Student Login</h2><br>
-<div class="form-group">
-    <label for="text">Username:</label>
-    <input type="text" name="username" class="form-control" id="username" placeholder="Enter Username" required>
-</div>
-        <br>
-
-<!-- Password Input -->
-<div class="form-group">
-    <label for="password">Password:</label>
-    <div class="input-group">
-        <input type="password" name="password" class="form-control" id="password" placeholder="Enter password" required>
-        <div class="input-group-append">
         </div>
     </div>
 </div>
-        <br>
-        <div class="form-group d-flex justify-content-between">
-            <a href="{% url 'reset-request' %}" class="text-danger">Forgot Password?</a>
-            <a href="{% url 'register' %}" class="text-secondary">Register</a>
-        </div>
-        <br>
-        <!-- Login Button -->
-        <div class="d-grid pt-2">
-            <button type="submit" class="btn btn-primary btn-block">Login</button>
-        </div>
-        <br>
-    </form>
-</div><br><br>
+
 <script>
     // Toggle password visibility
     const passwordInput = document.getElementById("password");
     const togglePassword = document.getElementById("togglePassword");
+    const togglePasswordIcon = document.getElementById("togglePasswordIcon");
 
     togglePassword.addEventListener("click", () => {
         const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
         passwordInput.setAttribute("type", type);
+        
+        // Toggle eye icon
+        if (type === "password") {
+            togglePasswordIcon.classList.remove("fa-eye-slash");
+            togglePasswordIcon.classList.add("fa-eye");
+        } else {
+            togglePasswordIcon.classList.remove("fa-eye");
+            togglePasswordIcon.classList.add("fa-eye-slash");
+        }
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        {% if messages %}
-        {% for message in messages %}
-            alert("{{ message }}");
-        {% endfor %}
-        {% endif %}
-    });
+    setTimeout(function() {
+        var successDiv = document.getElementById("success-message");
+        if (successDiv) {
+            successDiv.style.display = "none";
+        }
+    }, 5000);
 
-     setTimeout(function() {
-      var successDiv = document.getElementById("success-message");
-         if (successDiv) {
-           successDiv.style.display = "none";
-                    }
-                }, 5000);
-
-                let progressBar = document.getElementById("progress-bar");
-                let logoutDiv = document.getElementById("logout-container");
-                let width = 0;
-                let interval = setInterval(function() {
-                    if (width >= 100) {
-                        clearInterval(interval);
-                        logoutDiv.style.display = "none";  // Hide logout message after 5s
-                    } else {
-                        width++;
-                        progressBar.style.width = width + "%";
-                    }
-                }, 50);
-
+    let progressBar = document.getElementById("progress-bar");
+    let logoutDiv = document.getElementById("logout-container");
+    if (progressBar && logoutDiv) {
+        let width = 0;
+        let interval = setInterval(function() {
+            if (width >= 100) {
+                clearInterval(interval);
+                logoutDiv.style.display = "none";  // Hide logout message after 5s
+            } else {
+                width++;
+                progressBar.style.width = width + "%";
+            }
+        }, 50);
+    }
 </script>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 {% endblock %}

@@ -2,157 +2,418 @@
 {% load static %}
 
 {% block body %}
-<div class="container p-4 m-auto bg-info col-md-9 col-lg-6 " style="border-radius: 20px;">
-    <form method="POST" id="register-form" enctype="multipart/form-data">
-        {% csrf_token %}
+<div class="container p-4 m-auto col-lg-12">
+    <div class="row justify-content-center align-items-stretch"> 
 
-        <div class="container d-flex justify-content-center align-items-center mb-3">
-            <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
+        <!-- Left Side: Image -->
+        <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center">
+            <div class="position-relative w-100 h-100"> 
+                <img src="{% static 'assets/img/register2.jpg' %}" 
+                     alt="Register" 
+                     class="img-fluid rounded-4 shadow-lg w-100 h-100" 
+                     style="object-fit: cover;"> 
+                <div class="position-absolute bottom-0 start-0 p-4 text-white  rounded-bottom-4">
+                    <h3 class="fw-bold">Join Our Tech Community</h3>
+                    <p class="mb-0">Start your journey to becoming a tech professional today</p>
+                </div>
+            </div>
         </div>
 
-        <legend class="text-center">CREATE AN ACCOUNT!</legend><br>
+        <!-- Right Side: Form -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden h-100"> 
+                <div class="card-body p-4 p-md-5 d-flex flex-column justify-content-center"> 
+                    
+                    <!-- Header -->
+                    <div class="text-center mb-4">
+                        <div class="d-flex justify-content-center align-items-center mb-3">
+                            <img src="{% static 'assets/img/logo.png' %}" 
+                                 alt="Logo" 
+                                 class="img-fluid me-2 bg-light" 
+                                 style="height: 60px; width: auto; border-radius: 50%;">
+                        </div>
+                        <h2 class="fw-bold text-dark mb-2">Create Your Account</h2>
+                        <p class="text-muted">Join thousands of students transforming their careers</p>
+                    </div>
 
-        {% for message in messages %}
-            <div class="alert alert-success">{{ message }}</div>
-        {% endfor %}
+                    <!-- Progress Steps -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between position-relative">
+                            <div class="progress position-absolute w-100" style="height: 4px; top: 15px; z-index: 1;">
+                                <div id="step-progress" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between w-100 position-relative" style="z-index: 2;">
+                                <div class="step-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">1</div>
+                                <div class="step-circle bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">2</div>
+                                <div class="step-circle bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">3</div>
+                                <div class="step-circle bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">4</div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <small class="text-primary fw-bold">Basic Info</small>
+                            <small class="text-muted">Personal Details</small>
+                            <small class="text-muted">Security</small>
+                            <small class="text-muted">Verification</small>
+                        </div>
+                    </div>
 
-        {{ form.as_p }}
+                    <form method="POST" id="register-form" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
 
-        <label class="form-label">Full Name:</label>
-        <input type="text" name="name" required class="form-control"><br>
+                        {% for message in messages %}
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
 
-        <label for="email" class="form-label">Email:</label>
-        <input type="email" class="form-control" id="email" name="email" placeholder="student@gmail.com" required><br>
+                        <!-- Step 1: Basic Information -->
+                        <div class="form-step active">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Full Name</label>
+                                <input type="text" name="name" class="form-control form-control-lg" placeholder="Enter your full name" required>
+                            </div>
 
-        <label for="username" class="form-label">Username:</label>
-        <input type="text" class="form-control" id="username" name="username" placeholder="e.g.,sirbrams" required><br>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Email Address</label>
+                                <input type="email" name="email" class="form-control form-control-lg" placeholder="Enter your email" required>
+                            </div>
 
-        <label for="phone" class="form-label">Phone Number:</label>
-        <input type="tel" class="form-control" id="phone" name="phone" placeholder="e.g., +254710101010" required><br>
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Username</label>
+                                <input type="text" name="username" class="form-control form-control-lg" placeholder="Choose a username" required>
+                            </div>
 
-        <label for="id_number" class="form-label">ID Number:</label>
-        <input type="number" class="form-control" id="id_number" name="id_number" placeholder="Enter your ID number" required><br>
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-primary btn-lg px-4 next-step">Continue <i class="bi bi-arrow-right ms-1"></i></button>
+                            </div>
+                        </div>
 
-        <label for="date" class="form-label">Date of Birth:</label>
-        <input type="date" id="date" class="form-control" name="date" required><br>
+                        <!-- Step 2: Personal Details -->
+                        <div class="form-step">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Phone Number</label>
+                                <input type="tel" name="phone" class="form-control form-control-lg" placeholder="Enter your phone number" required>
+                            </div>
 
-        <div class="mb-3">
-    <label class="form-label">Choose Gender:</label>
-    <div class="d-flex gap-3">
-        <div class="form-check">
-            <input type="radio" id="male" name="gender" value="Male" class="form-check-input" required>
-            <label for="male" class="form-check-label">Male</label>
-        </div>
-        <div class="form-check">
-            <input type="radio" id="female" name="gender" value="Female" class="form-check-input">
-            <label for="female" class="form-check-label">Female</label>
-        </div>
-        <div class="form-check">
-            <input type="radio" id="other" name="gender" value="Other" class="form-check-input">
-            <label for="other" class="form-check-label">Other</label>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">ID Number</label>
+                                <input type="number" name="id_number" class="form-control form-control-lg" placeholder="Enter your ID number" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Date of Birth</label>
+                                <input type="date" name="date" class="form-control form-control-lg" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Gender</label>
+                                <select name="gender" class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Select your gender</option>
+                                    <option>Male</option>
+                                    <option>Female</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Profile Image (Optional)</label>
+                                <input type="file" name="profile_image" class="form-control form-control-lg" accept="image/*">
+                                <div class="form-text">Upload a clear photo of yourself (JPG, PNG, max 5MB)</div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                                <button type="button" class="btn btn-primary btn-lg px-4 next-step">Continue <i class="bi bi-arrow-right ms-1"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Security -->
+                        <div class="form-step">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Password</label>
+                                <div class="input-group input-group-lg">
+                                    <input type="password" name="password" id="password" class="form-control" placeholder="Create a strong password" required>
+                                    <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Password Strength Progress -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="fw-semibold">Password Strength</small>
+                                    <small id="strength-text" class="fw-bold">Weak</small>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div id="password-strength-bar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Password checklist -->
+                            <div class="mb-4">
+                                <small class="fw-semibold d-block mb-2">Password Requirements:</small>
+                                <ul id="password-checklist" class="list-unstyled">
+                                    <li id="length" class="text-danger mb-1"><i class="bi bi-x-circle-fill me-1"></i> At least 8 characters</li>
+                                    <li id="number" class="text-danger mb-1"><i class="bi bi-x-circle-fill me-1"></i> At least 1 number</li>
+                                    <li id="uppercase" class="text-danger mb-1"><i class="bi bi-x-circle-fill me-1"></i> At least 1 uppercase letter</li>
+                                    <li id="special" class="text-danger mb-1"><i class="bi bi-x-circle-fill me-1"></i> At least 1 special character (!@#$%^&*)</li>
+                                </ul>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Confirm Password</label>
+                                <input type="password" name="c_password" id="c_password" class="form-control form-control-lg" placeholder="Re-enter your password" required>
+                                <div id="password-match" class="form-text fw-bold"></div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                                <button type="button" class="btn btn-primary btn-lg px-4 next-step">Continue <i class="bi bi-arrow-right ms-1"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: OTP Verification -->
+                        <div class="form-step">
+                            <div class="text-center mb-4">
+                                <div class="bg-light rounded-3 p-4 mb-3">
+                                    <i class="bi bi-shield-check text-primary display-4 mb-3"></i>
+                                    <h4 class="fw-bold">Verify Your Account</h4>
+                                    <p class="text-muted mb-0">We've sent a 6-digit OTP to your email/phone. Enter it below to complete registration.</p>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Enter OTP Code</label>
+                                <input type="text" name="otp" class="form-control form-control-lg text-center fw-bold fs-4" maxlength="6" placeholder="000000" required>
+                                <div class="form-text text-center">
+                                    Didn't receive the code? <a href="#" class="text-decoration-none">Resend OTP</a>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                                <button type="submit" class="btn btn-success btn-lg px-4">Verify & Register <i class="bi bi-check-lg ms-1"></i></button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Divider -->
+                    <div class="my-4 position-relative text-center">
+                        <hr>
+                        <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">OR</span>
+                    </div>
+
+                    <!-- Google Sign-up -->
+                    <div class="text-center">
+                        <a href="#" class="btn btn-outline-primary btn-lg w-100">
+                            <i class="fab fa-google me-2"></i> Sign up with Google
+                        </a>
+                    </div>
+
+                    <!-- Login Link -->
+                    <div class="text-center mt-4">
+                        <p class="text-muted">Already have an account? <a href="{% url 'login' %}" class="text-primary text-decoration-none fw-bold">Login here</a></p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
+<style>
+.form-step { display: none; }
+.form-step.active { display: block; }
 
-        <div>
-        <label for="profile_image">Profile Image:</label>
-        <input type="file" id="profile_image" name="profile_image" accept="image/*">
-       </div>
+.step-circle {
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
 
-        <label for="password" class="form-label">Password:</label>
-        <div class="input-group">
-            <input type="password" name="password" class="form-control" id="password" placeholder="Type password" required>
-        </div>
-        <small id="password-strength" ></small><br>
+.card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
 
-        <label for="c_password" class="form-label">Confirm Password:</label>
-        <input type="password" id="c_password" name="c_password" class="form-control" placeholder="Confirm password" required><br>
+.form-control, .form-select {
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s;
+}
 
-        <div class="text-center mt-4">
-            <button type="submit" class="btn btn-outline-secondary">Register</button>
-        </div>
-        <div class="d-flex justify-content-end mt-2">
-            <a href="{% url 'login' %}" class="text-white">Already have an account? Login</a>
-        </div>
-    </form>
-</div><br><br>
-      <script>
-document.getElementById("register-form").addEventListener("submit", function (e) {
-    // Age validation
-    const birthDate = new Date(document.getElementById("date").value);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+#password-checklist li {
+    transition: all 0.3s;
+}
+</style>
+
+<script>
+const steps = document.querySelectorAll(".form-step");
+const nextBtns = document.querySelectorAll(".next-step");
+const prevBtns = document.querySelectorAll(".prev-step");
+const stepCircles = document.querySelectorAll(".step-circle");
+const stepProgress = document.getElementById("step-progress");
+let stepIndex = 0;
+
+// Update progress indicator
+function updateProgress() {
+    // Update step circles
+    stepCircles.forEach((circle, index) => {
+        if (index <= stepIndex) {
+            circle.classList.remove("bg-secondary");
+            circle.classList.add("bg-primary");
+        } else {
+            circle.classList.remove("bg-primary");
+            circle.classList.add("bg-secondary");
+        }
+    });
+    
+    // Update progress bar
+    const progressPercent = (stepIndex / (steps.length - 1)) * 100;
+    stepProgress.style.width = `${progressPercent}%`;
+}
+
+// Validate before moving next
+function validateStep(step) {
+    const inputs = step.querySelectorAll("input, select");
+    for (let input of inputs) {
+        if (!input.checkValidity()) {
+            input.reportValidity();
+            return false;
+        }
     }
-    if (age < 18 || age > 70) {
-        e.preventDefault();
-        alert("Eligible for persons between 18-70 years of Age!");
-        return;
-    }
+    return true;
+}
 
-    // Phone number validation
-    const phone = document.getElementById("phone").value;
-    const phoneRegex = /^\+254\d{9}$/;
-    if (!phoneRegex.test(phone)) {
-        e.preventDefault();
-        alert("Phone number must start with +254 and followed by 9 digits!");
-        return;
-    }
-
-
-    // ID number validation
-    const idNumber = document.getElementById("id_number").value;
-    if (!/^\d{7,8}$/.test(idNumber)) {
-        e.preventDefault();
-        alert("ID number must be 7 or 8 digits long!");
-        return;
-    }
+nextBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+        if (validateStep(steps[stepIndex])) {
+            steps[stepIndex].classList.remove("active");
+            stepIndex++;
+            steps[stepIndex].classList.add("active");
+            updateProgress();
+        }
+    });
 });
+
+prevBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+        steps[stepIndex].classList.remove("active");
+        stepIndex--;
+        steps[stepIndex].classList.add("active");
+        updateProgress();
+    });
+});
+
+// Toggle Password Visibility
 const passwordInput = document.getElementById("password");
-const confirmPasswordInput = document.getElementById("c_password");
-const passwordStrength = document.getElementById("password-strength");
-const form = document.querySelector("form"); // Select the form
+const togglePassword = document.getElementById("togglePassword");
+togglePassword.addEventListener("click", () => {
+    const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+    passwordInput.setAttribute("type", type);
+    togglePassword.innerHTML = type === "password" ? '<i class="fa fa-eye"></i>' : '<i class="fa fa-eye-slash"></i>';
+});
+
+// Password Strength Progress + Checklist
+const strengthBar = document.getElementById("password-strength-bar");
+const strengthText = document.getElementById("strength-text");
+const checklist = {
+    length: document.getElementById("length"),
+    number: document.getElementById("number"),
+    uppercase: document.getElementById("uppercase"),
+    special: document.getElementById("special")
+};
 
 passwordInput.addEventListener("input", () => {
-    const password = passwordInput.value;
-    let message = "";
-    let color = "red";
-    let isValid = false;
+    let val = passwordInput.value;
+    let strength = 0;
 
-    if (password.length < 8) {
-        message = "Weak!";
-        color = "red";
-    } else if (/[a-zA-Z]/.test(password) && /\d/.test(password) && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-        message = "Fair ";
-        color = "orange";
-        isValid = true;
-    }
-    if (password.length >= 8 && /[a-zA-Z]/.test(password) && /\d/.test(password) && /[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-        message = "Strong (Recommended)";
-        color = "green";
-        isValid = true;
+    // Conditions
+    if (val.length >= 8) { 
+        checklist.length.classList.replace("text-danger","text-success"); 
+        checklist.length.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 8 characters'; 
+        strength++; 
+    } else { 
+        checklist.length.classList.replace("text-success","text-danger"); 
+        checklist.length.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 8 characters'; 
     }
 
-    passwordStrength.textContent = message;
-    passwordStrength.style.color = color;
-    passwordStrength.style.fontWeight = "bold";
+    if (/[0-9]/.test(val)) { 
+        checklist.number.classList.replace("text-danger","text-success"); 
+        checklist.number.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 1 number'; 
+        strength++; 
+    } else { 
+        checklist.number.classList.replace("text-success","text-danger"); 
+        checklist.number.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 1 number'; 
+    }
 
-    passwordInput.dataset.valid = isValid; // Store validation status in data attribute
+    if (/[A-Z]/.test(val)) { 
+        checklist.uppercase.classList.replace("text-danger","text-success"); 
+        checklist.uppercase.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 1 uppercase'; 
+        strength++; 
+    } else { 
+        checklist.uppercase.classList.replace("text-success","text-danger"); 
+        checklist.uppercase.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 1 uppercase'; 
+    }
+
+    if (/[!@#$%^&*]/.test(val)) { 
+        checklist.special.classList.replace("text-danger","text-success"); 
+        checklist.special.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 1 special character'; 
+        strength++; 
+    } else { 
+        checklist.special.classList.replace("text-success","text-danger"); 
+        checklist.special.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 1 special character'; 
+    }
+
+    // Progress bar
+    let strengthPercent = (strength / 4) * 100;
+    strengthBar.style.width = strengthPercent + "%";
+    
+    if (strengthPercent < 50) {
+        strengthBar.className = "progress-bar bg-danger";
+        strengthText.textContent = "Weak";
+        strengthText.className = "fw-bold text-danger";
+    } else if (strengthPercent < 100) {
+        strengthBar.className = "progress-bar bg-warning";
+        strengthText.textContent = "Fair";
+        strengthText.className = "fw-bold text-warning";
+    } else {
+        strengthBar.className = "progress-bar bg-success";
+        strengthText.textContent = "Strong";
+        strengthText.className = "fw-bold text-success";
+    }
 });
 
-// Prevent form submission if the password is weak
-form.addEventListener("submit", (event) => {
-    if (passwordInput.dataset.valid !== "true") {
-        event.preventDefault();
-        alert("Password is too weak! Use at least 8 characters with numbers and symbols.");
-    } else if (passwordInput.value !== confirmPasswordInput.value) {
-        event.preventDefault();
-        alert("Passwords do not match!");
+// Confirm Password Validation
+const confirmInput = document.getElementById("c_password");
+const matchText = document.getElementById("password-match");
+
+confirmInput.addEventListener("input", () => {
+    if (confirmInput.value === passwordInput.value && confirmInput.value !== "") {
+        matchText.textContent = "✅ Passwords match";
+        matchText.classList.remove("text-danger");
+        matchText.classList.add("text-success");
+    } else {
+        matchText.textContent = "❌ Passwords do not match";
+        matchText.classList.remove("text-success");
+        matchText.classList.add("text-danger");
     }
 });
 
-  </script>
+// Initialize progress on page load
+updateProgress();
+</script>
 {% endblock %}
