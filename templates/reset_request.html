@@ -1,70 +1,47 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Reset Password</title>
-    {% load static %}
-  <link href="{% static 'assets/img/logo.png' %}" rel="icon">
-  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+{% extends 'main-page.html' %}
+{% load static %}
 
-    <link href="https://fonts.gstatic.com" rel="preconnect">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+{% block body %}
+<div class="bg-light d-flex align-items-center justify-content-center vh-100">
 
-  <!-- Vendor CSS Files -->
-  <link href="{% static 'asset/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-  <link href="{% static 'asset/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-  <link href="{% static 'asset/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
-  <link href="{% static 'asset/vendor/quill/quill.snow.css' %}" rel="stylesheet">
-  <link href="{% static 'asset/vendor/quill/quill.bubble.css' %}" rel="stylesheet">
-  <link href="{% static 'asset/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
-  <link href="{% static 'asset/vendor/simple-datatables/style.css' %}" rel="stylesheet">
-    <link rel="stylesheet" href="">
-  <link href="{% static 'asset/css/style.css' %}" rel="stylesheet">
-  <!-- Main CSS File -->
-  <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
-    </head>
-
-    <nav class="navbar navbar-expand-lg " style="background-color: navy">
-        <div class="container-md">
-         <span class="d-lg-block text-uppercase text-white" id="titles">SirBrams Tech Virtual  </span><div  class="text-lowercase  text-warning ms-1" style="font-family:'Courier New';
-font-size: 14px">Campus </div>
-        </div>
-      </nav>
-<body class="bg-light">
-    <div class="container d-flex justify-content-center align-items-center vh-100">
-        <div class="card p-4 shadow-lg" style="width: 400px;">
-            <h3 class="text-center">Reset Password</h3>
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-danger text-center">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-            <form method="POST">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="email" class="form-label">Enter your Email</label>
-                    <input type="email" name="email" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Send OTP</button>
-            </form>
-            <div class="text-center mt-3">
-                <a href="{% url 'login' %}" class="text-decoration-none">Back to Login</a>
-            </div>
-        </div>
+  <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 500px; width: 90%;">
+    <!-- Logo -->
+    <div class="text-center mb-3">
+      <img src="{% static 'assets/img/logo.png' %}" alt="Logo" style="height: 70px; width: auto;">
     </div>
 
-      <footer id="footer1" class="footer " style="background-color:navy">
+    <!-- Heading -->
+    <h4 class="text-center fw-bold mb-2">Reset Your Password</h4>
+    <p class="text-muted text-center mb-4">Enter your email address and we’ll send you an OTP to reset your password.</p>
 
+    <!-- Messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-danger text-center rounded-3 py-2">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
 
-    <div class="container copyright text-center mt-4">
-      <p>© <span>Copyright</span> <strong class="#">SirBrams Tech Virtual Campus</strong> <span>All Rights Reserved</span></p>
-      <div class="credits">
+    <!-- Reset Form -->
+    <form method="POST" class="needs-validation" novalidate>
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="email" class="form-label fw-semibold">Email Address</label>
+        <input type="email" name="email" id="email" class="form-control rounded-3" placeholder="example@email.com" required>
+        <div class="invalid-feedback">Please enter a valid email address.</div>
       </div>
-    </div>
 
-  </footer>
-</body>
-</html>
+      <button type="submit" class="btn btn-primary w-100 py-2 rounded-3 fw-semibold">
+        Send OTP
+      </button>
+    </form>
+
+    <!-- Footer Links -->
+    <div class="text-center mt-4">
+      <a href="{% url 'login' %}" class="text-decoration-none small text-primary fw-semibold">
+        ← Back to Login
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

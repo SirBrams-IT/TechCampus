@@ -1,5 +1,6 @@
 import json
 import logging
+import traceback
 from django.http import FileResponse
 from django.db import transaction
 from django.utils import timezone
@@ -14,15 +15,17 @@ from django.urls import reverse
 from django.db.models import Prefetch
 from django.contrib.auth.hashers import check_password
 from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.http import HttpResponse, JsonResponse
 from requests.auth import HTTPBasicAuth
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth.decorators import login_required
 from TechApp.credentials import MpesaAccessToken, LipanaMpesaPpassword
 from django.shortcuts import  redirect,render, get_object_or_404
 from django.contrib.auth import logout, authenticate
 from django.contrib import messages
 from TechApp.forms import  StudentForm,StudentEditForm, MentorEditForm,AdminForm, CourseForm, ModuleForm, LessonForm
-from TechApp.models import Course, Member, Enrollment,LessonProgress, Contact, AdminLogin,Module, Lesson,Topic, Subtopic
+from TechApp.models import Course,User , Enrollment,LessonProgress, Contact, Module, Lesson,Topic, Subtopic
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 import random
@@ -37,6 +40,7 @@ from reportlab.lib.colors import Color, black, white, darkblue, lightgrey
 from reportlab.lib.units import inch
 from reportlab.lib.utils import ImageReader
 import os
+from django.utils.html import strip_tags
 from django.db.models import Sum, Count
 
 logger = logging.getLogger(__name__)
@@ -52,157 +56,318 @@ def about(request):
 def services(request):
     return render(request, 'services.html')
 
-def generate_otp():
-    """Generate a 6-digit OTP."""
+# ---------- OTP helper ----------
+def generate_otp_code():
     return str(random.randint(100000, 999999))
 
-#student registration view
+def send_otp_email(email, name, otp, subject="OTP Verification"):
+    current_time = timezone.localtime(timezone.now()).strftime("%d-%m-%Y at %I:%M %p")
+    html_content = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; text-align: center;">
+        <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
+            <div style="margin-bottom: 20px;">
+             <img src="https://res.cloudinary.com/dbkuxm0jo/image/upload/v1759413687/profile_images/ztqvzdv1ajimw4894t7h.png" alt="SirBrams-logo" style="height: 60px;"> </div>
+            <h2 style="color: #2c3e50; margin-bottom: 10px;">Hello, {name} 👋</h2>
+            <p style="font-size: 16px; color: #555;">Use the OTP below to verify your email and continue registration:</p>
+            <div style="margin: 20px auto; display: inline-block; background-color: #eef4ff; color: #1e3a8a; font-size: 32px; font-weight: bold; padding: 15px 30px; border-radius: 10px; letter-spacing: 4px;">{otp}</div>
+            <p style="font-size: 14px; color: #555; margin-top: 20px;"><strong>This OTP will expire in 10 minutes</strong></p>
+            <ul style="list-style-type: none; padding: 0; font-size: 14px; color: #555;">
+                <li>📧 <strong>Email:</strong> {email}</li>
+                <li>⏳ <strong>Time:</strong> {current_time}</li>
+            </ul>
+            <p style="font-size: 14px; color: #777; margin-top: 20px;">If you didn't request this OTP, please ignore this email.</p>
+            <p style="font-size: 14px; margin-top: 30px; color: #333;">Best regards, <br><strong>SirBrams Tech Virtual Campus Support Team</strong></p>
+        </div>
+    </body>
+    </html>
+    """
+    text_content = strip_tags(html_content)
+    email_message = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [email])
+    email_message.attach_alternative(html_content, "text/html")
+    email_message.send()
+
+# ----------------register view-----------------------
 def register(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        username = request.POST.get('username')
-        phone = request.POST.get('phone')
-        id_number = request.POST.get('id_number')
-        date_of_birth = request.POST.get('date')
-        gender = request.POST.get('gender')
-        password = request.POST.get('password')
-        confirm_password = request.POST.get('c_password')
-        profile_image = request.FILES.get('profile_image')
+    if request.method == "POST":
+        step = request.POST.get("step")
 
-        # Validate uniqueness
-        if Member.objects.filter(email=email).exists():
-            messages.error(request, "Email is already taken.")
-            return redirect('register')
-        if Member.objects.filter(username=username).exists():
-            messages.error(request, "Username is already taken.")
-            return redirect('register')
-        if Member.objects.filter(phone=phone).exists():
-            messages.error(request, "Phone number is already taken.")
-            return redirect('register')
-        if Member.objects.filter(id_number=id_number).exists():
-            messages.error(request, "ID number is already taken.")
-            return redirect('register')
+        # ---------------- STEP 1: BASIC INFO + OTP ----------------
+        if step == "basic_info":
+            full_name = request.POST.get("name")
+            email = request.POST.get("email")
+            username = request.POST.get("username")
 
-        # Validate password match
-        if password != confirm_password:
-            messages.error(request, "Passwords do not match.")
-            return redirect('register')
+            if not all([full_name, email, username]):
+                messages.error(request, "All fields are required.")
+                return redirect("register")
 
-        # Create user
-        new_user = Member(
-            name=name,
-            email=email,
-            username=username,
-            phone=phone,
-            id_number=id_number,
-            date_of_birth=date_of_birth,
-            gender=gender,
-            password=make_password(password),
-            profile_image=profile_image,
-            is_active=False,  # Keep the user inactive until OTP verification
-        )
-        new_user.save()
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "Email is already registered.")
+                return redirect("register")
 
-        # Generate OTP and send email
-        new_user.generate_otp()
-        new_user.refresh_from_db()  # Ensure the OTP is saved before sending email
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "Username is already taken.")
+                return redirect("register")
 
-        subject = "Email Verification"
-        message = f"""
-            Hi {new_user.username}, here is your OTP: {new_user.otp_code} 
-            It expires in 3 minutes. Click below to verify your email:
-            http://127.0.0.1:8000/verify-email/{new_user.username}
-        """
-        sender = "wekesabramuel00@gmail.com"
-        receiver = [new_user.email]
+            otp = generate_otp_code()
+            request.session["register_data"] = {
+                "name": full_name,
+                "email": email,
+                "username": username,
+                "step": "otp_verification"
+            }
+            request.session["otp_code"] = otp
+            request.session["otp_attempts"] = 0
+            request.session["otp_expiry"] = (timezone.now() + timedelta(minutes=10)).isoformat()
 
-        send_mail(subject, message, sender, receiver, fail_silently=False)
+            try:
+                send_otp_email(email, full_name, otp)
+                messages.success(request, "OTP sent. Please verify to continue.")
+            except Exception as e:
+                messages.error(request, f"Error sending OTP: {str(e)}")
+                request.session.pop("register_data", None)
+                return redirect("register")
 
-        messages.success(request, "Account created successfully! An OTP has been sent to your email.")
-        return redirect("verify-email", username=new_user.username)
+            return redirect("register")
 
-    return render(request, 'register.html')
+        # ---------------- STEP 2: OTP VERIFICATION ----------------
+        elif step == "verify_otp":
+            otp_input = request.POST.get("otp")
+            register_data = request.session.get("register_data")
+            if not register_data:
+                messages.error(request, "Session expired. Start over.")
+                return redirect("register")
 
-def verify_email(request, username):
-    user = get_object_or_404(Member, username=username)
+            otp_session = request.session.get("otp_code")
+            otp_expiry = request.session.get("otp_expiry")
+            otp_attempts = request.session.get("otp_attempts", 0)
 
-    if request.method == 'POST':
-        otp_input = request.POST.get('otp_code')
+            if otp_attempts >= 3:
+                messages.error(request, "Too many failed attempts. Request a new OTP.")
+                return redirect("register")
 
-        if user.verify_otp(otp_input):  # Call verify_otp method
-            messages.success(request, "Account activated successfully! You can now log in.")
-            return redirect("login")
-        else:
-            messages.warning(request, "Invalid or expired OTP. Please try again.")
-            return redirect("verify-email", username=user.username)
+            if not otp_session or timezone.now() > timezone.datetime.fromisoformat(otp_expiry):
+                messages.error(request, "OTP expired. Request a new one.")
+                return redirect("register")
 
-    return render(request, "verify_token.html")
+            if otp_input != otp_session:
+                request.session["otp_attempts"] = otp_attempts + 1
+                messages.error(request, f"Invalid OTP. {3 - (otp_attempts + 1)} attempts left.")
+                return redirect("register")
 
+            # OTP valid → Step 3
+            register_data["step"] = "personal_details"
+            request.session["register_data"] = register_data
+            request.session["otp_verified"] = True
+            for key in ["otp_code", "otp_expiry", "otp_attempts"]:
+                request.session.pop(key, None)
 
-def resend_otp(request):
-    if request.method == 'POST':
-        user_email = request.POST.get("otp_email")
+            messages.success(request, "Email verified! Continue with personal details.")
+            return redirect("register")
 
-        user = Member.objects.filter(email=user_email).first()
+        # ---------------- STEP 3: PERSONAL DETAILS ----------------
+        elif step == "personal_details":
+            register_data = request.session.get("register_data")
+            if not register_data or register_data.get("step") != "personal_details":
+                messages.error(request, "Complete email verification first.")
+                return redirect("register")
 
-        if user:
-            user.generate_otp()
+            phone = request.POST.get("phone")
+            id_number = request.POST.get("id_number")
+            date_of_birth = request.POST.get("date")
+            gender = request.POST.get("gender")
 
-            # Send email
-            subject = "Email Verification"
-            message = f"""
-                Hi {user.username}, here is your new OTP: {user.otp_code} 
-                It expires in 3 minutes. Click below to verify:
-                http://127.0.0.1:8000/verify-email/{user.username}
-            """
-            sender = "wekesabramuel00@gmail.com"
-            receiver = [user.email]
+            if not all([phone, id_number, date_of_birth, gender]):
+                messages.error(request, "All personal details are required.")
+                return redirect("register")
 
-            send_mail(subject, message, sender, receiver, fail_silently=False)
+            if User.objects.filter(id_number=id_number).exists():
+                messages.error(request, "ID number is already registered.")
+                return redirect("register")
 
-            messages.success(request, "A new OTP has been sent to your email.")
-            return redirect("verify-email", username=user.username)
-        else:
-            messages.error(request, "Email does not exist.")
-            return redirect("resend-otp")
+            register_data.update({
+                "phone": phone,
+                "id_number": id_number,
+                "date_of_birth": date_of_birth,
+                "gender": gender,
+                "step": "security"
+            })
+            request.session["register_data"] = register_data
+            messages.success(request, "Personal details saved. Continue with security settings.")
+            return redirect("register")
 
-    return render(request, "resend_otp.html")
+        # ---------------- STEP 4: FINAL SUBMIT ----------------
+        elif step == "final_submit":
+            register_data = request.session.get("register_data")
+            if not register_data or register_data.get("step") != "security":
+                messages.error(request, "Complete previous steps first.")
+                return redirect("register")
 
+            password = request.POST.get("password")
+            confirm_password = request.POST.get("c_password")
+            profile_image = request.FILES.get("profile_image")
 
+            # Validate password
+            if not password or not confirm_password:
+                messages.error(request, "Password fields cannot be empty.")
+                return redirect("register")
+
+            if password != confirm_password:
+                messages.error(request, "Passwords do not match.")
+                return redirect("register")
+
+            if len(password) < 8:
+                messages.error(request, "Password must be at least 8 characters.")
+                return redirect("register")
+
+            try:
+                # Check for duplicates just before saving
+                if User.objects.filter(username=register_data["username"]).exists():
+                    messages.error(request, "Username already exists.")
+                    return redirect("register")
+                if User.objects.filter(email=register_data["email"]).exists():
+                    messages.error(request, "Email already registered.")
+                    return redirect("register")
+                if User.objects.filter(id_number=register_data["id_number"]).exists():
+                    messages.error(request, "ID number already registered.")
+                    return redirect("register")
+
+                # Create user
+                new_user = User(
+                    name=register_data["name"],
+                    email=register_data["email"],
+                    username=register_data["username"],
+                    phone=register_data["phone"],
+                    id_number=register_data["id_number"],
+                    date_of_birth=register_data["date_of_birth"],
+                    gender=register_data["gender"],
+                    password=make_password(password),
+                    profile_image=profile_image,
+                    is_active=True,
+                    email_verified=True
+                )
+                new_user.save()
+
+                # Clear session
+                for key in ["register_data", "otp_verified"]:
+                    request.session.pop(key, None)
+
+                messages.success(request, "Account created successfully!")
+                return redirect("login")
+
+            except Exception as e:
+                # Print full traceback to console for debugging
+                print("Error creating user:", traceback.format_exc())
+                messages.error(request, f"Error creating account: {str(e)}")
+                return redirect("register")
+
+        # ---------------- RESEND OTP ----------------
+        elif step == "resend_otp":
+            register_data = request.session.get("register_data")
+            if not register_data:
+                messages.error(request, "Session expired. Start over.")
+                return redirect("register")
+
+            otp = generate_otp_code()
+            request.session["otp_code"] = otp
+            request.session["otp_attempts"] = 0
+            request.session["otp_expiry"] = (timezone.now() + timedelta(minutes=10)).isoformat()
+            register_data["step"] = "otp_verification"
+            request.session["register_data"] = register_data
+
+            try:
+                send_otp_email(register_data["email"], register_data["name"], otp)
+                messages.success(request, "New OTP sent to your email.")
+            except Exception as e:
+                print("Error resending OTP:", traceback.format_exc())
+                messages.error(request, f"Error resending OTP: {str(e)}")
+
+            return redirect("register")
+
+    # ---------- GET request ----------
+    register_data = request.session.get("register_data", {})
+    current_step = register_data.get("step", "basic_info")
+
+    # Debug: Print session data to console
+    print(f"Session data: {dict(request.session)}")
+    print(f"Current step: {current_step}")
+
+    context = {
+        "current_step": current_step,
+        "register_data": register_data,
+    }
+    return render(request, "register.html", context)
+
+# ---------- Unified Manual Login ----------
 def login(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+    if request.method == "POST":
+        identifier = request.POST.get("username")  # username OR email
+        password = request.POST.get("password")
 
-        try:
-            student = Member.objects.get(username=username)
-        except Member.DoesNotExist:
-            messages.error(request, "Invalid username or password.")
-            return redirect('/login')
+        # 🔍 Try by username first
+        user = User.objects.filter(username=identifier).first()
 
-        # Use check_password to verify the hashed password
-        if check_password(password, student.password):
-            request.session['username'] = username
-            return redirect('student_dashboard')
-        else:
-            messages.error(request, "Invalid username or password.")
-            return redirect('/login')
+        # 🔍 If not found, try by email
+        if not user:
+            user = User.objects.filter(email=identifier).first()
 
-    return render(request, 'login.html')
+        # ❌ User not found
+        if not user:
+            messages.error(request, "Invalid username/email or password.")
+            return redirect("login")
+
+        # ✅ Check password manually (since custom model)
+        if not check_password(password, user.password):
+            messages.error(request, "Invalid username/email or password.")
+            return redirect("login")
+
+        # 🔑 Log in with Django session
+        auth_login(request, user)
+
+        # 🎯 Redirect to common handler
+        return redirect("post_login_redirect")
+
+    return render(request, "login.html")
+
+
+# ---------- Post-login Role Redirect (manual + Google) ----------
+@login_required
+def post_login_redirect(request):
+    user = request.user
+
+    if user.is_superuser:
+        messages.success(request, "Welcome Superuser! Redirecting to Django Admin...")
+        return redirect("/admin/")
+
+    elif user.role == "mentor":
+        messages.success(request, f"Welcome {user.username}! Redirecting to Mentor Dashboard...")
+        return redirect("admin_dashboard")  # ✅ mentors share admin_dashboard
+
+    elif user.role == "student":
+        messages.success(request, f"Welcome {user.username}! Redirecting to Student Dashboard...")
+        return redirect("student_dashboard")
+
+    else:
+        messages.error(request, "Your account has no valid role assigned. Contact admin.")
+        return redirect("login")
+
+
+# ---------- Logout ----------
+def logout_view(request):
+    auth_logout(request)
+    messages.success(request, "You have been logged out.")
+    return redirect("login")
 
 # student_dashboard
+@login_required
 def student_dashboard(request):
-    username = request.session.get('username')
-    
-    if not username:
-        return redirect('login')
+    # ✅ Ensure the logged-in user is actually a student
+    if request.user.role != "student":
+        messages.error(request, "Access denied! You are not a student.")
+        return redirect("login")
 
-    try:
-        studentinfo = Member.objects.get(username=username)
-    except Member.DoesNotExist:
-        messages.error(request, "User not found.")
-        return redirect('login')
+    studentinfo = request.user  # now you don’t need to fetch from session
 
     # ✅ Get all enrollments for this student
     enrolled_courses = Enrollment.objects.filter(student=studentinfo)
@@ -212,7 +377,7 @@ def student_dashboard(request):
     active_courses_count = enrolled_courses.filter(status="Approved").count()  # only approved
 
     # ✅ Get all mentors
-    mentors = AdminLogin.objects.all()
+    mentors = User.objects.filter(role="mentor")
 
     context = {
         'studentinfo': studentinfo,
@@ -222,114 +387,63 @@ def student_dashboard(request):
         'active_courses_count': active_courses_count,
     }
 
-    return render(request, 'student_dashboard.html', context)
+    return render(request, "student_dashboard.html", context)
 
-
-#logout
-def logout_student(request):
-    logout(request)
-    messages.success(request, "You have successfully logged out.")
-    return redirect('login')
-
-def admin_login(request):
-    if request.method == "POST":
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        # Get the admin info by username
-        admininfo = AdminLogin.objects.filter(username=username).first()
-
-        if admininfo and check_password(password, admininfo.password):
-            request.session['username'] = username
-            request.session['admin_id'] = admininfo.id
-
-            messages.success(request, "Login successful! Welcome to the admin dashboard.")  
-            return redirect('admin_dashboard')
-
-        # Superuser login via Django’s auth
-        user = authenticate(request, username=username, password=password)
-        if user is not None and user.is_superuser:
-            auth_login(request, user)
-            messages.success(request, "Login successful! Redirecting to admin panel.")  
-            return redirect('/admin/')
-
-        # If nothing matched
-        messages.error(request, "Invalid username or password")
-
-    return render(request, 'mentor_login.html')
-
+#-----------Admin/mentor dashboard view-----------
+@login_required
 def admin_dashboard(request):
-    username = request.session.get('username')
-    if not username:
-        return redirect('admin_login')
+    # ✅ Allow only superuser or mentor (if mentors share admin dashboard)
+    if not (request.user.is_superuser or request.user.role == "mentor"):
+        messages.error(request, "Access denied! You are not an admin or mentor.")
+        return redirect("login")
 
-    try:
-        admininfo = AdminLogin.objects.get(username=username)
-    except AdminLogin.DoesNotExist:
-        messages.error(request, "User not found.")
-        return redirect('admin_login')
+    admininfo = request.user  # current logged-in user
 
     # Students
-    member = Member.objects.all()
+    member = User.objects.filter(role="student")  # only students
     total_students = member.count()
     today = timezone.now().date()
-    new_today = member.filter(created_at__date=today).count()
+    new_today = member.filter(created_at__date__gte=today).count()
 
     # Courses
     courses = Course.objects.all()
     total_courses = courses.count()
 
-    # courses added this week
+    # Courses added this week
     start_week = today - timedelta(days=today.weekday())  # Monday of this week
     new_this_week = courses.filter(created_at__date__gte=start_week).count()
 
-    return render(request, 'admin_dashboard.html', {
-        'admininfo': admininfo,
-        'member': member,
-        'total_students': total_students,
-        'new_today': new_today,
-        'total_courses': total_courses,
-        'new_this_week': new_this_week,
+    return render(request, "admin_dashboard.html", {
+        "admininfo": admininfo,
+        "member": member,
+        "total_students": total_students,
+        "new_today": new_today,
+        "total_courses": total_courses,
+        "new_this_week": new_this_week,
     })
 
-def logout_mentor(request):
-    logout(request)
-    messages.success(request, "You have successfully logged out.")
-    return redirect('admin_login')
-
+#courses view page
 def courses(request):
         return render(request, 'login.html')
 
-
+#main page view
 def main(request):
     return render(request, 'main.html')
-
+#contact page view
 def contact(request):
     return render(request, 'contact.html')
 
-
+# Reset Password Request
 def reset_request(request):
     if request.method == "POST":
         email = request.POST.get("email")
-
-        # Check if user exists
-        user = Member.objects.filter(email=email).first()
+        user = User.objects.filter(email=email).first()
 
         if user:
-            # Generate new OTP
-            user.generate_otp()
+            user.generate_otp()  # Generate OTP and set expiry
 
-            # Send OTP via email
-            subject = "Password Reset OTP"
-            message = f"""
-                Hi {user.username}, your password reset OTP is: {user.otp_code}
-                It expires in 3 minutes. Click below link to reset your password:
-                https://techcampus-k4qi.onrender.com/reset-password/{user.username}
-            """
-            sender = "wekesabramuel00@gmail.com"
-            receiver = [user.email]
-
-            send_mail(subject, message, sender, receiver, fail_silently=False)
+            # Send OTP using HTML email
+            send_otp_email(email=user.email, name=user.username, otp=user.otp_code, subject="Password Reset OTP")
 
             messages.success(request, "OTP has been sent to your email. Check your inbox.")
             return redirect("reset-password", username=user.username)
@@ -340,15 +454,16 @@ def reset_request(request):
     return render(request, "reset_request.html")
 
 
+# Reset Password
 def reset_password(request, username):
-    user = get_object_or_404(Member, username=username)
+    user = get_object_or_404(User, username=username)
 
     if request.method == "POST":
         otp_code = request.POST.get("otp_code")
         new_password = request.POST.get("new_password")
         confirm_password = request.POST.get("confirm_password")
 
-        # Check OTP validity
+        # Validate OTP
         if not user.otp_code or not user.otp_expires_at:
             messages.error(request, "OTP is missing. Request a new one.")
             return redirect("reset-request")
@@ -361,14 +476,14 @@ def reset_password(request, username):
             messages.error(request, "OTP has expired. Request a new one.")
             return redirect("reset-request")
 
-        # Check password confirmation
+        # Validate passwords
         if new_password != confirm_password:
             messages.error(request, "Passwords do not match.")
             return redirect("reset-password", username=username)
 
-        # Update password and clear OTP
-        user.password = make_password(new_password)  # Hash the password
-        user.otp_code = None  # Clear OTP after successful reset
+        # Update password
+        user.password = make_password(new_password)
+        user.otp_code = None
         user.otp_expires_at = None
         user.save()
 
@@ -377,40 +492,9 @@ def reset_password(request, username):
 
     return render(request, "reset_password.html", {"username": username})
 
-
-def resend_reset_otp(request):
-    if request.method == 'POST':
-        user_email = request.POST.get("otp_email")
-
-        user = Member.objects.filter(email=user_email).first()
-
-        if user:
-            user.generate_otp()
-
-            # Send new OTP via email
-            subject = "Resend Password Reset OTP"
-            message = f"""
-                Hi {user.username}, your new OTP is: {user.otp_code}
-                It expires in 3 minutes. Click below to reset your password:
-                http://127.0.0.1:8000/reset-password/{user.username}
-            """
-            sender = "wekesabramuel00@gmail.com"
-            receiver = [user.email]
-
-            send_mail(subject, message, sender, receiver, fail_silently=False)
-
-            messages.success(request, "A new OTP has been sent to your email.")
-            return redirect("reset-password", username=user.username)
-        else:
-            messages.error(request, "Email does not exist.")
-            return redirect("resend-reset-otp")
-
-    return render(request, "resent_reset_otp.html")
-
-
 #add student
 def add_student(request, user_id):
-    admininfo = get_object_or_404(AdminLogin, id=user_id)  # Fetch the admin info
+    admininfo = get_object_or_404(User, id=user_id)  # Fetch the admin info
 
     if request.method == 'POST':
         # Extracting form data
@@ -423,16 +507,16 @@ def add_student(request, user_id):
         gender = request.POST.get('gender')
 
         # Validation for unique fields
-        if Member.objects.filter(email=email).exists():
+        if User.objects.filter(email=email).exists():
             messages.error(request, "Email is already taken.")
             return redirect('add_student', user_id=user_id)
-        elif Member.objects.filter(username=username).exists():
+        elif User.objects.filter(username=username).exists():
             messages.error(request, "Username is already taken.")
             return redirect('add_student', user_id=user_id)
-        elif Member.objects.filter(phone=phone).exists():
+        elif User.objects.filter(phone=phone).exists():
             messages.error(request, "Phone number is already taken.")
             return redirect('add_student', user_id=user_id)
-        elif Member.objects.filter(id_number=id_number).exists():
+        elif User.objects.filter(id_number=id_number).exists():
             messages.error(request, "ID number is already taken.")
             return redirect('add_student', user_id=user_id)
 
@@ -441,7 +525,7 @@ def add_student(request, user_id):
         hashed_password = make_password(default_password)
 
         # Save student
-        student = Member(
+        student = User(
             name=name,
             username=username,
             email=email,
@@ -459,7 +543,7 @@ def add_student(request, user_id):
     return render(request, 'add_student.html', {'admininfo': admininfo})
 
 def delete_account_view(request, id):
-    studentinfo = get_object_or_404(Member, id=id)
+    studentinfo = get_object_or_404(User, id=id)
     studentinfo.delete()
 
     messages.success(request, "Account Deleted Successfully")  # Success message
@@ -468,7 +552,7 @@ def delete_account_view(request, id):
 
 # available courses
 def available_courses(request, user_id):
-    studentinfo = get_object_or_404(Member, id=user_id)
+    studentinfo = get_object_or_404(User, id=user_id)
     courses = Course.objects.select_related("mentor").all()
 
     # get enrolled course IDs for this student
@@ -485,7 +569,7 @@ def available_courses(request, user_id):
 
 # Payment form
 def payment(request, user_id, course_id):
-    studentinfo = get_object_or_404(Member, id=user_id)
+    studentinfo = get_object_or_404(User, id=user_id)
     course = get_object_or_404(Course, id=course_id)
 
     # ✅ Check if enrollment already exists
@@ -513,7 +597,7 @@ def payment(request, user_id, course_id):
 
 # enrolled courses
 def enrolled_courses(request, user_id):
-    studentinfo = get_object_or_404(Member, id=user_id)
+    studentinfo = get_object_or_404(User, id=user_id)
 
     # ✅ only approved enrollments
     enrollments = Enrollment.objects.filter(
@@ -527,7 +611,7 @@ def enrolled_courses(request, user_id):
 
 #learning view
 def learning(request, student_id, course_id):
-    student = get_object_or_404(Member, id=student_id)
+    student = get_object_or_404(User, id=student_id)
     course = get_object_or_404(Course, id=course_id)
 
     enrollment = Enrollment.objects.filter(
@@ -583,7 +667,7 @@ def learning(request, student_id, course_id):
 
 # STK push - Add more logging
 def stk(request, user_id, course_id):
-    student = get_object_or_404(Member, id=user_id)
+    student = get_object_or_404(User, id=user_id)
     course = get_object_or_404(Course, id=course_id)
 
     if request.method == "POST":
@@ -748,7 +832,7 @@ def stk(request, user_id, course_id):
 
 #payment status
 def payment_status(request, user_id, course_id):
-    studentinfo = get_object_or_404(Member, id=user_id)
+    studentinfo = get_object_or_404(User, id=user_id)
     course = get_object_or_404(Course, id=course_id)
     
     # Pass debug mode to template
@@ -769,7 +853,7 @@ def check_payment_status(request, user_id, course_id, checkout_id):
     logger.info(f"=== STATUS CHECK ===")
     logger.info(f"User: {user_id}, Course: {course_id}, Checkout: {checkout_id}")
     
-    student = get_object_or_404(Member, id=user_id)
+    student = get_object_or_404(User, id=user_id)
     course = get_object_or_404(Course, id=course_id)
 
     # Method 1: Check Enrollment by checkout_id (primary method)
@@ -878,7 +962,7 @@ def mpesa_callback(request):
                         break
         
         if student_id and course_id:
-            student = Member.objects.get(id=int(student_id))
+            student = User.objects.get(id=int(student_id))
             course = Course.objects.get(id=int(course_id))
             
             if result_code == 0:
@@ -1120,7 +1204,7 @@ def enrollment_receipt(request, enrollment_id):
 
 #mentor Actions for student payments and enrollments
 def manage_enrollments(request):
-    admininfo = get_object_or_404(AdminLogin, id=request.session.get("admin_id"))
+    admininfo = get_object_or_404(User, id=request.session.get("admin_id"))
 
 
     search_query = request.GET.get("q", "")
@@ -1193,7 +1277,7 @@ def reject_enrollment(request, enrollment_id):
  #print  
 from django.template.loader import render_to_string
 def print_enrollments(request):
-    admininfo = get_object_or_404(AdminLogin, id=request.session.get("admin_id"))
+    admininfo = get_object_or_404(User, id=request.session.get("admin_id"))
     enrollments = Enrollment.objects.select_related("student", "course").filter(course__mentor=admininfo)
     # ✅ Total amount from all enrollments
     total_amount = enrollments.aggregate(total=Sum("amount"))["total"] or 0
@@ -1217,13 +1301,13 @@ def print_enrollments(request):
    
  #records   
 def records(request, user_id):
-    allmembers = Member.objects.all()
-    admininfo = get_object_or_404(AdminLogin, id=user_id)
+    allmembers = User.objects.all()
+    admininfo = get_object_or_404(User, id=user_id)
     return render(request,'records.html',{'member':allmembers,'admininfo':admininfo})
 
 #mentor update student info view
 def updates(request, id):
-    updatestudent = get_object_or_404(Member, id=id)
+    updatestudent = get_object_or_404(User, id=id)
     if request.method == 'POST':
         form = StudentForm(request.POST, request.FILES, instance=updatestudent)
         if form.is_valid():
@@ -1237,17 +1321,24 @@ def updates(request, id):
 
     return render(request, 'admin_dashboard.html', {'form': form, 'member_u': updatestudent})
 
-def delete_member(request,id):
-    member= Member.objects.get(id  = id )
+# delete student
+def delete_member(request, id):
+     # ✅ Ensure only superuser or mentor can delete
+    if not (request.user.is_superuser or request.user.role == "mentor"):
+        messages.error(request, "Access denied! You are not allowed to delete student.")
+        return redirect("registered_students")
+    # ✅ Fetch only student
+    member = get_object_or_404(User, id=id, role="student")
     member.delete()
-    return redirect('registered_students')
+    messages.success(request, "Student deleted successfully.")
+    return redirect("registered_students")
 
 def records_view(request):
-    members = Member.objects.filter(is_deleted=True)
+    members = User.objects.filter(is_deleted=True)
     return render(request, 'records.html', {'members': members})
 
 def restore_member(request, id):
-    member = get_object_or_404(Member, id=id)
+    member = get_object_or_404(User, id=id)
     member.restore()
     return redirect('/records')
 
@@ -1283,7 +1374,7 @@ def contacts(request):
     return render(request, 'contact.html')
 
 def generate_pdf(request):
-    members = Member.objects.all()
+    members = User.objects.all()
     contacts = Contact.objects.all()
 
     context = {'member': members, 'allcontact': contacts}
@@ -1301,105 +1392,6 @@ def generate_pdf(request):
         return HttpResponse('We had an error generating the PDF', status=500)
     return response
 
-
-def admin_reset_request(request):
-    if request.method == "POST":
-        email = request.POST.get("email")
-
-        # Check if admin exists
-        admin = AdminLogin.objects.filter(email=email).first()
-
-        if admin:
-            admin.generate_otp()
-
-            # Send OTP via email
-            subject = "Admin Password Reset OTP"
-            message = f"""
-                Hi {admin.username}, your password reset OTP is: {admin.otp_code}
-                It expires in 3 minutes. Click below to reset your password:
-                http://127.0.0.1:8000/admin-reset-password/{admin.username}
-            """
-            sender = "wekesabramuel00@gmail.com"
-            receiver = [admin.email]
-
-            send_mail(subject, message, sender, receiver, fail_silently=False)
-
-            messages.success(request, "OTP has been sent to your email. Check your inbox.")
-            return redirect("admin-reset-password", username=admin.username)
-        else:
-            messages.error(request, "Email does not exist.")
-            return redirect("admin-reset-request")
-
-    return render(request, "admin_reset_request.html")
-
-
-def admin_reset_password(request, username):
-    admin = get_object_or_404(AdminLogin, username=username)
-
-    if request.method == "POST":
-        otp_code = request.POST.get("otp_code")
-        new_password = request.POST.get("new_password")
-        confirm_password = request.POST.get("confirm_password")
-
-        # Validate OTP
-        if not admin.otp_code or not admin.otp_expires_at:
-            messages.error(request, "OTP is missing. Request a new one.")
-            return redirect("admin-reset-request")
-
-        if admin.otp_code != otp_code:
-            messages.error(request, "Invalid OTP. Try again.")
-            return redirect("admin-reset-password", username=username)
-
-        if admin.otp_expires_at < timezone.now():
-            messages.error(request, "OTP has expired. Request a new one.")
-            return redirect("admin-reset-request")
-
-        # Check password confirmation
-        if new_password != confirm_password:
-            messages.error(request, "Passwords do not match.")
-            return redirect("admin-reset-password", username=username)
-
-        # **Hash and save new password**
-        admin.password = make_password(new_password)  # Hash the password before saving
-        admin.otp_code = None  # Clear OTP after successful reset
-        admin.otp_expires_at = None
-        admin.save()
-
-        messages.success(request, "Password reset successful! You can now log in.")
-        return redirect("admin_login")
-
-    return render(request, "admin_reset_password.html", {"username": username})
-
-
-def admin_resend_reset_otp(request):
-    if request.method == 'POST':
-        admin_email = request.POST.get("otp_email")
-
-        admin = AdminLogin.objects.filter(email=admin_email).first()
-
-        if admin:
-            admin.generate_otp()
-
-            # Send new OTP via email
-            subject = "Resend Admin Password Reset OTP"
-            message = f"""
-                Hi {admin.username}, your new OTP is: {admin.otp_code}
-                It expires in 3 minutes. Click below to reset your password:
-                http://127.0.0.1:8000/admin-reset-password/{admin.username}
-            """
-            sender = "wekesabramuel00@gmail.com"
-            receiver = [admin.email]
-
-            send_mail(subject, message, sender, receiver, fail_silently=False)
-
-            messages.success(request, "A new OTP has been sent to your email.")
-            return redirect("admin-reset-password", username=admin.username)
-        else:
-            messages.error(request, "Email does not exist.")
-            return redirect("admin-resend-reset-otp")
-
-    return render(request, "admin_resend_reset_otp.html")
-
 def settings_view(request):
     if not request.user.is_authenticated:
         messages.error(request, "You need to log in to access settings.")
@@ -1410,7 +1402,7 @@ def settings_view(request):
         new_password = request.POST.get("new_password")
         confirm_password = request.POST.get("confirm_password")
 
-        user = Member.objects.get(username=request.user.username)
+        user = User.objects.get(username=request.user.username)
 
         # Check if current password is correct
         if not check_password(current_password, user.password):
@@ -1437,8 +1429,8 @@ def student_main(request):
         return redirect('/login')
 
     try:
-        studentinfo = Member.objects.get(id=user_id)
-    except Member.DoesNotExist:
+        studentinfo = User.objects.get(id=user_id)
+    except User.DoesNotExist:
         return redirect('/login')
 
     return render(request, 'student-main.html', {'studentinfo': studentinfo})
@@ -1450,57 +1442,56 @@ def admin_main(request):
         return redirect('/mentor_login')
 
     try:
-        admininfo = AdminLogin.objects.get(id=user_id)
-    except AdminLogin.DoesNotExist:
+        admininfo = User.objects.get(id=user_id)
+    except User.DoesNotExist:
         return redirect('/mentor_login')
 
     return render(request, 'admin_main.html', {'admininfo': admininfo})
 
 
 def edit_student(request):
-    if request.method == "POST":
-        student_id = request.POST.get("student_id")
-        student = get_object_or_404(Member, id=student_id)
+    student_id = request.POST.get("student_id")
+    student = get_object_or_404(User, id=student_id, role="student")  # ✅ Only students
 
-        new_name = request.POST.get("name")
-        new_email = request.POST.get("email")
-        new_username = request.POST.get("username")
-        new_phone = request.POST.get("phone")
-        new_id_number = request.POST.get("id_number")
-        new_dob = request.POST.get("date_of_birth")
-        new_gender = request.POST.get("gender")
+    new_name = request.POST.get("name", "").strip()
+    new_email = request.POST.get("email", "").strip()
+    new_username = request.POST.get("username", "").strip()
+    new_phone = request.POST.get("phone", "").strip()
+    new_id_number = request.POST.get("id_number", "").strip()
+    new_dob = request.POST.get("date_of_birth", "").strip()
+    new_gender = request.POST.get("gender", "").strip()
 
-        if Member.objects.filter(email=new_email).exclude(id=student.id).exists():
-            return JsonResponse({"error": "Email is already taken by another student."})
+    # ✅ Check uniqueness (excluding current student)
+    if User.objects.filter(email=new_email).exclude(id=student.id).exists():
+        return JsonResponse({"error": "Email is already taken by another student."}, status=400)
 
-        if Member.objects.filter(username=new_username).exclude(id=student.id).exists():
-            return JsonResponse({"error": "Username is already taken by another student."})
+    if User.objects.filter(username=new_username).exclude(id=student.id).exists():
+        return JsonResponse({"error": "Username is already taken by another student."}, status=400)
 
-        if Member.objects.filter(phone=new_phone).exclude(id=student.id).exists():
-            return JsonResponse({"error": "Phone number is already taken by another student."})
+    if User.objects.filter(phone=new_phone).exclude(id=student.id).exists():
+        return JsonResponse({"error": "Phone number is already taken by another student."}, status=400)
 
-        if Member.objects.filter(id_number=new_id_number).exclude(id=student.id).exists():
-            return JsonResponse({"error": "ID number is already taken by another student."})
+    if User.objects.filter(id_number=new_id_number).exclude(id=student.id).exists():
+        return JsonResponse({"error": "ID number is already taken by another student."}, status=400)
 
-        student.name = new_name
-        student.email = new_email
-        student.username = new_username
-        student.phone = new_phone
-        student.id_number = new_id_number
-        student.date_of_birth = new_dob
-        student.gender = new_gender
-        student.save()
+    # ✅ Update fields safely
+    student.name = new_name
+    student.email = new_email
+    student.username = new_username
+    student.phone = new_phone
+    student.id_number = new_id_number
+    student.date_of_birth = new_dob or None
+    student.gender = new_gender
+    student.save()
 
-        return JsonResponse({"success": "Student information updated successfully!"})
-
-    return JsonResponse({"error": "Invalid request."})
+    return JsonResponse({"success": "Student information updated successfully!"}, status=200)
 
 def course_list(request):
     courses = Course.objects.all()
     return render(request, 'course_list.html', {'courses': courses})
 
 def mentor_courses(request, user_id):
-    admininfo = get_object_or_404(AdminLogin, id=user_id)
+    admininfo = get_object_or_404(User, id=user_id)
     courses = Course.objects.filter(mentor=admininfo)
 
     if request.method == "POST" and "add_course" in request.POST:
@@ -1524,7 +1515,7 @@ def mentor_courses(request, user_id):
 
 # Add a new course
 def add_course(request, user_id):
-    admininfo = get_object_or_404(AdminLogin, id=user_id)
+    admininfo = get_object_or_404(User, id=user_id)
 
     if request.method == "POST":
         form = CourseForm(request.POST, request.FILES)
@@ -1772,7 +1763,7 @@ def download_note(request, lesson_id):
 
 # student_profile
 def student_profile(request, studentinfo):
-    infos = get_object_or_404(Member, id=studentinfo)
+    infos = get_object_or_404(User, id=studentinfo)
 
     if request.method == 'POST':
         form = StudentEditForm(request.POST, request.FILES, instance=infos)
@@ -1794,7 +1785,7 @@ def student_profile(request, studentinfo):
 
 # student change password
 def change_password_s(request, id):
-    infos = get_object_or_404(Member, id=id)
+    infos = get_object_or_404(User, id=id)
 
     if request.method == "POST":
         current_password = request.POST.get("currentPassword")
@@ -1820,7 +1811,7 @@ def change_password_s(request, id):
 
 @csrf_protect
 def delete_account_s(request, id):
-    infos = get_object_or_404(Member, id=id)
+    infos = get_object_or_404(User, id=id)
 
     if request.method == "POST":
         email_input = request.POST.get("email")
@@ -1845,7 +1836,7 @@ def delete_account_s(request, id):
 # mentor profile
 
 def mentor_profile(request, admininfo):
-    infos = get_object_or_404(AdminLogin, id=admininfo)
+    infos = get_object_or_404(User, id=admininfo)
 
     if request.method == 'POST':
         form = MentorEditForm(request.POST, request.FILES, instance=infos)
@@ -1865,7 +1856,7 @@ def mentor_profile(request, admininfo):
     })
 
 def change_password_m(request, id):
-    infos = get_object_or_404(AdminLogin, id=id)
+    infos = get_object_or_404(User, id=id)
 
     if request.method == "POST":
         current_password = request.POST.get("currentPassword")
@@ -1899,7 +1890,7 @@ def change_password_m(request, id):
 
 @csrf_protect
 def delete_account_m(request, id):
-    infos = get_object_or_404(AdminLogin, id=id)
+    infos = get_object_or_404(User, id=id)
 
     if request.method == "POST":
         email_input = request.POST.get("email")
@@ -1924,35 +1915,44 @@ def delete_account_m(request, id):
 #registered students view
 
 def registered_students(request):
-    username = request.session.get('username')
-    if not username:
-        return redirect('admin_login')
-    
-    try:
-        admininfo = AdminLogin.objects.get(username=username)
-    except AdminLogin.DoesNotExist:
-        messages.error(request, "User not found.")
-        return redirect('admin_login')
+    # ✅ Check authentication first
+    if not request.user.is_authenticated:
+        return redirect("login")
 
-    # Get all students and order them
-    student_list = Member.objects.all().order_by('name')
-    
-    # Set up pagination - 10 students per page
-    paginator = Paginator(student_list, 10)
-    page = request.GET.get('page')
-    
+    # ✅ Allow only superuser or mentor
+    if not (request.user.is_superuser or request.user.role == "mentor"):
+        messages.error(request, "Access denied! You are not an admin or mentor.")
+        return redirect("login")
+
+    admininfo = request.user  # ✅ current logged-in user
+
+    # ✅ Search functionality
+    query = request.GET.get("q")
+    student_list = User.objects.filter(role="student").order_by("name")
+
+    if query:
+        student_list = student_list.filter(
+            Q(name__icontains=query) |
+            Q(username__icontains=query) |
+            Q(email__icontains=query)
+        )
+
+    # ✅ Pagination
+    paginator = Paginator(student_list, 10)  # 10 per page
+    page = request.GET.get("page")
+
     try:
         page_obj = paginator.page(page)
     except PageNotAnInteger:
-        # If page is not an integer, deliver first page
         page_obj = paginator.page(1)
     except EmptyPage:
-        # If page is out of range, deliver last page of results
         page_obj = paginator.page(paginator.num_pages)
 
-    return render(request, 'student_record/student.html', {
-        'admininfo': admininfo,
-        'page_obj': page_obj,  # Paginated students
+    return render(request, "student_record/student.html", {
+        "admininfo": admininfo,
+        "role": admininfo.role,
+        "page_obj": page_obj,
+        "query": query,   # ✅ send back search term to template
     })
 
 
@@ -1963,8 +1963,8 @@ def contact_message(request):
         return redirect('admin_login')
 
     try:
-        admininfo = AdminLogin.objects.get(username=username)
-    except AdminLogin.DoesNotExist:
+        admininfo = User.objects.get(username=username)
+    except User.DoesNotExist:
         messages.error(request, "User not found.")
         return redirect('admin_login')
     

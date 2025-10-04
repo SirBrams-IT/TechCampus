@@ -168,21 +168,30 @@
 
         /* --- Mobile adjustments: put cards below carousel and remove overlay --- */
         @media (max-width: 768px) {
+             .carousel-item img {
+                height: 400px;         /* uniform height */
+                width: 100%;           /* full width */
+                object-fit: cover;     /* crop without distortion */
+            }
+
             .carousel-caption {
-                left: 5%;
-                max-width: 90%;
+                bottom: 20pxpx;          /* keep captions visible */
+                padding: 10px;
                 top: 40%;
-                transform: translateY(-40%);
             }
 
             .carousel-caption h2 {
-                font-size: 1.6rem;
+                font-size: 1.2rem;     /* smaller headings for mobile */
             }
 
             .carousel-caption p {
-                font-size: 0.95rem;
+                font-size: 0.9rem;     /* smaller paragraph */
             }
 
+            .carousel-caption .btn {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
             .carousel-cards {
                 position: relative;
                 bottom: 0;
@@ -271,7 +280,6 @@
             }
         }
 
-    
 
         /* small helper: slightly reduce main hero button sizes on small screens */
         @media (max-width: 576px) {
@@ -280,8 +288,9 @@
                 font-size: 0.95rem;
             }
             .carousel-indicators {
-                bottom: 110px;
+                bottom: 10px;
             }
+           
         }
 
 .toggle-sidebar-btn {

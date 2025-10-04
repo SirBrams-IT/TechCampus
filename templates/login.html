@@ -1,6 +1,6 @@
 {% extends 'main-page.html' %}
 {% load static %}
-
+{% load socialaccount %}
 
 {% block body %}
 
@@ -35,12 +35,12 @@
                             <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
                         </div>
 
-                        <h2 class="text-center mb-4">Student Login</h2>
+                        <h2 class="text-center mb-4 ">Login <i class="fas fa-right-to-bracket"></i></h2>
                         
                         <!-- Username Input -->
                         <div class="form-group mb-3">
                             <label for="username" class="form-label">Username:</label>
-                            <input type="text" name="username" class="form-control" id="username" placeholder="Enter Username" required>
+                            <input type="text" name="username" class="form-control" id="username" placeholder="Enter Username/Email" required>
                         </div>
 
                         <!-- Password Input -->
@@ -74,7 +74,7 @@
 
                         <!-- Google Login Button -->
                         <div class="d-grid">
-                            <a href="#" class="btn btn-outline-primary btn-block">
+                            <a href="{% provider_login_url 'google' %}" class="btn btn-outline-primary btn-block">
                                 <i class="fab fa-google me-2"></i>Login with Google
                             </a>
                         </div>
@@ -83,7 +83,7 @@
             </div>
         </div>
     </div>
-</div>
+</div><br><br>
 
 <script>
     // Toggle password visibility

@@ -103,16 +103,48 @@ class StudentChat {
         </div>`;
       return;
     }
+
     let html='';
-    conversations.forEach(c=>{
+    const colorPalette = [
+      "#007bff", "#28a745", "#ffc107", "#17a2b8",
+      "#6f42c1", "#e83e8c", "#fd7e14", "#20c997",
+      "#6610f2", "#d63384", "#0dcaf0", "#198754"
+    ];
+
+    conversations.forEach((c, index)=>{
       const snippet = (c.last_message||'').substring(0,30)+((c.last_message||'').length>30?'...':'');
-      const lastTime = c.last_message_time?new Date(c.last_message_time).toLocaleTimeString():'';
-      const profile = c.profile_image || '/static/asset/img/profile.jpeg';
+      const lastTime = c.last_message_time?new Date(c.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }):'';
+      
+      // Check for forum type - try multiple possible property names
+      const isForum = c.conversation_type === "forum" || c.type === "forum" || c.is_forum === true;
+      let color;
+      
+      if (isForum) {
+        // For forums, generate color based on conversation ID for consistency
+        const colorIndex = (c.id % colorPalette.length);
+        color = colorPalette[colorIndex];
+      } else {
+        // For DMs, generate color based on conversation name for consistency
+        const colorIndex = (c.name?.charCodeAt(0) || 0) % colorPalette.length;
+        color = colorPalette[colorIndex];
+      }
+
+      // Forum icon with unique color or first letter avatar for DMs
+      const iconHTML = isForum
+        ? `<div class="rounded-circle d-flex align-items-center justify-content-center"
+             style="background-color:${color};width:40px;height:40px;">
+             <i class="bi bi-people-fill text-white"></i>
+           </div>`
+        : `<div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
+             style="background-color:${color};width:40px;height:40px;font-size:18px;">
+             ${c.name ? c.name.charAt(0).toUpperCase() : "?"}
+           </div>`;
+
       html+=`
       <div class="conversation-item d-flex justify-content-between align-items-start py-2 px-2" data-id="${c.id}" style="cursor:pointer;">
         <div class="d-flex align-items-center flex-grow-1" onclick="window.studentChat.selectConversation(${JSON.stringify(c).replace(/"/g,'&quot;')})">
-          <img src="${profile}" class="rounded-circle me-2" style="width:30px;height:30px;object-fit:cover;">
-          <div>
+          ${iconHTML}
+          <div class="ms-2">
             <div class="fw-medium">${c.name}</div>
             <div class="small text-muted">${snippet}</div>
             <div class="small text-secondary">${lastTime}</div>
@@ -131,10 +163,15 @@ class StudentChat {
 
     this.currentConversation = conv;
     this.page[conv.id] = 1;
+    
+    // Check for forum type - try multiple possible property names
+    const isForum = conv.conversation_type === "forum" || conv.type === "forum" || conv.is_forum === true;
+    
     this.chatHeader.innerHTML = `
       <h6 class="mb-0">
-        <i class="bi bi-chat-left-text me-2"></i>${conv.name || 'Conversation'}
-        ${conv.type==='forum'?'<span class="badge bg-info ms-2">Forum</span>':''}
+        <i class="bi ${isForum ? 'bi-people-fill' : 'bi-chat-left-text'} me-2"></i>
+        ${conv.name || 'Conversation'}
+        ${isForum?'<span class="badge bg-info ms-2">Forum</span>':''}
       </h6>`;
     if(this.messageInput){this.messageInput.disabled=false; this.messageInput.focus();}
     if(this.sendButton) this.sendButton.disabled=false;
@@ -155,12 +192,19 @@ class StudentChat {
     this.socket.onmessage = e=>{
       try{
         const d=JSON.parse(e.data);
+        
+        // Check for forum type - try multiple possible property names
+        const isForum = this.currentConversation?.conversation_type === "forum" || 
+                       this.currentConversation?.type === "forum" || 
+                       this.currentConversation?.is_forum === true;
+        
         this.displayMessage({
           message:d.message,
           sender_name:d.sender_name,
           timestamp:d.timestamp,
           is_own:d.is_own,
-          status:d.status||"sent"
+          status:d.status||"sent",
+          conversation_type: isForum ? "forum" : "dm"
         }, "append");
       }catch(err){console.error(err);}
     };
@@ -189,13 +233,19 @@ class StudentChat {
           </div>`;
         }
       }else{
+        // Check for forum type - try multiple possible property names
+        const isForum = this.currentConversation?.conversation_type === "forum" || 
+                       this.currentConversation?.type === "forum" || 
+                       this.currentConversation?.is_forum === true;
+        
         data.messages.forEach(msg=>{
           this.displayMessage({
             message: msg.content||msg.message||msg,
             sender_name: msg.sender_name,
             timestamp: msg.timestamp,
             is_own: !!msg.is_own,
-            status: msg.status || "delivered"
+            status: msg.status || "delivered",
+            conversation_type: isForum ? "forum" : "dm"
           }, page===1 ? "append" : "prepend");
         });
         if(page===1) this.chatMessages.scrollTop=this.chatMessages.scrollHeight;
@@ -248,11 +298,16 @@ class StudentChat {
     div.dataset.sender = data.sender_name;
 
     const statusIcon = this.getStatusIcon(data.status, data.is_own);
+    const isForum = data.conversation_type === "forum";
+    
+    // Show username for forum messages that are not our own
+    const showUsername = isForum && !data.is_own;
 
     div.innerHTML = `<div class="${data.is_own?'bg-primary text-white':'bg-light text-dark'} p-2 rounded shadow-sm" style="max-width:70%;">
+      ${showUsername ? `<div class="small text-muted fw-bold mb-1">${data.sender_name}</div>` : ''}
       <div>${data.message}</div>
-      <div class="small text-muted text-end">
-        ${data.timestamp?new Date(data.timestamp).toLocaleTimeString():''} 
+      <div class="small ${data.is_own ? 'text-light' : 'text-muted'} text-end" style="opacity:0.8;">
+        ${data.timestamp?new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }):''} 
         <span class="msg-status">${statusIcon}</span>
       </div>
     </div>`;
@@ -322,6 +377,7 @@ async function startDmWithMentor(mentorId){
     const data = await resp.json();
     if(data.error){ alert('Error starting conversation: '+data.error); return; }
     if(!data.conversation_id){ alert('No conversation created'); return; }
+    
 
     closeMentorsModal();
     await window.studentChat.loadConversations();
@@ -329,7 +385,11 @@ async function startDmWithMentor(mentorId){
       const el = await waitForSelector(`.conversation-item[data-id="${data.conversation_id}"]`,3000);
       el.click();
     }catch{
-      window.studentChat.selectConversation({id:data.conversation_id,name:'Conversation'});
+      window.studentChat.selectConversation({
+        id:data.conversation_id,
+        name:'Conversation',
+        conversation_type: 'dm'
+      });
     }
   }catch(err){ console.error(err); alert('Failed to start conversation'); }
 }

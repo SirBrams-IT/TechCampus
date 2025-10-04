@@ -1,42 +1,42 @@
 from datetime import date
 
 from django import forms
-from TechApp.models import Course, Enrollment, Member,AdminLogin, Lesson,Module
+from TechApp.models import Course, Enrollment, User, Lesson,Module
 
 
 class StudentForm(forms.ModelForm):
     class Meta:
-        model = Member
+        model = User
         fields= '__all__'
         exclude=['password','confirm_password']
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if Member.objects.filter(email=email).exclude(id=self.instance.id).exists():
+        if User.objects.filter(email=email).exclude(id=self.instance.id).exists():
             raise forms.ValidationError("This email is already in use.")
         return email
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
-        if Member.objects.filter(username=username).exclude(id=self.instance.id).exists():
+        if User.objects.filter(username=username).exclude(id=self.instance.id).exists():
             raise forms.ValidationError("This username is already taken.")
         return username
 
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
-        if Member.objects.filter(phone=phone).exclude(id=self.instance.id).exists():
+        if User.objects.filter(phone=phone).exclude(id=self.instance.id).exists():
             raise forms.ValidationError("This phone number is already registered.")
         return phone
 
     def clean_id_number(self):
         id_number = self.cleaned_data.get('id_number')
-        if Member.objects.filter(id_number=id_number).exclude(id=self.instance.id).exists():
+        if User.objects.filter(id_number=id_number).exclude(id=self.instance.id).exists():
             raise forms.ValidationError("This ID number is already in use.")
         return id_number
 
 class RegistrationForm(forms.ModelForm):
     class Meta:
-        model = Member
+        model = User
         fields = '__all__'
 
 
@@ -44,7 +44,7 @@ class AdminForm(forms.ModelForm):
     profile_image = forms.ImageField(required=False)
 
     class Meta:
-        model = AdminLogin
+        model = User
         exclude = ['password']
 
     def __init__(self, *args, **kwargs):
@@ -118,30 +118,30 @@ class LessonForm(forms.ModelForm):
 # Student_edit form
 class StudentEditForm(forms.ModelForm):
     class Meta:
-        model = Member
+        model = User
         fields = ['name', 'email', 'username', 'phone', 'id_number', 'profile_image','date_of_birth']
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if Member.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+        if User.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
             raise forms.ValidationError("Email already exists.")
         return email
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
-        if Member.objects.exclude(pk=self.instance.pk).filter(username=username).exists():
+        if User.objects.exclude(pk=self.instance.pk).filter(username=username).exists():
             raise forms.ValidationError("Username already taken.")
         return username
 
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
-        if Member.objects.exclude(pk=self.instance.pk).filter(phone=phone).exists():
+        if User.objects.exclude(pk=self.instance.pk).filter(phone=phone).exists():
             raise forms.ValidationError("Phone number already in use.")
         return phone
 
     def clean_id_number(self):
         id_number = self.cleaned_data.get('id_number')
-        if Member.objects.exclude(pk=self.instance.pk).filter(id_number=id_number).exists():
+        if User.objects.exclude(pk=self.instance.pk).filter(id_number=id_number).exists():
             raise forms.ValidationError("ID number already registered.")
         return id_number
 
@@ -159,30 +159,30 @@ class StudentEditForm(forms.ModelForm):
 # Student_edit form
 class MentorEditForm(forms.ModelForm):
     class Meta:
-        model = AdminLogin
+        model = User
         fields = ['name', 'email', 'username', 'phone', 'id_number', 'profile_image','date_of_birth']
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if AdminLogin.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+        if User.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
             raise forms.ValidationError("Email already exists.")
         return email
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
-        if AdminLogin.objects.exclude(pk=self.instance.pk).filter(username=username).exists():
+        if User.objects.exclude(pk=self.instance.pk).filter(username=username).exists():
             raise forms.ValidationError("Username already taken.")
         return username
 
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
-        if AdminLogin.objects.exclude(pk=self.instance.pk).filter(phone=phone).exists():
+        if User.objects.exclude(pk=self.instance.pk).filter(phone=phone).exists():
             raise forms.ValidationError("Phone number already in use.")
         return phone
 
     def clean_id_number(self):
         id_number = self.cleaned_data.get('id_number')
-        if AdminLogin.objects.exclude(pk=self.instance.pk).filter(id_number=id_number).exists():
+        if User.objects.exclude(pk=self.instance.pk).filter(id_number=id_number).exists():
             raise forms.ValidationError("ID number already registered.")
         return id_number
 

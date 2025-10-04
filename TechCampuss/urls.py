@@ -7,6 +7,8 @@ urlpatterns = [
     
     path('', include('TechApp.urls')),  
     path('', include('ChatApp.urls')), 
+    path("accounts/", include("allauth.urls")),
+
 ]
 
 if settings.DEBUG:

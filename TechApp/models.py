@@ -1,156 +1,18 @@
+# TechApp/models.py
 from datetime import date
 import random
+from decimal import Decimal
+from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from django.db import models
+from django.db import IntegrityError
 from cloudinary.models import CloudinaryField
-from django.contrib.auth.hashers import make_password, check_password, identify_hasher
-from decimal import Decimal
 
 
 def generate_otp():
     return str(random.randint(100000, 999999))
-
-#conversation
-class Conversation(models.Model):
-    CONVERSATION_TYPES = (
-        ('dm', 'Direct Message'),
-        ('forum', 'Forum'),
-    )
-    
-    name = models.CharField(max_length=255, blank=True, null=True)
-    conversation_type = models.CharField(max_length=10, choices=CONVERSATION_TYPES)
-    participants = models.ManyToManyField('Member', related_name='conversations')
-    admin_participants = models.ManyToManyField('AdminLogin', related_name='conversations', blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    def clean(self):
-        if self.conversation_type == 'dm' and self.participants.count() + self.admin_participants.count() != 2:
-            raise ValidationError("Direct messages must have exactly 2 participants")
-    
-    def __str__(self):
-        if self.conversation_type == 'dm':
-            participants = list(self.participants.all()) + list(self.admin_participants.all())
-            return f"DM: {', '.join([p.name for p in participants])}"
-        return f"Forum: {self.name}"
-
-#message model
-class Message(models.Model):
-    conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
-    sender_member = models.ForeignKey('Member', on_delete=models.CASCADE, null=True, blank=True)
-    sender_admin = models.ForeignKey('AdminLogin', on_delete=models.CASCADE, null=True, blank=True)
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-    read = models.BooleanField(default=False)
-    
-    class Meta:
-        ordering = ['timestamp']
-    
-    def clean(self):
-        if not self.sender_member and not self.sender_admin:
-            raise ValidationError("Message must have a sender")
-        if self.sender_member and self.sender_admin:
-            raise ValidationError("Message can only have one sender")
-    
-    def get_sender_name(self):
-        if self.sender_member:
-            return self.sender_member.name
-        return self.sender_admin.name
-    
-    def get_sender_type(self):
-        if self.sender_member:
-            return 'student'
-        return 'mentor'
-    
-    def __str__(self):
-        sender_name = self.get_sender_name()
-        return f"{sender_name}: {self.content[:50]}"
-
-#student model
-class Member(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    student_number = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    username = models.CharField(max_length=15, unique=True)
-    password = models.CharField(max_length=100)
-    phone = models.CharField(max_length=15, unique=True)
-    id_number = models.CharField(max_length=20)
-    date_of_birth = models.DateField()
-    gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')])
-    profile_image = CloudinaryField('image', folder='profile_images', null=True, blank=True)
-    is_deleted = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True) 
-    updated_at = models.DateTimeField(auto_now=True) 
-
-    # OTP Fields
-    otp_code = models.CharField(max_length=6, blank=True, null=True)
-    otp_expires_at = models.DateTimeField(blank=True, null=True)
-
-    class User(models.Model):
-        email = models.CharField(max_length=100)
-        username = models.CharField(max_length=50)
-        password = models.CharField(max_length=50)
-        is_superuser = models.BooleanField(default=False)
-
-        def __str__(self):
-            return self.email
-
-    def generate_otp(self):
-        self.otp_code = str(random.randint(100000, 999999))
-        self.otp_expires_at = timezone.now() + timezone.timedelta(minutes=3)
-        self.save()
-
-    def verify_otp(self, otp):
-        if self.is_otp_valid(otp):
-            self.is_active = True
-            self.clear_otp()
-            self.save()
-            return True
-        return False
-
-    def is_otp_valid(self, otp):
-        return self.otp_code == otp and self.otp_expires_at > timezone.now()
-
-    def clear_otp(self):
-        self.otp_code = None
-        self.otp_expires_at = None
-        self.save()
-     #methods for messages
-    def get_conversations(self):
-        return self.conversations.all()
-    
-    def get_unread_count(self):
-        return Message.objects.filter(
-            conversation__in=self.conversations.all()
-        ).exclude(sender_member=self).filter(read=False).count() 
-
-    def save(self, *args, **kwargs):
-        if not self.student_number:
-            current_year = timezone.now().year
-            # Count only students admitted in the current year
-            count = Member.objects.filter(
-                student_numberr__endswith=f"/{current_year}"
-            ).count() + 1
-            # Format: STVC/0001/2025
-            self.student_number = f"STVC/{count:04d}/{current_year}"
-        super().save(*args, **kwargs)       
-
-    def __str__(self):
-        return self.email
-
-
-class Contact(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    phone = models.CharField(max_length=13)
-    message = models.CharField(max_length=300)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
 
 
 def validate_age(value):
@@ -159,86 +21,218 @@ def validate_age(value):
     if age < 30 or age > 75:
         raise ValidationError(f'Age must be between 30 and 75 years. Current age: {age} years.')
 
-# Admin/Mentor Model
-class AdminLogin(models.Model):
-    name = models.CharField(max_length=100)
-    username = models.CharField(max_length=50, unique=True)
-    phone = models.CharField(max_length=15, unique=True)
-    id_number = models.CharField(max_length=20, unique=True)
+
+# ---------- Custom Unified User ----------
+class User(AbstractUser):
+    ROLE_CHOICES = (
+        ('student', 'Student'),
+        ('mentor', 'Mentor'),
+        ('admin', 'Admin'),
+    )
+
+    name = models.CharField(max_length=100, blank=True, null=True)
     email = models.EmailField(unique=True)
-    date_of_birth = models.DateField(validators=[validate_age])
+    phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
+    id_number = models.CharField(max_length=20, null=True, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    email_verified = models.BooleanField(default=False)
     gender = models.CharField(
         max_length=10,
-        choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')]
+        choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')],
+        null=True,
+        blank=True
     )
-    profile_image = CloudinaryField('image', folder='admin_profiles', blank=True, null=True)
-    password = models.CharField(max_length=250)
+    profile_image = CloudinaryField('image', folder='profile_images', null=True, blank=True)
+
+    # role & IDs
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+    student_number = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    mentor_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
     # OTP fields
     otp_code = models.CharField(max_length=6, blank=True, null=True)
     otp_expires_at = models.DateTimeField(blank=True, null=True)
 
-    # 🔐 Password methods
-    def set_password(self, raw_password):
-        """Hashes and sets the password."""
-        self.password = make_password(raw_password)
+    # soft delete, timestamps
+    is_deleted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    def check_password(self, raw_password):
-        """Verifies a password against the stored hash."""
-        return check_password(raw_password, self.password)
+    # use email as login identifier
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']  # username still required for display
 
-    def save(self, *args, **kwargs):
-        # Ensure password is always hashed before saving
-        try:
-            identify_hasher(self.password)  # If it's a valid hash, fine
-        except ValueError:
-            self.password = make_password(self.password)  # Hash raw text
-        super().save(*args, **kwargs)
+    def __str__(self):
+        return f"{self.username} ({self.role})"
 
-    # 🔑 OTP methods
+    # ---------- OTP helpers ----------
     def generate_otp(self):
-        self.otp_code = str(random.randint(100000, 999999))
+        self.otp_code = generate_otp()
         self.otp_expires_at = timezone.now() + timezone.timedelta(minutes=3)
         self.save(update_fields=["otp_code", "otp_expires_at"])
 
+    def is_otp_valid(self, otp):
+        return (
+            self.otp_code == str(otp)
+            and self.otp_expires_at
+            and self.otp_expires_at > timezone.now()
+        )
+
     def verify_otp(self, otp):
         if self.is_otp_valid(otp):
+            self.is_active = True
             self.clear_otp()
+            self.save(update_fields=["is_active"])
             return True
         return False
-
-    def is_otp_valid(self, otp):
-        return self.otp_code == otp and self.otp_expires_at > timezone.now()
 
     def clear_otp(self):
         self.otp_code = None
         self.otp_expires_at = None
         self.save(update_fields=["otp_code", "otp_expires_at"])
 
-    # Messaging methods
+    # ---------- Auto-generate Student No / Mentor ID safely ----------
+    def save(self, *args, **kwargs):
+        current_year = timezone.now().year
+
+        # Hash password if not already hashed
+        if self.password and not self.password.startswith('pbkdf2_'):
+            self.set_password(self.password)
+
+        # Generate unique student number
+        if self.role == "student" and not self.student_number:
+            attempt = 0
+            while True:
+                last_user = User.objects.filter(
+                    role="student", student_number__endswith=f"/{current_year}"
+                ).order_by('-id').first()
+
+                if last_user and last_user.student_number:
+                    try:
+                        last_num = int(last_user.student_number.split('/')[1])
+                    except:
+                        last_num = 0
+                    new_num = last_num + 1
+                else:
+                    new_num = 1
+
+                self.student_number = f"STVC/{new_num:04d}/{current_year}"
+
+                try:
+                    super(User, self).save(*args, **kwargs)
+                    break
+                except IntegrityError:
+                    attempt += 1
+                    if attempt > 10:
+                        raise ValueError("Unable to generate unique student number. Please try again.")
+
+            return  # already saved
+
+        # Generate unique mentor ID
+        if self.role == "mentor" and not self.mentor_id:
+            attempt = 0
+            while True:
+                last_user = User.objects.filter(role="mentor").order_by('-id').first()
+                if last_user and last_user.mentor_id:
+                    try:
+                        last_num = int(last_user.mentor_id.split('/')[1])
+                    except:
+                        last_num = 0
+                    new_num = last_num + 1
+                else:
+                    new_num = 1
+
+                self.mentor_id = f"MENT/{new_num:03d}/{current_year}"
+
+                try:
+                    super(User, self).save(*args, **kwargs)
+                    break
+                except IntegrityError:
+                    attempt += 1
+                    if attempt > 10:
+                        raise ValueError("Unable to generate unique mentor ID. Please try again.")
+
+            return  # already saved
+
+        # Default save if IDs already exist
+        super().save(*args, **kwargs)
+
+    # ---------- Messaging helper shims ----------
     def get_conversations(self):
-        return self.conversations.all()
-    
+        return getattr(self, "conversations", None) and self.conversations.all()
+
     def get_unread_count(self):
-        from messaging.models import Message  # import here to avoid circular import
-        return Message.objects.filter(
-            conversation__in=self.conversations.all()
-        ).exclude(sender_admin=self).filter(read=False).count()
+        from django.db.models import Q
+        from .models import Message  # local import to avoid circular import risk
+        return (
+            Message.objects.filter(conversation__in=self.conversations.all())
+            .exclude(sender=self)
+            .filter(read=False)
+            .count()
+        )
+
+
+# ---------- Conversation & Messages (use unified User) ----------
+class Conversation(models.Model):
+    CONVERSATION_TYPES = (
+        ('dm', 'Direct Message'),
+        ('forum', 'Forum'),
+    )
+
+    name = models.CharField(max_length=255, blank=True, null=True)
+    conversation_type = models.CharField(max_length=10, choices=CONVERSATION_TYPES)  
+    # normal participants
+    participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='conversations')
+    # admins of the conversation
+    admin_participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='admin_conversations',blank=True) 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        if self.conversation_type == 'dm' and self.participants.count() != 2:
+            raise ValidationError("Direct messages must have exactly 2 participants")
 
     def __str__(self):
-        return self.name
+        if self.conversation_type == 'dm':
+            participants = list(self.participants.all())
+            return f"DM: {', '.join([p.name or p.username for p in participants])}"
+        return f"Forum: {self.name}"
 
+#------------Message model------
+class Message(models.Model):
+    conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
 
-#course model
+    class Meta:
+        ordering = ['timestamp']
+
+    def clean(self):
+        if not self.sender:
+            raise ValidationError("Message must have a sender")
+
+    def get_sender_name(self):
+        return self.sender.name or self.sender.username
+
+    def get_sender_type(self):
+        return getattr(self.sender, "role", None) or "user"
+
+    def __str__(self):
+        sender_name = self.get_sender_name()
+        return f"{sender_name}: {self.content[:50]}"
+
+# ---------- Courses, Modules, Topics, Lessons ----------
 class Course(models.Model):
     title = models.CharField(max_length=200, unique=True)
     description = models.TextField()
     code = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    mentor = models.ForeignKey("AdminLogin", on_delete=models.CASCADE)
+    mentor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'role__in': ['mentor', 'admin']})
     amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="Course fee in KES")
     duration = models.CharField(max_length=50, help_text="e.g. '3 months', '10 weeks'")
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True) 
+    updated_at = models.DateTimeField(auto_now=True)
     course_images = CloudinaryField('image', folder='course_images', null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -252,7 +246,6 @@ class Course(models.Model):
         return f"{self.title} ({self.code}) - KES {self.amount}"
 
 
-#module model
 class Module(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="modules")
     title = models.CharField(max_length=200)
@@ -265,7 +258,7 @@ class Module(models.Model):
     def __str__(self):
         return self.title
 
-#topic model
+
 class Topic(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="topics")
     title = models.CharField(max_length=200)
@@ -291,7 +284,7 @@ class Subtopic(models.Model):
     def __str__(self):
         return self.title
 
-# lesson model
+
 class Lesson(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="lessons")
     title = models.CharField(max_length=200)
@@ -317,27 +310,23 @@ class Lesson(models.Model):
             return None
 
         url = self.youtube_url
-
-        # Handle standard YouTube links
         if "watch?v=" in url:
             video_id = url.split("watch?v=")[-1].split("&")[0]
-        # Handle shortened youtu.be links
         elif "youtu.be/" in url:
             video_id = url.split("youtu.be/")[-1].split("?")[0]
-        # Handle shorts links
         elif "youtube.com/shorts/" in url:
             video_id = url.split("shorts/")[-1].split("?")[0]
         else:
-            return url  # fallback if unknown format
-
+            return url
         return f"https://www.youtube.com/embed/{video_id}"
 
     def __str__(self):
         return f"{self.module} - {self.title}"
 
-#lesson progress model
+
+# ---------- Progress & Enrollment ----------
 class LessonProgress(models.Model):
-    student = models.ForeignKey(Member, on_delete=models.CASCADE, related_name="lesson_progress")
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="lesson_progress", limit_choices_to={'role': 'student'})
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="lesson_progress")
     completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -357,13 +346,10 @@ STATUS_CHOICES = [
     ('rejected', 'Rejected by Mentor'),
 ]
 
+
 class Enrollment(models.Model):
-    student = models.ForeignKey(
-        'TechApp.Member', on_delete=models.CASCADE, related_name='enrollments'
-    )
-    course = models.ForeignKey(
-        'TechApp.Course', on_delete=models.CASCADE, related_name='enrollments'
-    )
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='enrollments', limit_choices_to={'role': 'student'})
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
 
     # Snapshots for easy display + history
     mentor_name = models.CharField(max_length=255)
@@ -385,8 +371,19 @@ class Enrollment(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-        unique_together = ('student', 'course')  # 🚨 prevents duplicate payments per course per student
+        unique_together = ('student', 'course')
 
     def __str__(self):
         return f"{self.student_name} -> {self.course_title} ({self.status})"
 
+
+# ---------- Contact ----------
+class Contact(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=13)
+    message = models.CharField(max_length=300)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name

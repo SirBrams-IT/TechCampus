@@ -1,5 +1,6 @@
 {% extends 'main-page.html' %}
 {% load static %}
+{% load socialaccount %}
 
 {% block body %}
 <div class="container p-4 m-auto col-lg-12">
@@ -12,7 +13,7 @@
                      alt="Register" 
                      class="img-fluid rounded-4 shadow-lg w-100 h-100" 
                      style="object-fit: cover;"> 
-                <div class="position-absolute bottom-0 start-0 p-4 text-white  rounded-bottom-4">
+                <div class="position-absolute bottom-0 start-0 p-4 text-white rounded-bottom-4">
                     <h3 class="fw-bold">Join Our Tech Community</h3>
                     <p class="mb-0">Start your journey to becoming a tech professional today</p>
                 </div>
@@ -51,68 +52,107 @@
                         </div>
                         <div class="d-flex justify-content-between mt-2">
                             <small class="text-primary fw-bold">Basic Info</small>
+                            <small class="text-muted">OTP Verification</small>
                             <small class="text-muted">Personal Details</small>
                             <small class="text-muted">Security</small>
-                            <small class="text-muted">Verification</small>
                         </div>
                     </div>
 
-                    <form method="POST" id="register-form" enctype="multipart/form-data" novalidate>
+                    <form method="POST" id="register-form" enctype="multipart/form-data" >
                         {% csrf_token %}
 
                         {% for message in messages %}
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show" role="alert">
                                 {{ message }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                         {% endfor %}
 
                         <!-- Step 1: Basic Information -->
-                        <div class="form-step active">
+                        <div class="form-step {% if current_step == 'basic_info' %}active{% endif %}" id="step-basic">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Full Name</label>
-                                <input type="text" name="name" class="form-control form-control-lg" placeholder="Enter your full name" required>
+                                <input type="text" name="name" class="form-control form-control-lg" placeholder="Enter your full name" 
+                                       value="{{ register_data.name|default:'' }}" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Email Address</label>
-                                <input type="email" name="email" class="form-control form-control-lg" placeholder="Enter your email" required>
+                                <input type="email" name="email" class="form-control form-control-lg" placeholder="Enter your email" 
+                                       value="{{ register_data.email|default:'' }}" required>
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label fw-semibold">Username</label>
-                                <input type="text" name="username" class="form-control form-control-lg" placeholder="Choose a username" required>
+                                <input type="text" name="username" class="form-control form-control-lg" placeholder="Choose a username" 
+                                       value="{{ register_data.username|default:'' }}" required>
                             </div>
 
                             <div class="d-flex justify-content-end">
-                                <button type="button" class="btn btn-primary btn-lg px-4 next-step">Continue <i class="bi bi-arrow-right ms-1"></i></button>
+                                <!-- This button submits only the enabled controls (we disable other step controls in JS) -->
+                                <button type="submit" name="step" value="basic_info" class="btn btn-primary btn-lg px-4">Send OTP <i class="bi bi-send ms-1"></i></button>
                             </div>
                         </div>
 
-                        <!-- Step 2: Personal Details -->
-                        <div class="form-step">
+                        <!-- Step 2: OTP Verification -->
+                        <div class="form-step {% if current_step == 'otp_verification' %}active{% endif %}" id="step-otp">
+                            <div class="text-center mb-4">
+                                <div class="bg-light rounded-3 p-4 mb-3">
+                                    <i class="bi bi-shield-check text-primary display-4 mb-3"></i>
+                                    <h4 class="fw-bold">Verify Your Email</h4>
+                                    <p class="text-muted mb-2">We've sent a 6-digit OTP to:</p>
+                                    <p class="fw-bold text-dark mb-3">{{ register_data.email }}</p>
+                                    <div class="alert alert-warning py-2">
+                                        <i class="bi bi-clock me-2"></i>
+                                        <span id="timer-text">OTP expires in: </span>
+                                        <span id="timer" class="fw-bold">10:00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Enter OTP Code</label>
+                                <input type="text" name="otp" class="form-control form-control-lg text-center fw-bold fs-4" 
+                                       maxlength="6" placeholder="6-digit" pattern="[0-9]{6}" required>
+                                <div class="form-text text-center mt-2">
+                                    Didn't receive the code? Request new code. 
+                                    <button type="submit" name="step" value="resend_otp" class="btn btn-link bg-light text-primary p-2" formnovalidate>Resend OTP</button>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="showStep('basic')"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                                <button type="submit" name="step" value="verify_otp" class="btn btn-primary btn-lg px-4">Verify OTP <i class="bi bi-check-lg ms-1"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Personal Details -->
+                        <div class="form-step {% if current_step == 'personal_details' %}active{% endif %}" id="step-personal">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Phone Number</label>
-                                <input type="tel" name="phone" class="form-control form-control-lg" placeholder="Enter your phone number" required>
+                                <input type="tel" name="phone" class="form-control form-control-lg" placeholder="Enter your phone number" 
+                                       value="{{ register_data.phone|default:'' }}" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">ID Number</label>
-                                <input type="number" name="id_number" class="form-control form-control-lg" placeholder="Enter your ID number" required>
+                                <input type="number" name="id_number" class="form-control form-control-lg" placeholder="Enter your ID number" 
+                                       value="{{ register_data.id_number|default:'' }}" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Date of Birth</label>
-                                <input type="date" name="date" class="form-control form-control-lg" required>
+                                <input type="date" name="date" class="form-control form-control-lg" 
+                                       value="{{ register_data.date_of_birth|default:'' }}" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Gender</label>
                                 <select name="gender" class="form-select form-select-lg" required>
                                     <option value="" selected disabled>Select your gender</option>
-                                    <option>Male</option>
-                                    <option>Female</option>
-                                    <option>Other</option>
+                                    <option value="Male" {% if register_data.gender == 'Male' %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if register_data.gender == 'Female' %}selected{% endif %}>Female</option>
+                                    <option value="Other" {% if register_data.gender == 'Other' %}selected{% endif %}>Other</option>
                                 </select>
                             </div>
 
@@ -123,13 +163,13 @@
                             </div>
 
                             <div class="d-flex justify-content-between">
-                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step"><i class="bi bi-arrow-left me-1"></i> Back</button>
-                                <button type="button" class="btn btn-primary btn-lg px-4 next-step">Continue <i class="bi bi-arrow-right ms-1"></i></button>
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="showStep('otp')"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                                <button type="submit" name="step" value="personal_details" class="btn btn-primary btn-lg px-4">Continue <i class="bi bi-arrow-right ms-1"></i></button>
                             </div>
                         </div>
 
-                        <!-- Step 3: Security -->
-                        <div class="form-step">
+                        <!-- Step 4: Security -->
+                        <div class="form-step {% if current_step == 'security' %}active{% endif %}" id="step-security">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Password</label>
                                 <div class="input-group input-group-lg">
@@ -169,52 +209,31 @@
                             </div>
 
                             <div class="d-flex justify-content-between">
-                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step"><i class="bi bi-arrow-left me-1"></i> Back</button>
-                                <button type="button" class="btn btn-primary btn-lg px-4 next-step">Continue <i class="bi bi-arrow-right ms-1"></i></button>
-                            </div>
-                        </div>
-
-                        <!-- Step 4: OTP Verification -->
-                        <div class="form-step">
-                            <div class="text-center mb-4">
-                                <div class="bg-light rounded-3 p-4 mb-3">
-                                    <i class="bi bi-shield-check text-primary display-4 mb-3"></i>
-                                    <h4 class="fw-bold">Verify Your Account</h4>
-                                    <p class="text-muted mb-0">We've sent a 6-digit OTP to your email/phone. Enter it below to complete registration.</p>
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="form-label fw-semibold">Enter OTP Code</label>
-                                <input type="text" name="otp" class="form-control form-control-lg text-center fw-bold fs-4" maxlength="6" placeholder="000000" required>
-                                <div class="form-text text-center">
-                                    Didn't receive the code? <a href="#" class="text-decoration-none">Resend OTP</a>
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-between">
-                                <button type="button" class="btn btn-outline-secondary btn-lg px-4 prev-step"><i class="bi bi-arrow-left me-1"></i> Back</button>
-                                <button type="submit" class="btn btn-success btn-lg px-4">Verify & Register <i class="bi bi-check-lg ms-1"></i></button>
+                                <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="showStep('personal')"><i class="bi bi-arrow-left me-1"></i> Back</button>
+                                <button type="submit" name="step" value="final_submit" class="btn btn-success btn-lg px-4">Create Account <i class="bi bi-check-lg ms-1"></i></button>
                             </div>
                         </div>
                     </form>
 
-                    <!-- Divider -->
-                    <div class="my-4 position-relative text-center">
-                        <hr>
-                        <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">OR</span>
-                    </div>
+                    <!-- Only show these on first step -->
+                    <div id="alternative-auth" class="{% if current_step != 'basic_info' %}d-none{% endif %}">
+                        <!-- Divider -->
+                        <div class="my-4 position-relative text-center">
+                            <hr>
+                            <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">OR</span>
+                        </div>
 
-                    <!-- Google Sign-up -->
-                    <div class="text-center">
-                        <a href="#" class="btn btn-outline-primary btn-lg w-100">
-                            <i class="fab fa-google me-2"></i> Sign up with Google
-                        </a>
-                    </div>
+                        <!-- Google Sign-up -->
+                        <div class="text-center">
+                            <a href="{% provider_login_url 'google' %}" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="fab fa-google me-2"></i> Sign up with Google
+                            </a>
+                        </div>
 
-                    <!-- Login Link -->
-                    <div class="text-center mt-4">
-                        <p class="text-muted">Already have an account? <a href="{% url 'login' %}" class="text-primary text-decoration-none fw-bold">Login here</a></p>
+                        <!-- Login Link -->
+                        <div class="text-center mt-4">
+                            <p class="text-muted">Already have an account? <a href="{% url 'login' %}" class="text-primary text-decoration-none fw-bold">Login here</a></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -261,18 +280,94 @@
 </style>
 
 <script>
-const steps = document.querySelectorAll(".form-step");
-const nextBtns = document.querySelectorAll(".next-step");
-const prevBtns = document.querySelectorAll(".prev-step");
-const stepCircles = document.querySelectorAll(".step-circle");
-const stepProgress = document.getElementById("step-progress");
-let stepIndex = 0;
+// Global variable for OTP timer
+let otpTimerId = null;
+
+// Helper: enable controls inside a step and restore required flags
+function enableStepControls(stepEl) {
+    stepEl.querySelectorAll('input, select, textarea, button').forEach(ctrl => {
+        // skip "Back" or navigation buttons of type button (they should remain buttons)
+        if (ctrl.tagName.toLowerCase() === 'button' && ctrl.type === 'button') return;
+
+        // restore disabled state
+        if (ctrl.dataset.wasDisabled === 'true') ctrl.disabled = false; else ctrl.disabled = false;
+
+        // restore required if it originally had it
+        if (ctrl.dataset.wasRequired === 'true') ctrl.setAttribute('required', '');
+
+        // clear saved flags
+        delete ctrl.dataset.wasDisabled;
+        delete ctrl.dataset.wasRequired;
+    });
+}
+
+// Helper: disable controls inside a step and remember required flags
+function disableStepControls(stepEl) {
+    stepEl.querySelectorAll('input, select, textarea, button').forEach(ctrl => {
+        // skip "Back" buttons so they still work while hidden (but they are not visible) - they are type button
+        if (ctrl.tagName.toLowerCase() === 'button' && ctrl.type === 'button') return;
+
+        ctrl.dataset.wasDisabled = ctrl.disabled ? 'true' : 'false';
+        ctrl.dataset.wasRequired = ctrl.hasAttribute('required') ? 'true' : 'false';
+
+        // disable and remove required so browser won't validate hidden inputs
+        ctrl.disabled = true;
+        if (ctrl.hasAttribute('required')) ctrl.removeAttribute('required');
+
+        // clear any custom validity so it doesn't block hidden controls
+        if (typeof ctrl.setCustomValidity === 'function') {
+            ctrl.setCustomValidity('');
+        }
+    });
+}
+
+// Set disabled/enabled state for each step so only the active step's controls are validated/submitted
+function setStepDisabledStates() {
+    document.querySelectorAll('.form-step').forEach(stepEl => {
+        if (stepEl.classList.contains('active')) {
+            enableStepControls(stepEl);
+        } else {
+            disableStepControls(stepEl);
+        }
+    });
+}
+
+// Show specific step (for back buttons and client navigation)
+function showStep(step) {
+    const targetId = 'step-' + step;
+    document.querySelectorAll('.form-step').forEach(stepEl => stepEl.classList.remove('active'));
+    const targetStep = document.getElementById(targetId);
+    if (targetStep) {
+        targetStep.classList.add('active');
+        updateProgress();
+        updateAlternativeAuth();
+        setStepDisabledStates();
+        // Start OTP timer if we're on OTP step
+        if (targetId === 'step-otp') {
+            startOTPTimer();
+        }
+    }
+}
 
 // Update progress indicator
 function updateProgress() {
-    // Update step circles
+    const stepCircles = document.querySelectorAll(".step-circle");
+    const stepProgress = document.getElementById("step-progress");
+    const activeStep = document.querySelector('.form-step.active');
+    const currentStep = activeStep ? activeStep.id : 'step-basic';
+    
+    const stepMapping = {
+        'step-basic': 0,
+        'step-otp': 1,
+        'step-personal': 2,
+        'step-security': 3
+    };
+    
+    const currentIndex = stepMapping[currentStep] || 0;
+    const progressPercent = (currentIndex / 3) * 100;
+
     stepCircles.forEach((circle, index) => {
-        if (index <= stepIndex) {
+        if (index <= currentIndex) {
             circle.classList.remove("bg-secondary");
             circle.classList.add("bg-primary");
         } else {
@@ -280,140 +375,189 @@ function updateProgress() {
             circle.classList.add("bg-secondary");
         }
     });
-    
-    // Update progress bar
-    const progressPercent = (stepIndex / (steps.length - 1)) * 100;
-    stepProgress.style.width = `${progressPercent}%`;
+
+    if (stepProgress) {
+        stepProgress.style.width = `${progressPercent}%`;
+    }
 }
 
-// Validate before moving next
-function validateStep(step) {
-    const inputs = step.querySelectorAll("input, select");
-    for (let input of inputs) {
-        if (!input.checkValidity()) {
-            input.reportValidity();
-            return false;
+// Update alternative auth visibility
+function updateAlternativeAuth() {
+    const alternativeAuth = document.getElementById('alternative-auth');
+    const activeStep = document.querySelector('.form-step.active');
+    if (alternativeAuth && activeStep) {
+        if (activeStep.id === 'step-basic') {
+            alternativeAuth.classList.remove('d-none');
+        } else {
+            alternativeAuth.classList.add('d-none');
         }
     }
-    return true;
 }
 
-nextBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-        if (validateStep(steps[stepIndex])) {
-            steps[stepIndex].classList.remove("active");
-            stepIndex++;
-            steps[stepIndex].classList.add("active");
-            updateProgress();
-        }
-    });
-});
-
-prevBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-        steps[stepIndex].classList.remove("active");
-        stepIndex--;
-        steps[stepIndex].classList.add("active");
-        updateProgress();
-    });
-});
-
-// Toggle Password Visibility
-const passwordInput = document.getElementById("password");
-const togglePassword = document.getElementById("togglePassword");
-togglePassword.addEventListener("click", () => {
-    const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
-    passwordInput.setAttribute("type", type);
-    togglePassword.innerHTML = type === "password" ? '<i class="fa fa-eye"></i>' : '<i class="fa fa-eye-slash"></i>';
-});
-
-// Password Strength Progress + Checklist
-const strengthBar = document.getElementById("password-strength-bar");
-const strengthText = document.getElementById("strength-text");
-const checklist = {
-    length: document.getElementById("length"),
-    number: document.getElementById("number"),
-    uppercase: document.getElementById("uppercase"),
-    special: document.getElementById("special")
-};
-
-passwordInput.addEventListener("input", () => {
-    let val = passwordInput.value;
-    let strength = 0;
-
-    // Conditions
-    if (val.length >= 8) { 
-        checklist.length.classList.replace("text-danger","text-success"); 
-        checklist.length.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 8 characters'; 
-        strength++; 
-    } else { 
-        checklist.length.classList.replace("text-success","text-danger"); 
-        checklist.length.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 8 characters'; 
-    }
-
-    if (/[0-9]/.test(val)) { 
-        checklist.number.classList.replace("text-danger","text-success"); 
-        checklist.number.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 1 number'; 
-        strength++; 
-    } else { 
-        checklist.number.classList.replace("text-success","text-danger"); 
-        checklist.number.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 1 number'; 
-    }
-
-    if (/[A-Z]/.test(val)) { 
-        checklist.uppercase.classList.replace("text-danger","text-success"); 
-        checklist.uppercase.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 1 uppercase'; 
-        strength++; 
-    } else { 
-        checklist.uppercase.classList.replace("text-success","text-danger"); 
-        checklist.uppercase.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 1 uppercase'; 
-    }
-
-    if (/[!@#$%^&*]/.test(val)) { 
-        checklist.special.classList.replace("text-danger","text-success"); 
-        checklist.special.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 1 special character'; 
-        strength++; 
-    } else { 
-        checklist.special.classList.replace("text-success","text-danger"); 
-        checklist.special.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 1 special character'; 
-    }
-
-    // Progress bar
-    let strengthPercent = (strength / 4) * 100;
-    strengthBar.style.width = strengthPercent + "%";
+// OTP Timer
+function startOTPTimer() {
+    const timerDisplay = document.getElementById("timer");
+    if (!timerDisplay) return;
     
-    if (strengthPercent < 50) {
-        strengthBar.className = "progress-bar bg-danger";
-        strengthText.textContent = "Weak";
-        strengthText.className = "fw-bold text-danger";
-    } else if (strengthPercent < 100) {
-        strengthBar.className = "progress-bar bg-warning";
-        strengthText.textContent = "Fair";
-        strengthText.className = "fw-bold text-warning";
-    } else {
-        strengthBar.className = "progress-bar bg-success";
-        strengthText.textContent = "Strong";
-        strengthText.className = "fw-bold text-success";
+    // Clear any existing timer
+    if (otpTimerId !== null) {
+        clearInterval(otpTimerId);
+        otpTimerId = null;
     }
-});
 
-// Confirm Password Validation
-const confirmInput = document.getElementById("c_password");
-const matchText = document.getElementById("password-match");
+    let countdown = 600; // 10 minutes
+    function tick() {
+        let minutes = Math.floor(countdown / 60);
+        let seconds = countdown % 60;
+        timerDisplay.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+        countdown--;
 
-confirmInput.addEventListener("input", () => {
-    if (confirmInput.value === passwordInput.value && confirmInput.value !== "") {
-        matchText.textContent = "✅ Passwords match";
-        matchText.classList.remove("text-danger");
-        matchText.classList.add("text-success");
-    } else {
-        matchText.textContent = "❌ Passwords do not match";
-        matchText.classList.remove("text-success");
-        matchText.classList.add("text-danger");
+        if (countdown < 0) {
+            clearInterval(otpTimerId);
+            otpTimerId = null;
+            timerDisplay.textContent = "Expired!";
+            timerDisplay.className = "fw-bold text-danger";
+        } else if (countdown < 60) {
+            timerDisplay.className = "fw-bold text-danger";
+        }
     }
-});
 
-// Initialize progress on page load
-updateProgress();
+    tick();
+    otpTimerId = setInterval(tick, 1000);
+}
+
+// Initialize UI based on current step
+function initializeUI() {
+    updateProgress();
+    updateAlternativeAuth();
+    setStepDisabledStates();
+    
+    // Start OTP timer if we're on OTP step
+    if (document.getElementById('step-otp')?.classList.contains('active')) {
+        startOTPTimer();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the UI based on current step from Django
+    initializeUI();
+
+    // Toggle Password Visibility - only if elements exist
+    const passwordInput = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.innerHTML = type === 'password' ? '<i class="fa fa-eye"></i>' : '<i class="fa fa-eye-slash"></i>';
+        });
+    }
+
+    // Password strength and checklist
+    const strengthBar = document.getElementById('password-strength-bar');
+    const strengthText = document.getElementById('strength-text');
+    const checklist = {
+        length: document.getElementById('length'),
+        number: document.getElementById('number'),
+        uppercase: document.getElementById('uppercase'),
+        special: document.getElementById('special')
+    };
+
+    // Only set up password strength if password input exists
+    if (passwordInput && strengthBar && strengthText) {
+        passwordInput.addEventListener('input', () => {
+            let val = passwordInput.value || '';
+            let strength = 0;
+
+            // Safely update checklist items
+            if (checklist.length) {
+                if (val.length >= 8) { 
+                    checklist.length.classList.replace('text-danger','text-success'); 
+                    checklist.length.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 8 characters'; 
+                    strength++; 
+                } else { 
+                    checklist.length.classList.replace('text-success','text-danger'); 
+                    checklist.length.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 8 characters'; 
+                }
+            }
+
+            if (checklist.number) {
+                if (/[0-9]/.test(val)) { 
+                    checklist.number.classList.replace('text-danger','text-success'); 
+                    checklist.number.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 1 number'; 
+                    strength++; 
+                } else { 
+                    checklist.number.classList.replace('text-success','text-danger'); 
+                    checklist.number.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 1 number'; 
+                }
+            }
+
+            if (checklist.uppercase) {
+                if (/[A-Z]/.test(val)) { 
+                    checklist.uppercase.classList.replace('text-danger','text-success'); 
+                    checklist.uppercase.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 1 uppercase'; 
+                    strength++; 
+                } else { 
+                    checklist.uppercase.classList.replace('text-success','text-danger'); 
+                    checklist.uppercase.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 1 uppercase'; 
+                }
+            }
+
+            if (checklist.special) {
+                if (/[!@#$%^&*]/.test(val)) { 
+                    checklist.special.classList.replace('text-danger','text-success'); 
+                    checklist.special.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> At least 1 special character'; 
+                    strength++; 
+                } else { 
+                    checklist.special.classList.replace('text-success','text-danger'); 
+                    checklist.special.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i> At least 1 special character'; 
+                }
+            }
+
+            let strengthPercent = (strength / 4) * 100;
+            strengthBar.style.width = strengthPercent + "%";
+
+            if (strengthPercent < 50) {
+                strengthBar.className = "progress-bar bg-danger";
+                strengthText.textContent = "Weak";
+                strengthText.className = "fw-bold text-danger";
+            } else if (strengthPercent < 100) {
+                strengthBar.className = "progress-bar bg-warning";
+                strengthText.textContent = "Fair";
+                strengthText.className = "fw-bold text-warning";
+            } else {
+                strengthBar.className = "progress-bar bg-success";
+                strengthText.textContent = "Strong";
+                strengthText.className = "fw-bold text-success";
+            }
+        });
+    }
+
+    // Confirm Password Validation
+    const confirmInput = document.getElementById('c_password');
+    const matchText = document.getElementById('password-match');
+
+    function updatePasswordMatch() {
+        if (!confirmInput || !passwordInput || !matchText) return;
+        if (confirmInput.value === passwordInput.value && confirmInput.value !== "") {
+            matchText.textContent = "✅ Passwords match";
+            matchText.classList.remove("text-danger");
+            matchText.classList.add("text-success");
+            confirmInput.setCustomValidity('');
+        } else {
+            matchText.textContent = "❌ Passwords do not match";
+            matchText.classList.remove("text-success");
+            matchText.classList.add("text-danger");
+            // Only set custom validity if the control is enabled (visible) so it doesn't block other submits
+            if (!confirmInput.disabled) confirmInput.setCustomValidity('Passwords do not match');
+        }
+    }
+
+    if (confirmInput && passwordInput && matchText) {
+        confirmInput.addEventListener("input", updatePasswordMatch);
+        passwordInput.addEventListener("input", updatePasswordMatch);
+    }
+
+});
 </script>
 {% endblock %}

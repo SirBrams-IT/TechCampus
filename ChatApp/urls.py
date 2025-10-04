@@ -10,7 +10,7 @@ urlpatterns = [
     path('api/messages/<int:conversation_id>/', views.get_conversation_messages, name='get_messages'),
     path('api/start_dm/', views.start_dm, name='start_dm'),
     path('api/conversations/', views.get_user_conversations, name='get_conversations'),
-    path('api/create_forum/', views.create_forum, name='create_forum'),
+    path('create_forum/', views.create_forum, name='create_forum'),
     path('api/mentors/', views.get_available_mentors, name='get_mentors'),
 
 ]

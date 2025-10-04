@@ -37,6 +37,8 @@ GETOTP_AUTH_TOKEN = config("GETOTP_AUTH_TOKEN")
 # 🚨 Security
 DEBUG = False
 
+AUTH_USER_MODEL = "TechApp.User"
+
 USE_X_FORWARDED_HOST = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -56,13 +58,23 @@ INSTALLED_APPS = [
     "daphne",
     "django.contrib.staticfiles",
     "channels",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     "TechApp", # Handles the rest of functionality
     "ChatApp", #for messaging
     "cloudinary",
-    "cloudinary_storage",
-    
+    "cloudinary_storage", 
     
 ]
+
+SITE_ID = 1
+
+# used for Google login too
+LOGIN_REDIRECT_URL = "post_login_redirect"  
+LOGOUT_REDIRECT_URL = "login"
+
 
 # ⚙️ Middleware
 MIDDLEWARE = [
@@ -74,6 +86,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "TechCampuss.urls"
@@ -134,7 +147,7 @@ ASGI_APPLICATION = 'TechCampuss.asgi.application'
 # 📦 Database (MySQL from Aiven)
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": config("DB_NAME"),
         "USER": config("DB_USER"),
         "PASSWORD": config("DB_PASSWORD"),
@@ -151,9 +164,40 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+
+#google env
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": config("GOOGLE_CLIENT_ID"),
+            "secret": config("GOOGLE_CLIENT_SECRET"),
+            "key": "",
+        },
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+    }
+}
+
+SOCIALACCOUNT_ADAPTER = "TechApp.adapters.CustomSocialAccountAdapter"
+
+# Recommended allauth settings
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True  # if you want usernames
+ACCOUNT_UNIQUE_EMAIL = True
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+
+
 # 🌍 Internationalization
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "Africa/Nairobi"
+TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
@@ -177,6 +221,7 @@ FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
 # 📧 Email Config
+DEFAULT_FROM_EMAIL = 'SirBrams Tech Virtual Campus Support <no-reply@sirbramstech.com>'
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
 EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
