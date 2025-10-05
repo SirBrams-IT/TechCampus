@@ -374,7 +374,7 @@ def student_dashboard(request):
 
     # ✅ Count totals
     enrolled_courses_count = enrolled_courses.count()  # all (pending + approved + rejected)
-    active_courses_count = enrolled_courses.filter(status="Approved").count()  # only approved
+    active_courses_count = enrolled_courses.filter(status="approved").count()  # only approved
 
     # ✅ Get all mentors
     mentors = User.objects.filter(role="mentor")
@@ -597,13 +597,20 @@ def payment(request, user_id, course_id):
     })
 
 # enrolled courses
+# ✅ Enrolled Courses View
 def enrolled_courses(request, user_id):
     studentinfo = get_object_or_404(User, id=user_id)
 
-    # ✅ only approved enrollments
+    # ✅ Ensure only the logged-in student can access this
+    if request.user.id != studentinfo.id or request.user.role != "student":
+        messages.error(request, "Access denied! Only students can access this page.")
+        return redirect("login")
+
+    # ✅ Show all enrollments related to this student
+    # (You can later filter out unwanted ones if needed)
     enrollments = Enrollment.objects.filter(
-        student=studentinfo, status="approved"
-    ).select_related("course")
+        student=studentinfo
+    ).select_related("course").order_by('-id')
 
     return render(request, 'enrolled_courses.html', {
         'studentinfo': studentinfo,
@@ -615,6 +622,12 @@ def learning(request, student_id, course_id):
     student = get_object_or_404(User, id=student_id)
     course = get_object_or_404(Course, id=course_id)
 
+    # ✅ Ensure the logged-in user matches the student and has a student role
+    if request.user.id != student.id or request.user.role != "student":
+        messages.error(request, "Access denied! Only students can access this page.")
+        return redirect("login")
+
+    # ✅ Check for approved enrollment
     enrollment = Enrollment.objects.filter(
         student=student, course=course, status="approved"
     ).first()
@@ -625,37 +638,39 @@ def learning(request, student_id, course_id):
             "student": student
         })
 
+    # ✅ Prefetch related module data
     modules = course.modules.prefetch_related("topics__subtopics", "lessons").all()
 
-    # Calculate progress for each module and lesson
+    # Calculate progress per module
     for module in modules:
         total_lessons = module.lessons.count()
-
-        # ✅ count completed lessons using LessonProgress
         completed_lessons = LessonProgress.objects.filter(
             lesson__module=module,
             student=student,
             completed=True
         ).count()
 
-        module.progress_percentage = (completed_lessons / total_lessons * 100) if total_lessons > 0 else 0
+        module.progress_percentage = (
+            (completed_lessons / total_lessons * 100) if total_lessons > 0 else 0
+        )
         module.is_completed = completed_lessons == total_lessons
-        module.is_accessible = True  # (add logic later if you want to lock)
+        module.is_accessible = True  # Optional: lock logic later
 
-        # ✅ attach lesson-level progress
+        # ✅ Attach lesson-level progress
         for lesson in module.lessons.all():
             progress = LessonProgress.objects.filter(
                 lesson=lesson, student=student, completed=True
-            ).first()
-            lesson.is_completed = bool(progress)
-            lesson.is_accessible = True  # (customize if needed)
-            lesson.is_current = False    # could mark one as "current"
+            ).exists()
+            lesson.is_completed = progress
+            lesson.is_accessible = True
+            lesson.is_current = False  # Add logic later if needed
 
-    # Calculate enrollment (course-level) progress
+    # ✅ Course-level progress
     total_modules = modules.count()
-    completed_modules = sum(1 for module in modules if module.is_completed)
-
-    enrollment.progress_percentage = (completed_modules / total_modules * 100) if total_modules > 0 else 0
+    completed_modules = sum(1 for m in modules if m.is_completed)
+    enrollment.progress_percentage = (
+        (completed_modules / total_modules * 100) if total_modules > 0 else 0
+    )
     enrollment.completed_modules_count = completed_modules
 
     return render(request, "learning_page.html", {
@@ -1281,9 +1296,14 @@ def reject_enrollment(request, enrollment_id):
     return redirect("manage_enrollments")
 
  #print  
-from django.template.loader import render_to_string
+
 def print_enrollments(request):
-    admininfo = get_object_or_404(User, id=request.session.get("admin_id"))
+    # ✅ Restrict access to superuser or mentor
+    if not (request.user.is_superuser or getattr(request.user, "role", "") == "mentor"):
+        messages.error(request, "Access denied! You are not authorized to view this page.")
+        return redirect("login")
+
+    admininfo = request.user  # current logged-in mentor or admin
     enrollments = Enrollment.objects.select_related("student", "course").filter(course__mentor=admininfo)
     # ✅ Total amount from all enrollments
     total_amount = enrollments.aggregate(total=Sum("amount"))["total"] or 0

@@ -123,10 +123,10 @@
     document.getElementById("progress-bar").style.width = "100%";
 
     document.getElementById("status-message").innerHTML =
-      "<span class='text-success fw-bold'>✅ Payment successful! Redirecting to dashboard...</span>";
+      "<span class='text-success fw-bold'>✅ Payment successful! Redirecting to My Courses...</span>";
 
     setTimeout(() => {
-      window.location.href = "{% url 'student_dashboard' %}";
+      window.location.href = "{% url 'mycourses' %}";
     }, 2000);
   }
 
