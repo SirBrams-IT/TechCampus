@@ -492,6 +492,7 @@ def reset_password(request, username):
 
     return render(request, "reset_password.html", {"username": username})
 
+
 #add student
 def add_student(request, user_id):
     admininfo = get_object_or_404(User, id=user_id)  # Fetch the admin info
@@ -1203,13 +1204,18 @@ def enrollment_receipt(request, enrollment_id):
     return response
 
 #mentor Actions for student payments and enrollments
+@login_required(login_url="login")
 def manage_enrollments(request):
-    admininfo = get_object_or_404(User, id=request.session.get("admin_id"))
+    # ✅ Restrict access to superuser or mentor
+    if not (request.user.is_superuser or getattr(request.user, "role", "") == "mentor"):
+        messages.error(request, "Access denied! You are not authorized to view this page.")
+        return redirect("login")
 
+    admininfo = request.user  # current logged-in mentor or admin
 
     search_query = request.GET.get("q", "")
 
-    # Filter enrollments with student + course details
+    # ✅ Filter enrollments with student + course details for this mentor/admin
     enrollments = Enrollment.objects.select_related("student", "course").filter(course__mentor=admininfo)
 
     if search_query:
@@ -1218,11 +1224,11 @@ def manage_enrollments(request):
             Q(student__phone__icontains=search_query) |
             Q(course__title__icontains=search_query) |
             Q(course__code__icontains=search_query) |
-            Q(transaction_code__icontains=search_query) |   # ✅ match your Enrollment field
+            Q(transaction_code__icontains=search_query) |
             Q(status__icontains=search_query)
         )
 
-    # Paginate (10 per page)
+    # ✅ Paginate (10 per page)
     paginator = Paginator(enrollments, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -1230,10 +1236,10 @@ def manage_enrollments(request):
     context = {
         "page_obj": page_obj,
         "search_query": search_query,
-        "admininfo":admininfo
+        "admininfo": admininfo,
     }
-    return render(request, "manage_enrollments.html", context)
 
+    return render(request, "manage_enrollments.html", context)
 
 # ✅ Approve Enrollment
 def approve_enrollment(request, enrollment_id):
