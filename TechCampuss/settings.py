@@ -6,26 +6,22 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 
-
+# Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Environment setup
 env = environ.Env()
 environ.Env.read_env()
 
+# Logging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
+        'console': {'class': 'logging.StreamHandler'},
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'DEBUG',
-    },
+    'root': {'handlers': ['console'], 'level': 'DEBUG'},
 }
-
 
 # 🔐 Secrets & API Keys
 SECRET_KEY = config("SECRET_KEY")
@@ -36,14 +32,24 @@ GETOTP_AUTH_TOKEN = config("GETOTP_AUTH_TOKEN")
 
 # 🚨 Security
 DEBUG = False
-
 AUTH_USER_MODEL = "TechApp.User"
 
+# Allow trusted hosts
 USE_X_FORWARDED_HOST = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     "techcampus-r82w.onrender.com",
+]
+
+# ✅ Force HTTPS in production (fixes Google OAuth mismatch)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+# ✅ CSRF Trusted Origins
+CSRF_TRUSTED_ORIGINS = [
+    "https://techcampus-r82w.onrender.com",
 ]
 
 PORT = os.getenv("PORT", "8000")
@@ -55,31 +61,29 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "daphne",
     "django.contrib.staticfiles",
+    "daphne",
     "channels",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
-    "TechApp", # Handles the rest of functionality
-    "ChatApp", #for messaging
+    "TechApp",
+    "ChatApp",
     "cloudinary",
-    "cloudinary_storage", 
-    
+    "cloudinary_storage",
 ]
 
 SITE_ID = 1
 
-# used for Google login too
-LOGIN_REDIRECT_URL = "post_login_redirect"  
+# Authentication redirects
+LOGIN_REDIRECT_URL = "post_login_redirect"
 LOGOUT_REDIRECT_URL = "login"
-
 
 # ⚙️ Middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ Static files for production
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -94,7 +98,7 @@ ROOT_URLCONF = "TechCampuss.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],  # ✅ where 404.html / 500.html will live
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -107,7 +111,7 @@ TEMPLATES = [
     },
 ]
 
-# Use database cache as it's more reliable than local memory cache
+# 🧠 Cache (DB-based)
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
@@ -115,36 +119,29 @@ CACHES = {
     }
 }
 
-# Detect environment
-ENVIRONMENT = os.environ.get("DJANGO_ENV", "development")  # default is development
-
+# 🌍 Channel Layers (Redis in production)
 ENVIRONMENT = os.environ.get("DJANGO_ENV", "development")
 
 if ENVIRONMENT == "production":
     REDIS_URL = os.environ.get("REDIS_URL")
     if not REDIS_URL:
         raise ValueError("REDIS_URL is required in production")
-    
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
-            "CONFIG": {
-                "hosts": [REDIS_URL],
-            },
+            "CONFIG": {"hosts": [REDIS_URL]},
         },
     }
 else:
     CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer"
-        }
+        "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
     }
 
-
+# ⚙️ ASGI/WSGI
 WSGI_APPLICATION = "TechCampuss.wsgi.application"
-ASGI_APPLICATION = 'TechCampuss.asgi.application'
+ASGI_APPLICATION = "TechCampuss.asgi.application"
 
-# 📦 Database (MySQL from Aiven)
+# 🗃️ Database (PostgreSQL from Aiven)
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -156,7 +153,7 @@ DATABASES = {
     }
 }
 
-# 🔑 Password validation
+# 🔑 Password Validation
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -164,8 +161,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
-#google env
+# 🌐 Google OAuth2
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
@@ -173,13 +169,8 @@ SOCIALACCOUNT_PROVIDERS = {
             "secret": config("GOOGLE_CLIENT_SECRET"),
             "key": "",
         },
-        "SCOPE": [
-            "profile",
-            "email",
-        ],
-        "AUTH_PARAMS": {
-            "access_type": "online",
-        },
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
     }
 }
 
@@ -187,13 +178,12 @@ SOCIALACCOUNT_ADAPTER = "TechApp.adapters.CustomSocialAccountAdapter"
 
 # Recommended allauth settings
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True  # if you want usernames
+ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
-
 
 # 🌍 Internationalization
 LANGUAGE_CODE = "en-us"
@@ -201,26 +191,23 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# 🗂️ Static & Media Files Configuration
+# 🗂️ Static & Media
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# ✅ Cloudinary media configuration
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-
-# (Optional fallback if Cloudinary is unavailable)
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# File upload settings
+# File upload limits
 FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
-# 📧 Email Config
+# 📧 Email
 DEFAULT_FROM_EMAIL = 'SirBrams Tech Virtual Campus Support <no-reply@sirbramstech.com>'
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
@@ -230,25 +217,19 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=False, cast=bool)
 
-# M-Pesa Configuration
+# 💳 M-Pesa Config
 MPESA_CONSUMER_KEY = config("MPESA_CONSUMER_KEY", default="")
 MPESA_CONSUMER_SECRET = config("MPESA_CONSUMER_SECRET", default="")
 MPESA_BUSINESS_SHORTCODE = config("MPESA_BUSINESS_SHORTCODE", default="174379")
 MPESA_PASSKEY = config("MPESA_PASSKEY", default="bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919")
 
-# 🔐 CSRF
-CSRF_TRUSTED_ORIGINS = [
-    "https://techcampus-r82w.onrender.com",
-    "http://techcampus-r82w.onrender.com",
-]
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# 🌩️ Cloudinary credentials (from .env)
-cloudinary.config( 
-    cloud_name = config("CLOUDINARY_CLOUD_NAME"), 
-    api_key = config("CLOUDINARY_API_KEY"), 
-    api_secret = config("CLOUDINARY_API_SECRET"), 
-    secure = True
+# 🌩️ Cloudinary
+cloudinary.config(
+    cloud_name=config("CLOUDINARY_CLOUD_NAME"),
+    api_key=config("CLOUDINARY_API_KEY"),
+    api_secret=config("CLOUDINARY_API_SECRET"),
+    secure=True,
 )
 
+# Default auto field
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
