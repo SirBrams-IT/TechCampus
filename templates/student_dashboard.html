@@ -458,6 +458,38 @@
         </div>
       </div>
     </div>
+
+        {% if show_modal %}
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="profileModalLabel">Complete Your Profile</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Your profile is {{ profile_percent }}% complete.</p>
+        <div class="progress mb-3" style="height: 10px;">
+          <div class="progress-bar bg-success" role="progressbar" style="width: {{ profile_percent }}%;" aria-valuenow="{{ profile_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <p>Please complete missing details like <strong>username, email, phone, ID number, date of birth, and profile picture</strong> for a better experience.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <a href="{% url 'student_profile'  studentinfo.id  %}" class="btn btn-primary">Complete Profile</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Show modal automatically when page loads
+  var profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
+  window.addEventListener('load', function() {
+    profileModal.show();
+  });
+</script>
+{% endif %}
   </main>
 
   <footer class="bg-navy text-white text-center py-3 mt-4">

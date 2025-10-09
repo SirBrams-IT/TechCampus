@@ -48,6 +48,8 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
     student_number = models.CharField(max_length=20, unique=True, blank=True, null=True)
     mentor_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    profile_prompt_shown = models.BooleanField(default=False) #profile %completion
+
 
     # OTP fields
     otp_code = models.CharField(max_length=6, blank=True, null=True)
@@ -64,6 +66,22 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.role})"
+
+    #-------------profile % completion helper-----------
+    def profile_completion(self):
+        """Return profile completion percentage based on filled fields."""
+        fields = [
+            self.name,
+            self.username,
+            self.email,
+            self.phone,
+            self.id_number,
+            self.date_of_birth,
+            self.gender,
+            self.profile_image
+        ]
+        filled = len([f for f in fields if f])
+        return int((filled / len(fields)) * 100)    
 
     # ---------- OTP helpers ----------
     def generate_otp(self):

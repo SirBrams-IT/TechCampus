@@ -36,14 +36,17 @@
 </div>
 
 <script>
+  // --- configuration & state ---
   let pollInterval = null;
+  let elapsedInterval = null;
   let pollCount = 0;
   const maxPolls = 60; // 5 minutes max (60 * 5s = 5 minutes)
   const totalTime = 300; // 5 minutes = 300 seconds
   let startTime = new Date();
   let elapsedSeconds = 0;
+  let timedOut = false; // prevents multiple timeouts/actions
 
-  // Update elapsed time and countdown
+  // Update elapsed time and countdown. If we reach totalTime, trigger timeout.
   function updateElapsedTime() {
     elapsedSeconds = Math.floor((new Date() - startTime) / 1000);
     document.getElementById('elapsed-time').textContent = elapsedSeconds;
@@ -58,18 +61,34 @@
     // Update progress bar (0-100% over 5 minutes = 300s)
     const progressPercent = Math.min((elapsedSeconds / totalTime) * 100, 100);
     document.getElementById('progress-bar').style.width = progressPercent + '%';
+
+    // If we've reached or passed totalTime, and haven't already timed out, trigger timeout
+    if (elapsedSeconds >= totalTime && !timedOut) {
+      timedOut = true;
+      // stop both timers
+      if (pollInterval) clearInterval(pollInterval);
+      if (elapsedInterval) clearInterval(elapsedInterval);
+      // ensure UI reflect full bar and call timeout handler
+      document.getElementById('progress-bar').classList.remove("progress-bar-animated");
+      document.getElementById('progress-bar').classList.add("bg-warning");
+      document.getElementById('progress-bar').style.width = "100%";
+      showTimeout();
+    }
   }
 
-  // Update every second
-  setInterval(updateElapsedTime, 1000);
-
+  // Poll payment status from server. Do nothing if already timed out.
   function checkStatus() {
+    if (timedOut) return;
+
     pollCount++;
+    // one more safety: update elapsed each poll as well
     updateElapsedTime();
 
-    // Stop after max polls (5 minutes)
-    if (pollCount > maxPolls) {
-      clearInterval(pollInterval);
+    // Stop after max polls (5 minutes) - fallback if intervals get desynced
+    if (pollCount > maxPolls && !timedOut) {
+      timedOut = true;
+      if (pollInterval) clearInterval(pollInterval);
+      if (elapsedInterval) clearInterval(elapsedInterval);
       showTimeout();
       return;
     }
@@ -84,11 +103,18 @@
       .then(data => {
         console.log("Poll response:", data);
 
+        if (timedOut) return; // no further action if timed out
+
         if (data.status === "success") {
-          clearInterval(pollInterval);
+          // clear intervals to avoid any further updates
+          if (pollInterval) clearInterval(pollInterval);
+          if (elapsedInterval) clearInterval(elapsedInterval);
+          timedOut = true;
           showSuccess();
         } else if (data.status === "failed") {
-          clearInterval(pollInterval);
+          if (pollInterval) clearInterval(pollInterval);
+          if (elapsedInterval) clearInterval(elapsedInterval);
+          timedOut = true;
           showFailure();
         } else {
           // Still pending - update status message occasionally
@@ -114,30 +140,45 @@
   }
 
   function showSuccess() {
-    document.getElementById("main-spinner").classList.remove("spinner-border", "text-success");
-    document.getElementById("main-spinner").classList.add("text-success");
-    document.getElementById("main-spinner").innerHTML = "✅";
+    // stop intervals
+    if (pollInterval) clearInterval(pollInterval);
+    if (elapsedInterval) clearInterval(elapsedInterval);
+    timedOut = true;
 
-    document.getElementById("progress-bar").classList.remove("progress-bar-animated");
-    document.getElementById("progress-bar").classList.add("bg-success");
-    document.getElementById("progress-bar").style.width = "100%";
+    const spinner = document.getElementById("main-spinner");
+    spinner.classList.remove("spinner-border");
+    spinner.classList.remove("text-success");
+    spinner.classList.add("text-success");
+    spinner.innerHTML = "✅";
+
+    const pbar = document.getElementById("progress-bar");
+    pbar.classList.remove("progress-bar-animated");
+    pbar.classList.add("bg-success");
+    pbar.style.width = "100%";
 
     document.getElementById("status-message").innerHTML =
       "<span class='text-success fw-bold'>✅ Payment successful! Redirecting to My Courses...</span>";
 
     setTimeout(() => {
-      window.location.href = "{% url 'mycourses' %}";
+      window.location.href = "{% url 'mycourses' studentinfo.id % }";
     }, 2000);
   }
 
   function showFailure() {
-    document.getElementById("main-spinner").classList.remove("spinner-border", "text-success");
-    document.getElementById("main-spinner").classList.add("text-danger");
-    document.getElementById("main-spinner").innerHTML = "❌";
+    // stop intervals
+    if (pollInterval) clearInterval(pollInterval);
+    if (elapsedInterval) clearInterval(elapsedInterval);
+    timedOut = true;
 
-    document.getElementById("progress-bar").classList.remove("progress-bar-animated");
-    document.getElementById("progress-bar").classList.add("bg-danger");
-    document.getElementById("progress-bar").style.width = "100%";
+    const spinner = document.getElementById("main-spinner");
+    spinner.classList.remove("spinner-border");
+    spinner.classList.add("text-danger");
+    spinner.innerHTML = "❌";
+
+    const pbar = document.getElementById("progress-bar");
+    pbar.classList.remove("progress-bar-animated");
+    pbar.classList.add("bg-danger");
+    pbar.style.width = "100%";
 
     document.getElementById("status-message").innerHTML =
       "<span class='text-danger fw-bold'>❌ Payment failed or cancelled.</span>" +
@@ -149,26 +190,40 @@
   }
 
   function showTimeout() {
-    document.getElementById("main-spinner").classList.remove("spinner-border", "text-success");
-    document.getElementById("main-spinner").classList.add("text-warning");
-    document.getElementById("main-spinner").innerHTML = "⏰";
+    // ensure timers stopped
+    if (pollInterval) clearInterval(pollInterval);
+    if (elapsedInterval) clearInterval(elapsedInterval);
+    timedOut = true;
 
-    document.getElementById("progress-bar").classList.remove("progress-bar-animated");
-    document.getElementById("progress-bar").classList.add("bg-warning");
-    document.getElementById("progress-bar").style.width = "100%";
+    const spinner = document.getElementById("main-spinner");
+    spinner.classList.remove("spinner-border");
+    spinner.classList.add("text-warning");
+    spinner.innerHTML = "⏰";
+
+    const pbar = document.getElementById("progress-bar");
+    pbar.classList.remove("progress-bar-animated");
+    pbar.classList.add("bg-warning");
+    pbar.style.width = "100%";
 
     document.getElementById("status-message").innerHTML =
       "<span class='text-warning fw-bold'>⏰ No payments made.</span>" +
       "<p class='text-muted'>Redirecting to payment page...</p>";
 
+    // small delay so user sees the timeout state before redirect
     setTimeout(() => {
       window.location.href = "{% url 'payment' user_id=studentinfo.id course_id=course.id %}";
     }, 3000);
   }
 
-  // Start polling immediately
+  // Start timers
+  // immediate call to render initial elapsed time/progress
+  updateElapsedTime();
+  // poll every 5 seconds
+  pollInterval = setInterval(checkStatus, 5000);
+  // update elapsed/progress every second
+  elapsedInterval = setInterval(updateElapsedTime, 1000);
+  // also start one immediate poll so user doesn't wait 5s for first check
   checkStatus();
-  pollInterval = setInterval(checkStatus, 5000); // Check every 5 seconds
 </script>
 
 

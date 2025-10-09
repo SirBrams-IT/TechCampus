@@ -362,22 +362,26 @@ def logout_view(request):
 # student_dashboard
 @login_required
 def student_dashboard(request):
-    # ✅ Ensure the logged-in user is actually a student
     if request.user.role != "student":
         messages.error(request, "Access denied! You are not a student.")
         return redirect("login")
 
-    studentinfo = request.user  # now you don’t need to fetch from session
+    studentinfo = request.user
 
-    # ✅ Get all enrollments for this student
     enrolled_courses = Enrollment.objects.filter(student=studentinfo)
+    enrolled_courses_count = enrolled_courses.count()
+    active_courses_count = enrolled_courses.filter(status="approved").count()
 
-    # ✅ Count totals
-    enrolled_courses_count = enrolled_courses.count()  # all (pending + approved + rejected)
-    active_courses_count = enrolled_courses.filter(status="approved").count()  # only approved
-
-    # ✅ Get all mentors
     mentors = User.objects.filter(role="mentor")
+
+    # ✅ Profile completion progress
+    profile_percent = studentinfo.profile_completion()
+
+    # ✅ Show modal only once per session
+    show_modal = False
+    if not request.session.get("profile_modal_shown", False) and profile_percent < 100:
+        show_modal = True
+        request.session["profile_modal_shown"] = True
 
     context = {
         'studentinfo': studentinfo,
@@ -385,6 +389,8 @@ def student_dashboard(request):
         'enrolled_courses': enrolled_courses,
         'enrolled_courses_count': enrolled_courses_count,
         'active_courses_count': active_courses_count,
+        'profile_percent': profile_percent,
+        'show_modal': show_modal,
     }
 
     return render(request, "student_dashboard.html", context)
