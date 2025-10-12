@@ -1,128 +1,6 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>SirBrams Tech Virtual Campus | Premier Online Tech Education</title>
-    <meta name="description" content="SirBrams Tech Virtual Campus offers accessible, industry-relevant tech education and training with expert mentors.">
-    <meta name="keywords" content="SirBrams Tech, virtual campus, online tech training, IT courses, programming, design, web development, data science, cybersecurity">
-
-    {% load static %}
-
-    <link href="{% static 'assets/img/logo.png' %}" rel="icon">
-
-    <link href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
-
-    <!-- Vendor CSS Files (kept your original includes) -->
-    <link href="{% static 'asset/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'asset/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-    <link href="{% static 'asset/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
-    <link href="{% static 'asset/vendor/quill/quill.snow.css' %}" rel="stylesheet">
-    <link href="{% static 'asset/vendor/quill/quill.bubble.css' %}" rel="stylesheet">
-    <link href="{% static 'asset/vendor/remixicon/remixicon.css' %}" rel="stylesheet">
-    <link href="{% static 'asset/vendor/simple-datatables/style.css' %}" rel="stylesheet">
-
-    <link href="{% static 'asset/css/style.css' %}" rel="stylesheet">
-
-    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
-    <script src="{% static 'assets/js/bootstrap.min.js' %}"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'assets/style/main.css' %}">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Bootstrap Icons CDN -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    
-</head>
-
-<body>
-   <nav class="navbar navbar-expand-lg fixed-top px-3" id="header1">
-    <div class="d-flex align-items-center me-auto">
-        <i class="bi bi-list toggle-sidebar-btn me-1 text-white d-lg-none"></i>
-
-       <img src="{% static 'assets/img/logo.png' %}" alt="logo"
-     class="d-none d-lg-inline"
-     style="height:45px; width:45px; background-color:dodgerblue; padding:4px; border-radius:50%; object-fit:contain;">
-
-        <!-- Title -->
-        <img src="{% static 'asset/img/image.png' %}" alt="title"
-     id="titles"
-     class="img-fluid ms-1"
-     style="max-height:45px; width:auto; object-fit:contain;">
-
-    </div>
-
-    <!-- Navbar Items -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto text-uppercase">
-            <li class="nav-item"><a class="nav-link text-white" href="{% url 'index' %}"><i class="bi bi-house-door"></i> Home</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="{% url 'about' %}"><i class="bi bi-info-circle"></i> About</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="{% url 'services' %}"><i class="bi bi-gear"></i> Services</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="{% url 'courses' %}"><i class="bi bi-book"></i> Courses</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="{% url 'contact' %}"><i class="bi bi-envelope"></i> Contact</a></li>
-
-            <!-- Register Button -->
-            <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-                <a href="{% url 'register' %}" class="btn btn-outline-light fw-bold px-3 py-2">
-                    <i class="bi bi-person-plus"></i> Register
-                </a>
-            </li>
-                <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-                <a href="{% url 'login' %}" class="btn btn-outline-light fw-bold px-3 py-2">
-                    <i class="bi bi-box-arrow-in-right"></i> Login
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
-
- <aside class="sidebar d-block d-md-none">
-     <ul class="sidebar-nav" style="background-color: navy;">
-         <!-- Logo For Small Devices -->
-        <div class="d-flex justify-content-center" style="margin: 4px auto;" >
-        <img src="{% static 'assets/img/logo.png' %}" alt="logo"
-            style="height:80px; width:80px; background-color:dodgerblue; padding:10px; border-radius:50%; object-fit:contain;">
-        </div>
-
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'index' %}">
-                <i class="bi bi-house-door"></i> <span>Home</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'about' %}">
-                <i class="bi bi-info-circle"></i> <span>About</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'services' %}">
-                <i class="bi bi-gear"></i> <span>Services</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'courses' %}">
-                <i class="bi bi-book"></i> <span>Courses</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'contact' %}">
-                <i class="bi bi-envelope"></i> <span>Contact</span>
-            </a>
-         </li>
-         <li class="nav-item">
-            <a class="nav-link" href="{% url 'register' %}">
-                <i class="bi bi-person-plus"></i> <span>Register</span>
-            </a>
-        </li>
-         <li class="nav-item ">
-            <a class="nav-link " href="{% url 'login' %}" >
-                <i class="bi bi-box-arrow-in-right"></i> <span>Login</span>
-            </a>
-        </li>
-    </ul>
-  </aside>
+{% extends 'main-page.html' %}
+{% load static %}
+{% block body %}
 
   <!-- Enhanced Carousel -->
   <div id="demo" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
@@ -370,43 +248,8 @@
     </div>
 </section>
 
-<footer class="footer1">
-    <div class="container text-center">
-        <h4 class="text-uppercase">SirBrams Tech Virtual Campus</h4>
-        <p style="margin-bottom:8px;">Your gateway to tech excellence and career transformation.</p>
-        <div class="links" style="margin-bottom:8px;">
-            <a href="{% url 'index' %}">Home</a>
-            <a href="{% url 'about' %}">About</a>
-            <a href="{% url 'services' %}">Services</a>
-            <a href="{% url 'courses' %}">Courses</a>
-            <a href="{% url 'contact' %}">Contact</a>
-        </div>
-        <div class="social-icons mt-2" style="margin-bottom:8px;">
-            <a href="#"><i class="bi bi-facebook"></i></a>
-            <a href="#"><i class="bi bi-twitter"></i></a>
-            <a href="#"><i class="bi bi-instagram"></i></a>
-            <a href="#"><i class="bi bi-linkedin"></i></a>
-        </div>
-        <p class="mb-0" style="font-size:0.95rem;">&copy; <span id="year"></span> SirBrams Tech Virtual Campus. All Rights Reserved.</p>
-    </div>
-</footer>
-
-<script src="{% static 'asset/vendor/apexcharts/apexcharts.min.js' %}"></script>
-<script src="{% static 'asset/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'asset/vendor/chart.js/chart.umd.js' %}"></script>
-<script src="{% static 'asset/vendor/echarts/echarts.min.js' %}"></script>
-<script src="{% static 'asset/vendor/quill/quill.js' %}"></script>
-<script src="{% static 'asset/vendor/simple-datatables/simple-datatables.js' %}"></script>
-<script src="{% static 'asset/vendor/tinymce/tinymce.min.js' %}"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
-
-<!-- Template Main JS File -->
-<script src="{% static 'asset/js/main.js' %}"></script>
-
 <script>
-    // set footer year
-    document.getElementById("year").textContent = new Date().getFullYear();
+   
 
     document.addEventListener("DOMContentLoaded", function () {
         // safe guards for custom toggles
@@ -497,5 +340,4 @@
   });
 
 </script>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,41 @@
+<!-- templates/chatbot/chat.html -->
+{% extends 'main-page.html' %}
+{% load static %}
+
+{% block body %}
+<div class="chat-container">
+    <div class="chat-header">
+        <h2>Tech Learning Assistant</h2>
+        <p>Ask me about programming, projects, or tech concepts!</p>
+    </div>
+    
+    <div class="messages-container" id="messagesContainer">
+        <div class="welcome-message">
+            <h3>👋 Welcome to Sirbrams Tech!</h3>
+            <p>I'm here to help you with:</p>
+            <ul>
+                <li>💻 Programming concepts & code help</li>
+                <li>🚀 Project guidance & best practices</li>
+                <li>📚 Learning path recommendations</li>
+                <li>🔧 Debugging assistance</li>
+                <li>🏗️ System design explanations</li>
+            </ul>
+            <p>What would you like to learn today?</p>
+        </div>
+    </div>
+    
+    <div class="input-container">
+        <div class="input-group">
+            <input type="text" id="userInput" placeholder="Ask about Python, React, AWS, algorithms..." 
+                   autocomplete="off">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <div class="suggestions">
+            <span>Try asking:</span>
+            <button class="suggestion-btn" onclick="fillSuggestion('How do I start with Python?')">Python basics</button>
+            <button class="suggestion-btn" onclick="fillSuggestion('Explain REST APIs')">REST APIs</button>
+            <button class="suggestion-btn" onclick="fillSuggestion('React vs Vue comparison')">React vs Vue</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

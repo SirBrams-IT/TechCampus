@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "TechApp",
+    "chatbot",
     "ChatApp",
     "cloudinary",
     "cloudinary_storage",
@@ -160,6 +161,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+
+#chtbot api_key
+GEMINI_API_KEY = config("GEMINI_API_KEY")
 
 # 🌐 Google OAuth2
 SOCIALACCOUNT_PROVIDERS = {

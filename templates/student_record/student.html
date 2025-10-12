@@ -55,11 +55,11 @@
                         {% for x in page_obj %}
                         <tr>
                             <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
-                            <td style="width: 45px; height: 45px; object-fit: cover;">
+                            <td >
                                 {% if x.profile_image %}
-                                    <img src="{{ x.profile_image.url }}" class="rounded-circle student-image img-thumbnail">
+                                    <img src="{{ x.profile_image.url }}" class="rounded-circle student-image img-thumbnail" style="width: 45px; height: 45px; ">
                                 {% else %}
-                                    <img src="{% static 'assets/img/profile.jpeg' %}" class="rounded-circle student-image img-thumbnail">
+                                    <img src="{% static 'assets/img/profile.jpeg' %}" class="rounded-circle student-image img-thumbnail" style="width: 45px; height: 45px; ">
                                 {% endif %}
                             </td>
                             <td>{{ x.name }}</td>
