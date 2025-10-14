@@ -7,7 +7,7 @@ urlpatterns = [
     
     path('', include('TechApp.urls')),  
     path('', include('ChatApp.urls')), 
-    path('', include("chatbot.urls")),
+    path("chatbot/", include("chatbot.urls")),
     path("accounts/", include("allauth.urls")),
 
 ]

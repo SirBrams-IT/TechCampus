@@ -471,6 +471,40 @@
         .card-header.bg-primary {
             background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
         }
+
+.ask-me-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 40px;
+  background: linear-gradient(135deg, #007BFF, #00B894);
+  color: #fff;
+  padding: 14px 22px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ask-me-btn:hover {
+  transform: scale(1.1) translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+  background: linear-gradient(135deg, #00B894, #007BFF);
+}
+
+.ask-me-btn:active {
+  transform: scale(1.05);
+}
+
+.ask-me-btn::after {
+  content: '🤖';
+  font-size: 18px;
+}        
     
 .footer1 {
     background-color: navy; 
@@ -523,4 +557,11 @@
     margin-top: 20px;
     border-top: 1px solid white; /* Add a line above the copyright */
     padding-top: 10px;
+}
+
+footer {
+    text-align: center;
+    color: white;
+    padding: 2rem;
+    opacity: 0.8;
 }
