@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="{% static 'chatbot/style.css' %}">
 
 <div class="chat-layout">
+
   <!-- SIDEBAR -->
   <aside class="sidebars">
     <div class="logo-sections">
@@ -18,38 +19,48 @@
     </div>
 
     <button id="btnNewChat" class="new-chat-btn">
-      <i class="bi bi-plus text-white"></i> New Chat
+      <i class="bi bi-plus-circle text-white"></i> New Chat
     </button>
 
-    <div id="chatSessions" class="chat-sessions">Loading...</div>
+    <div id="chatSessions" class="chat-sessions">
+      {% if conversations %}
+        {% for conv in conversations %}
+          <div class="session-item" data-uuid="{{ conv.uuid }}" data-convid="{{ conv.id }}">
+            <strong>{{ conv.title }}</strong>
+            <div style="font-size:12px;color:#9fb9c3;margin-top:6px">{{ conv.snippet }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="session-item text-muted">No chats yet. Click New Chat.</div>
+      {% endif %}
+    </div>
 
-    <!-- Footer icon -->
     <div class="sidebar-footer">
-      <i class="bi bi-cog text-primary" title="Settings"></i>
+      <span class="footer-text">
+        <i class="bi bi-stars"></i>
+        Powered by <strong>Gemini Pro</strong>
+      </span>
     </div>
   </aside>
 
   <!-- MAIN CHAT -->
   <main class="chat-container">
-    <header class="chat-header d-flex align-items-center p-2">
-  <h2 class="d-flex align-items-center m-0">
-    <img src="
-    {% if admininfo.profile_image and admininfo.profile_image.url %}
-      {{ admininfo.profile_image.url }}
-    {% elif studentinfo.profile_image and studentinfo.profile_image.url %}
-      {{ studentinfo.profile_image.url }}
-    {% else %}
-      {% static 'asset/img/profile.jpeg' %}
-    {% endif %}
-    "
-    alt="Profile" class="rounded-circle profile-img me-2" width="45" height="45">
-    <span class="fw-semibold text-black">Hello, <b class="text-primary">{{ username|capfirst }}! </b></span>
-  </h2>
-</header>
 
+    <header class="chat-header d-flex align-items-center justify-content-between p-2">
+      <h2 class="d-flex align-items-center m-0">
+        <img src="{% if admininfo.profile_image and admininfo.profile_image.url %}{{ admininfo.profile_image.url }}{% elif studentinfo.profile_image and studentinfo.profile_image.url %}{{ studentinfo.profile_image.url }}{% else %}{% static 'asset/img/profile.jpeg' %}{% endif %}"
+             alt="Profile" class="rounded-circle profile-img me-2" width="45" height="45">
+        <span class="fw-semibold text-black">Hello, <b class="text-primary">{{ username|capfirst }}!</b></span>
+      </h2>
+
+      <!-- Clear Chat Button -->
+      <button id="clearChatBtn" class="btn btn-sm btn-outline-danger">
+        <i class="bi bi-trash fs-5"></i>
+      </button>
+    </header>
 
     <div class="messages-container" id="messagesContainer">
-      <!-- Dynamic messages appear here -->
+      <!-- Dynamic messages will appear here -->
     </div>
 
     <div class="input-container">
@@ -62,27 +73,49 @@
           <button id="sendBtn" title="Send"><i class="bi bi-send-fill text-black"></i></button>
         </div>
       </div>
-
-      <div class="suggestions">
-        <span class="text-primary">Try:</span>
-        <button class="suggestion-btn" onclick="fillSuggestion('How do I start with Django?')">Django</button>
-        <button class="suggestion-btn" onclick="fillSuggestion('Explain REST APIs')">REST APIs</button>
-      </div>
     </div>
+
   </main>
 </div>
 
-<script src="{% static 'chatbot/script.js' %}"></script>
+<!-- Clear Chat Modal -->
+<div class="modal fade" id="clearChatModal" tabindex="-1" aria-labelledby="clearChatModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="clearChatModalLabel">
+          <i class="bi bi-trash"></i> Clear Chats
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
 
-<script>
-  // Clear input after send
-  document.getElementById('sendBtn').addEventListener('click', function() {
-    const input = document.getElementById('userInput');
-    if (input.value.trim() !== '') {
-      // Simulate sending (you can call your sendMessage() function here)
-      input.value = ''; // clear input
-    }
-  });
-</script>
+      <div class="modal-body">
+        <p class="text-black">Select the chats you want to clear. This action cannot be undone.</p>
+
+        <!-- Select All -->
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="selectAllChats">
+          <label class="form-check-label text-danger" for="selectAllChats">Select All</label>
+        </div>
+
+        <!-- Chats list -->
+        <div id="chatSelectList" style="max-height: 200px; overflow-y: auto;">
+          <!-- Chat checkboxes will be dynamically added here -->
+        </div>
+      </div>
+
+      <div class="modal-footer d-flex gap-4">
+        <button type="button" class="btn btn-secondary flex-fill" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger flex-fill" id="confirmClearChatBtn">
+          <i class="bi bi-trash"></i> Clear Selected
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Load external JS -->
+<script src="{% static 'chatbot/script.js' %}"></script>
 
 {% endblock %}
