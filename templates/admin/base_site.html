@@ -1,0 +1,16 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}SirBrams Tech Virtual Campus Admin{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="{% static 'admin/css/custom.css' %}">
+<link rel="shortcut icon" href="{% static 'admin/img/logo.png' %}" type="image/x-icon">
+{% endblock %}
+
+{% block branding %}
+<div class="custom-branding">
+    <img src="{% static 'admin/img/logo.png' %}" class="dashboard-logo" alt="TechCampus Logo">
+   
+</div>
+{% endblock %}

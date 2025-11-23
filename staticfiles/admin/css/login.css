@@ -1,61 +1,73 @@
-/* LOGIN FORM */
-
-.login {
-    background: var(--darkened-bg);
-    height: auto;
+/* ---- Login Page ---- */
+body.login {
+    background-color: navy;
+    font-family: 'Segoe UI', sans-serif;
 }
 
-.login #header {
-    height: auto;
-    padding: 15px 16px;
-    justify-content: center;
+/* Branding / Logo */
+.login-branding {
+    text-align: center;
+    margin-bottom: 20px;
 }
 
-.login #header h1 {
-    font-size: 1.125rem;
-    margin: 0;
+.login-logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: dodgerblue;
+    padding: 4px;
+    display: inline-block;
 }
 
-.login #header h1 a {
-    color: var(--header-link-color);
+/* Form container */
+.login-container {
+    background-color: white;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
 }
 
-.login #content {
-    padding: 20px;
-}
-
-.login #container {
-    background: var(--body-bg);
-    border: 1px solid var(--hairline-color);
-    border-radius: 4px;
-    overflow: hidden;
-    width: 28em;
-    min-width: 300px;
-    margin: 100px auto;
-    height: auto;
-}
-
-.login .form-row {
-    padding: 4px 0;
-}
-
-.login .form-row label {
-    display: block;
-    line-height: 2em;
-}
-
-.login .form-row #id_username, .login .form-row #id_password {
-    padding: 8px;
+/* Inputs */
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    padding: 10px;
     width: 100%;
+    margin-bottom: 15px;
     box-sizing: border-box;
 }
 
-.login .submit-row {
-    padding: 1em 0 0 0;
-    margin: 0;
-    text-align: center;
+/* Buttons */
+.login-btn {
+    background-color: black;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    padding: 10px 0;
+    font-weight: bold;
 }
 
-.login .password-reset-link {
-    text-align: center;
+.login-btn:hover {
+    background-color: #333333;
+}
+
+/* Google button */
+.google-btn {
+    border-radius: 8px;
+    border: 1px solid navy;
+    padding: 10px 0;
+    color: black;
+}
+
+.google-btn:hover {
+    background-color: dodgerblue;
+    color: white;
+}
+
+/* Links */
+.login-container a {
+    text-decoration: none;
 }

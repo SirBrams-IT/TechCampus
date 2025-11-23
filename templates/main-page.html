@@ -19,6 +19,8 @@
     <!-- Vendor CSS Files (kept your original includes) -->
     
 
+     <link href="{% static 'message_display/style.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'asset/css/sb-toast.css' %}">
     <link href="{% static 'asset/css/style.css' %}" rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
@@ -31,6 +33,16 @@
     
     
 </head>
+<!-- Small Page Loader Overlay -->
+<div id="loader-overlay">
+    <div class="spinner-square">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
+
 
 <body>
    <nav class="navbar navbar-expand-lg fixed-top px-3" id="header1">
@@ -72,6 +84,9 @@
         </ul>
     </div>
 </nav>
+
+ <!-- Toast Container -->
+   <div id="brams_toast_container" style="position: fixed; top: 60px; right: 110px; z-index: 9999;"></div>
 
  <aside class="sidebar d-block d-md-none">
      <ul class="sidebar-nav" style="background-color: navy;">
@@ -122,6 +137,7 @@
 <div style="margin-top: 60px">
 
 </div>
+
   {% block body %}
   	
   {% endblock %}
@@ -156,8 +172,46 @@
 
   <!-- Template Main JS File -->
   <script src="{% static 'asset/js/main.js' %}"></script>
+  <script src="{% static 'asset/js/sb-toast.js' %}"></script>
+  <script src="{% static 'message_display/script.js' %}"></script>
+  <script>
+     {% if messages %}
+        {% for message in messages %}
+            bramsShowToast("{{ message }}", "{{ message.tags }}");
+        {% endfor %}
+     {% endif %}
+  </script>
+   <script>
+  // window.SBToast available
+  SBToast.init({
+    position: 'bottom-right',
+    duration: 4200,
+    max: 5,
+    queueMode: true,
+    groupDuplicates: true,
+    playSound: true
+  });
 
-<script>
+  SBToast.show('Saved successfully', 'success');
+  SBToast.show('Validation failed', 'error');
+  SBToast.show('Network disconnected', 'offline', { duration: 0 });
+  // center session expired
+  SBToast.sessionExpired({ message: 'Session expired', onAction: ()=> { window.location = '/login/'; } });
+
+   function openDeleteModal(deleteUrl) {
+    var userConfirmation = prompt("Type DELETE to confirm deletion:");
+
+    if (userConfirmation !== null && userConfirmation.toUpperCase() === "DELETE") {
+        document.getElementById('confirmDeleteBtn').href = deleteUrl;
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        deleteModal.show();
+    } else {
+        alert("Deletion cancelled or incorrect confirmation.");
+    }
+}
+
+
+ </script>
 
     document.getElementById("year").textContent = new Date().getFullYear();
     document.addEventListener("DOMContentLoaded", function () {
@@ -172,6 +226,8 @@
     document.getElementById("sidebar").addEventListener("click", function () {
     document.querySelector(".sidebar").classList.toggle("active");
 });
+
+
 </script>
 
 </html>

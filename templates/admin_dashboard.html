@@ -2,20 +2,7 @@
 {% load static %}
 {% block content %}
 
-    {% if messages %}
-    {% for message in messages %}
-        {% if message.tags == 'success' %}  <!-- Show only success messages -->
-            <div  id="success-message" class="alert alert-success">
-                {{ message }}
-             <div class="progress mt-2">
-                    <div id="progress-bar" class="progress-bar bg-success" style="width: 0%;"></div>
-                </div>
-            </div>
-            </div>
 
-        {% endif %}
-    {% endfor %}
-    {% endif %}
    <!--search bar for small devices-->
    <div class="d-lg-none position-sticky top-0 start-0 w-100 bg-white shadow-sm p-2 z-3">
   <form class="search-form d-flex align-items-center w-100" method="POST" action="#">

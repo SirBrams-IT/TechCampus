@@ -1,0 +1,82 @@
+/* sb-toast.css -- namespaced (sb-) */
+.sb-toast-root { position: fixed; z-index: 999999; pointer-events: none; }
+
+/* positions */
+.sb-pos-bottom-right { right: 1rem; bottom: 1rem; display:flex; flex-direction:column; gap:.6rem; align-items:flex-end; }
+.sb-pos-bottom-left  { left: 1rem; bottom: 1rem; display:flex; flex-direction:column; gap:.6rem; align-items:flex-start; }
+.sb-pos-top-right    { right: 1rem; top: 1rem; display:flex; flex-direction:column; gap:.6rem; align-items:flex-end; }
+.sb-pos-top-left     { left: 1rem; top: 1rem; display:flex; flex-direction:column; gap:.6rem; align-items:flex-start; }
+.sb-pos-top-center   { left: 50%; top: 1rem; transform: translateX(-50%); display:flex; flex-direction:column; gap:.6rem; align-items:center; }
+.sb-pos-bottom-center{ left: 50%; bottom: 1rem; transform: translateX(-50%); display:flex; flex-direction:column; gap:.6rem; align-items:center; }
+
+/* container for center popup special mode (overlay) */
+.sb-center-overlay {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000000; pointer-events: none;
+}
+
+/* toast */
+.sb-toast {
+  pointer-events: auto;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  min-width: 220px;
+  max-width: 420px;
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  box-shadow: 0 10px 28px rgba(8,16,30,0.18);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  color: #fff;
+  transform-origin: right bottom;
+  overflow: hidden;
+  position: relative;
+  opacity: 0;
+  transform: translateY(8px) scale(.98);
+  transition: transform .22s cubic-bezier(.2,.9,.3,1), opacity .22s;
+}
+
+/* visible state */
+.sb-toast--show { opacity: 1; transform: translateY(0) scale(1); }
+
+/* icon / text / close */
+.sb-toast-icon { font-size: 1.05rem; width: 24px; text-align: center; opacity: .95; }
+.sb-toast-msg  { flex: 1; font-size: .95rem; line-height: 1.2; word-break: break-word; }
+.sb-toast-close { background: transparent; border: 0; color: inherit; cursor: pointer; font-size: 1.05rem; opacity:.9; }
+
+/* types */
+.sb-toast-success { background: linear-gradient(90deg,#0b8457,#0d9a63); }
+.sb-toast-info    { background: linear-gradient(90deg,#1f6feb,#3b82f6); }
+.sb-toast-warning { background: linear-gradient(90deg,#e08a00,#f59e0b); }
+.sb-toast-error   { background: linear-gradient(90deg,#c92a2a,#ef4444); }
+.sb-toast-offline { background: linear-gradient(90deg,#5a5a5a,#3f3f3f); }
+.sb-toast-online  { background: linear-gradient(90deg,#2e7d32,#43a047); }
+
+/* progress bar */
+.sb-toast-progress { position: absolute; left:0; bottom:0; height:4px; width:100%; background: rgba(255,255,255,0.18); }
+.sb-toast-progress > i { display:block; height:100%; width:100%; transform-origin:left; transform: scaleX(1); transition: transform linear; background: rgba(255,255,255,0.95); }
+
+/* center modal style */
+.sb-toast-center {
+  min-width: 320px; max-width: 720px; border-radius: 14px; padding: 1rem 1.2rem;
+  box-shadow: 0 24px 60px rgba(2,6,23,0.5);
+  pointer-events: auto;
+}
+
+/* small counter bubble for grouped messages */
+.sb-toast-count {
+  background: rgba(255,255,255,0.18); padding: 0.08rem .45rem; border-radius: 999px; font-size: .78rem;
+}
+
+/* theme adjustments (light fallback) */
+@media (prefers-color-scheme: light) {
+  .sb-toast { color: #fff; }
+}
+
+/* animations for dismiss */
+.sb-toast--hide { opacity: 0; transform: translateY(8px) scale(.98); transition: transform .18s, opacity .18s; }
+
+/* accessibility helper (visually-hidden) */
+.sb-visually-hidden { position: absolute!important; height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap; }

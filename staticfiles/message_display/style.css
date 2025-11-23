@@ -1,0 +1,95 @@
+/* Wrapper */
+#brams_toast_container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Toast */
+.brams-toast {
+    min-width: 250px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    color: #fff;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    font-family: 'Segoe UI', sans-serif;
+    position: relative;
+}
+
+/* Show */
+.brams-toast.brams-show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Success */
+.brams-success {
+    background-color: #28a745 !important;
+}
+
+/* Error */
+.brams-error {
+    background-color: #dc3545 !important;
+}
+
+/* Close Button */
+.brams-toast-close {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+
+
+/* Loader Overlay */
+#loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 128, 0.3); /* semi-transparent navy overlay */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+
+/* 4-dot square spinner */
+.spinner-square {
+    width: 50px;
+    height: 50px;
+    display: grid;
+    grid-template-columns: repeat(2, 20px);
+    grid-template-rows: repeat(2, 20px);
+    gap: 10px;
+}
+
+.spinner-square div {
+    width: 20px;
+    height: 20px;
+    background-color: dodgerblue;
+    border-radius: 4px;
+    animation: squareBounce 1.2s infinite ease-in-out;
+}
+
+/* Different delays for each dot for wave effect */
+.spinner-square div:nth-child(1) { animation-delay: 0s; }
+.spinner-square div:nth-child(2) { animation-delay: 0.3s; }
+.spinner-square div:nth-child(3) { animation-delay: 0.6s; }
+.spinner-square div:nth-child(4) { animation-delay: 0.9s; }
+
+@keyframes squareBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(0.5); }
+}

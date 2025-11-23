@@ -81,6 +81,8 @@ SITE_ID = 1
 LOGIN_REDIRECT_URL = "post_login_redirect"
 LOGOUT_REDIRECT_URL = "login"
 
+
+
 # ⚙️ Middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -89,9 +91,11 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "TechApp.middleware.redirect_admin_login.RedirectAdminLoginMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    
 ]
 
 ROOT_URLCONF = "TechCampuss.urls"
@@ -175,9 +179,13 @@ SOCIALACCOUNT_PROVIDERS = {
             "key": "",
         },
         "SCOPE": ["profile", "email"],
-        "AUTH_PARAMS": {"access_type": "online"},
+        "AUTH_PARAMS": {
+            "access_type": "online",
+            "prompt": "select_account",  # Force account chooser
+        },
     }
 }
+
 
 SOCIALACCOUNT_ADAPTER = "TechApp.adapters.CustomSocialAccountAdapter"
 

@@ -7,7 +7,13 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center align-items-center min-vh-100">
-        <div class="col-md-10 col-lg-8 col-xl-10 p-0 mx-3" style="border-radius: 20px; margin:5px auto; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+        <div class="col-md-10 col-lg-8 col-xl-10 p-0 mx-3" style="border-radius: 20px; margin:5px auto; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); position: relative;">
+            
+            <!-- TOP SLIDING BAR  -->
+            <div id="topSlideBarContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 5px; overflow: hidden; border-top-left-radius:20px; border-top-right-radius:20px; display:none; z-index: 10;">
+                <div id="topSlideBar" style="position: absolute; top: 0; left: -100%; height: 5px; width: 100%; background: linear-gradient(to right, navy, green, gold, red); border-radius: 5px;"></div>
+            </div>
+
             <div class="row g-0 h-100">
                 <!-- Left Side - Image -->
                 <div class="col-md-6 d-none d-md-block p-0">
@@ -18,19 +24,8 @@
                 
                 <!-- Right Side - Form -->
                 <div class="col-md-6 p-4 bg-white">
-                    <form method="POST" action="{% url 'login' %}">
+                    <form id="loginForm" method="POST" action="{% url 'login' %}" autocomplete="off">
                         {% csrf_token %}
-
-                        {% if messages %}
-                        <div>
-                            {% for message in messages %}
-                            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
 
                         <div class="container d-flex justify-content-center align-items-center mb-3">
                             <img src="{% static 'assets/img/logo.png' %}" alt="Logo" class="img-fluid" style="height: 80px; width: auto;">
@@ -41,14 +36,14 @@
                         <!-- Username Input -->
                         <div class="form-group mb-3">
                             <label for="username" class="form-label">Username:</label>
-                            <input type="text" name="username" class="form-control" id="username" placeholder="Enter Username/Email" required>
+                            <input type="text" name="username" class="form-control" id="username" placeholder="Enter Username/Email" autocomplete="off" required>
                         </div>
 
                         <!-- Password Input -->
                         <div class="form-group mb-3">
                             <label for="password" class="form-label">Password:</label>
                             <div class="input-group">
-                                <input type="password" name="password" class="form-control" id="password" placeholder="Enter password" required>
+                                <input type="password" name="password" class="form-control" id="password" placeholder="Enter password" autocomplete="off" required>
                                 <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                     <i class="fas fa-eye" id="togglePasswordIcon"></i>
                                 </button>
@@ -63,7 +58,7 @@
 
                         <!-- Login Button -->
                         <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary btn-block">Login</button>
+                            <button type="button" class="btn btn-primary btn-block" id="normalLoginBtn">Login</button>
                         </div>
 
                         <!-- Divider -->
@@ -86,6 +81,16 @@
     </div>
 </div><br><br>
 
+{% if redirect_url %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+        window.location.href = "{{ redirect_url }}";
+    }, 1500);
+});
+</script>
+{% endif %}
+
 <script>
     // Toggle password visibility
     const passwordInput = document.getElementById("password");
@@ -96,7 +101,6 @@
         const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
         passwordInput.setAttribute("type", type);
         
-        // Toggle eye icon
         if (type === "password") {
             togglePasswordIcon.classList.remove("fa-eye-slash");
             togglePasswordIcon.classList.add("fa-eye");
@@ -108,25 +112,51 @@
 
     setTimeout(function() {
         var successDiv = document.getElementById("success-message");
-        if (successDiv) {
-            successDiv.style.display = "none";
-        }
+        if (successDiv) successDiv.style.display = "none";
     }, 5000);
 
-    let progressBar = document.getElementById("progress-bar");
-    let logoutDiv = document.getElementById("logout-container");
-    if (progressBar && logoutDiv) {
-        let width = 0;
-        let interval = setInterval(function() {
-            if (width >= 100) {
-                clearInterval(interval);
-                logoutDiv.style.display = "none";  // Hide logout message after 5s
-            } else {
-                width++;
-                progressBar.style.width = width + "%";
-            }
-        }, 50);
+    // ------------------ TOP SLIDING BAR ------------------
+    function startTopSlideAnimation() {
+        const container = document.getElementById("topSlideBarContainer");
+        const bar = document.getElementById("topSlideBar");
+        container.style.display = "block";
+
+        let animation;
+        let pos = -100;
+        function slide() {
+            pos += 5;
+            if (pos > 100) pos = -100;
+            bar.style.left = pos + "%";
+            animation = requestAnimationFrame(slide);
+        }
+        slide();
+
+        // Do NOT stop automatically; let it run until page reload
+        return () => {
+            cancelAnimationFrame(animation);
+            container.style.display = "none";
+            bar.style.left = "-100%";
+        };
     }
+
+    // ------------------ LOGIN BUTTON ------------------
+    document.getElementById("normalLoginBtn").addEventListener("click", function() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        // Check if inputs are empty
+        if (!username || !password) {
+            // Trigger HTML5 validation
+            document.getElementById("loginForm").reportValidity();
+            return; // Do not show bar or submit
+        }
+
+        // Start sliding animation
+        startTopSlideAnimation();
+
+        // Submit form normally
+        this.closest("form").submit();
+    });
 </script>
 
 <!-- Font Awesome for icons -->

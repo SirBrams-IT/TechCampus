@@ -141,7 +141,8 @@
      style="height:45px; width:45px; background-color:dodgerblue; padding:4px; border-radius:50%; object-fit:contain;">
 
     <h1>Student Enrollments & Payments Report</h1>
-    <p class="subtitle">Generated on {{ current_date|date:"F j, Y H:i" }}</p>
+    <p class="subtitle">Generated on {% now "F j, Y H:i" %}</p>
+
   </div>
   
   <div class="report-info">

@@ -305,29 +305,40 @@ def login(request):
         identifier = request.POST.get("username")  # username OR email
         password = request.POST.get("password")
 
-        # 🔍 Try by username first
+        # Try to find user by username
         user = User.objects.filter(username=identifier).first()
-
-        # 🔍 If not found, try by email
         if not user:
+            # Try to find user by email
             user = User.objects.filter(email=identifier).first()
 
-        # ❌ User not found
+        # User not found
         if not user:
-            messages.error(request, "Invalid username/email or password.")
+            messages.error(request, "❌ User with this username/email does not exist.")
             return redirect("login")
 
-        # ✅ Check password manually (since custom model)
+        # Check password
         if not check_password(password, user.password):
-            messages.error(request, "Invalid username/email or password.")
+            messages.error(request, "❌ Incorrect password.")
             return redirect("login")
 
-        # 🔑 Log in with Django session
+        # Log in the user
         auth_login(request, user)
 
-        # 🎯 Redirect to common handler
-        return redirect("post_login_redirect")
+        # Determine redirect URL based on role
+        if user.is_superuser:
+            redirect_url = reverse("admin:index")  # superuser admin panel
+            messages.success(request, f"✅ Welcome {user.username}! Redirecting to Admin Panel...")
+        elif user.role == "mentor":
+            redirect_url = reverse("admin_dashboard")  # mentor shares admin dashboard
+            messages.success(request, f"✅ Welcome {user.username}! Redirecting to Mentor Dashboard...")
+        else:
+            redirect_url = reverse("student_dashboard")  # student dashboard
+            messages.success(request, f"✅ Welcome {user.username}! Redirecting to Student Dashboard...")
 
+        # Render login page with JS auto-redirect
+        return render(request, "login.html", {"redirect_url": redirect_url})
+
+    # GET request
     return render(request, "login.html")
 
 
@@ -337,7 +348,7 @@ def post_login_redirect(request):
     user = request.user
 
     if user.is_superuser:
-        messages.success(request, "Welcome Superuser! Redirecting to Django Admin...")
+        messages.success(request, f"Welcome {user.username}! Redirecting to  Admin Panel...")
         return redirect("/admin/")
 
     elif user.role == "mentor":
@@ -356,7 +367,7 @@ def post_login_redirect(request):
 # ---------- Logout ----------
 def logout_view(request):
     auth_logout(request)
-    messages.success(request, "You have been logged out.")
+    messages.success(request, "✅ You have been logged out.")
     return redirect("login")
 
 # student_dashboard

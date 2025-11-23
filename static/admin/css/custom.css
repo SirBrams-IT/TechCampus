@@ -1,0 +1,26 @@
+/* ---- General Admin Panel ---- */
+body, .module h2, .grp-module h2 {
+    font-family: 'Segoe UI', sans-serif; /* Update to your preferred font if needed */
+}
+
+/* Header & Sidebar */
+#header {
+    background-color: navy; /* Main header/nav color */
+    height: 80px; /* Reduced header height */
+    line-height: 50px;
+}
+
+
+
+/* Logo on dashboard header */
+.dashboard-logo {
+    width: 45px;           /* Adjusted size */
+    height: 45px;          /* Adjusted size */
+    border-radius: 50%;     /* Circular logo */
+    background-color: dodgerblue; /* Accent bg color */
+    padding: 4px;           /* Padding around logo */
+    margin-right: 15px;
+    vertical-align: middle;
+}
+
+
