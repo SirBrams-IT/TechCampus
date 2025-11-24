@@ -1,49 +1,48 @@
+
 (function () {
 
     // ---------- CONFIGURATION ----------
-    const LOGOUT_TIME = 5 * 60 * 1000;       // 5 minutes
-    const WARNING_TIME = 4.5 * 60 * 1000;    // 4 minutes 30 seconds
-    const LOGOUT_URL = "/logout/";           // Change if needed
+    const LOGOUT_TIME = 3 * 60 * 1000; // 3 minutes
+    const LOGOUT_URL = "/logout/";
 
     let logoutTimer;
-    let warningTimer;
-
-    // ---------- RESET TIMERS ----------
-    function resetTimers() {
-        clearTimeout(logoutTimer);
-        clearTimeout(warningTimer);
-
-        warningTimer = setTimeout(showWarningModal, WARNING_TIME);
-        logoutTimer = setTimeout(logoutUser, LOGOUT_TIME);
-    }
+    let sessionExpired = false;
 
     // ---------- TRIGGER LOGOUT ----------
     function logoutUser() {
+        if(sessionExpired) return;
+        sessionExpired = true;
+        alert("⚠ Session expired. Redirecting to login...");
         window.location.href = LOGOUT_URL;
     }
 
-    // ---------- SHOW WARNING ----------
-    function showWarningModal() {
-        const modal = document.getElementById("inactivityWarningModal");
-        if (modal) {
-            modal.style.display = "flex";
-        }
-    }
-
-    // ---------- HIDE WARNING ----------
-    window.closeInactivityModal = function() {
-        const modal = document.getElementById("inactivityWarningModal");
-        if (modal) {
-            modal.style.display = "none";
-        }
-        resetTimers();
+    // ---------- RESET TIMER ----------
+    function resetTimer() {
+        if(sessionExpired) return; // stop resetting after logout
+        clearTimeout(logoutTimer);
+        logoutTimer = setTimeout(logoutUser, LOGOUT_TIME);
     }
 
     // ---------- EVENT LISTENERS ----------
-    window.onload = resetTimers;
-    document.onmousemove = resetTimers;
-    document.onkeypress = resetTimers;
-    document.onclick = resetTimers;
-    document.onscroll = resetTimers;
+    window.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+    document.onclick = resetTimer;
+    document.onscroll = resetTimer;
+
+    // ---------- INTERACTION AFTER SESSION EXPIRED ----------
+    document.addEventListener("click", function() {
+        if(sessionExpired){
+            alert("⚠ Session expired. Redirecting to login...");
+            window.location.href = LOGOUT_URL;
+        }
+    });
+    document.addEventListener("keypress", function() {
+        if(sessionExpired){
+            alert("⚠ Session expired. Redirecting to login...");
+            window.location.href = LOGOUT_URL;
+        }
+    });
 
 })();
+

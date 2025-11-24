@@ -221,9 +221,11 @@ FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
 # 📧 Email (SendGrid)
-DEFAULT_FROM_EMAIL = 'SirBrams Tech Virtual Campus Support <no-reply@sirbramstech.com>'
+DEFAULT_FROM_EMAIL = "SirBrams Tech Virtual Campus Support <sirbramstechcampus1@gmail.com>"
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 SENDGRID_API_KEY = config("SENDGRID_API_KEY")
+SENDGRID_SANDBOX_MODE_IN_DEBUG=False 
+
 
 # 💳 M-Pesa Config
 MPESA_CONSUMER_KEY = config("MPESA_CONSUMER_KEY", default="")
