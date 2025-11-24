@@ -62,6 +62,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data: str) -> None:
         try:
+            # Parse into Pydantic Incoming model
             try:
                 incoming = IncomingMessage.parse_raw(text_data)
             except ValidationError as ve:
@@ -69,6 +70,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.send_error("ValidationError", str(ve))
                 return
 
+            # Save message in DB
             saved_message = await self.save_message(
                 incoming.message, incoming.sender_type, incoming.sender_id
             )
@@ -80,20 +82,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 incoming.sender_type, incoming.sender_id
             )
 
+            # Convert timestamp to ISO string to avoid Redis datetime serialization error
+            timestamp_str: Optional[str] = (
+                saved_message.timestamp.isoformat() if saved_message.timestamp else None
+            )
+
             outgoing = OutgoingMessage(
                 message=incoming.message,
                 sender_type=incoming.sender_type,
                 sender_id=incoming.sender_id,
                 sender_name=sender_name,
-                timestamp=saved_message.timestamp if saved_message else None,
+                timestamp=timestamp_str,
                 is_own=(
                     incoming.sender_type == self.user_type
                     and str(incoming.sender_id) == str(self.user_id)
                 ),
             )
 
+            # Send dictionary (fully JSON-safe)
             await self.channel_layer.group_send(
-                self.room_group_name, {"type": "chat_message", "payload": outgoing.dict()}
+                self.room_group_name,
+                {"type": "chat_message", "payload": outgoing.dict()}
             )
 
         except Exception as e:
@@ -103,6 +112,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event: Dict[str, Any]) -> None:
         try:
             payload = event.get("payload", {})
+
             try:
                 outgoing = OutgoingMessage(**payload)
             except ValidationError as ve:
@@ -110,7 +120,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.send_error("PayloadValidationError", str(ve))
                 return
 
+            # Send JSON to WebSocket
             await self.send(text_data=outgoing.json())
+
         except Exception as e:
             logger.exception(f"Error sending message: {e}")
             await self.send_error("SendError", str(e))
@@ -122,14 +134,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.exception(f"Failed to send structured error: {e}")
 
-    # ------------------------------
-    # DB helpers
-    # ------------------------------
+    # -----------------------------------------------------
+    # DATABASE HELPERS
+    # -----------------------------------------------------
     @database_sync_to_async
     def verify_access(self) -> bool:
-        """
-        Ensure user is in participants OR admin_participants.
-        """
         try:
             from TechApp.models import Conversation, User
 
@@ -145,21 +154,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_message(self, content: str, sender_type: str, sender_id: str):
-        """
-        Save message ensuring role & membership.
-        """
         try:
             from TechApp.models import Conversation, User, Message
 
             conversation = Conversation.objects.get(id=self.conversation_id)
             sender = User.objects.get(id=sender_id)
 
+            # Validate sender role
             if sender.role != sender_type:
                 logger.warning(
                     f"Role mismatch: user.role={sender.role} but sender_type={sender_type}"
                 )
                 return None
 
+            # Ensure sender is part of conversation
             if not (
                 sender in conversation.participants.all()
                 or sender in conversation.admin_participants.all()
@@ -169,16 +177,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 )
                 return None
 
-            message = Message(
-                conversation=conversation,
-                content=content,
-                sender=sender  # ✅ now use unified sender field
-            )
+            message = Message(conversation=conversation, content=content, sender=sender)
             message.save()
 
+            # Update conversation timestamp
             conversation.updated_at = timezone.now()
             conversation.save()
+
             return message
+
         except Exception as e:
             logger.exception(f"save_message failed: {e}")
             return None

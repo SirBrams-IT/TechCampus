@@ -220,11 +220,17 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
-# 📧 Email (SendGrid)
-DEFAULT_FROM_EMAIL = "SirBrams Tech Virtual Campus Support <sirbramstechcampus1@gmail.com>"
-EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = config("SENDGRID_API_KEY")
-SENDGRID_SANDBOX_MODE_IN_DEBUG=False 
+# 📧 Email (SendGrid via SMTP)
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.sendgrid.net"
+EMAIL_HOST_USER = "apikey"  
+EMAIL_HOST_PASSWORD = config("SENDGRID_API_KEY")
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# Verified sender from SendGrid
+DEFAULT_FROM_EMAIL = "SirBrams Tech Virtual Campus Support <no-reply@sirbramstechcampus1.com>"
+
 
 
 # 💳 M-Pesa Config
