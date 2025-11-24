@@ -31,7 +31,7 @@ GETOTP_API_KEY = config("GETOTP_API_KEY")
 GETOTP_AUTH_TOKEN = config("GETOTP_AUTH_TOKEN")
 
 # 🚨 Security
-DEBUG = True
+DEBUG = False
 AUTH_USER_MODEL = "TechApp.User"
 
 # Allow trusted hosts
@@ -220,15 +220,10 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
-# 📧 Email
+# 📧 Email (SendGrid)
 DEFAULT_FROM_EMAIL = 'SirBrams Tech Virtual Campus Support <no-reply@sirbramstech.com>'
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
-EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
-EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
-EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
-EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=False, cast=bool)
+EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+SENDGRID_API_KEY = config("SENDGRID_API_KEY")
 
 # 💳 M-Pesa Config
 MPESA_CONSUMER_KEY = config("MPESA_CONSUMER_KEY", default="")
