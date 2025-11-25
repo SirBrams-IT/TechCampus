@@ -229,7 +229,9 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 # Verified sender from SendGrid
-DEFAULT_FROM_EMAIL = "SirBrams Tech Virtual Campus Support <no-reply@sirbramstechcampus1.com>"
+DEFAULT_FROM_EMAIL = "SirBrams Support <sirbramstechcampus1@gmail.com>"
+
+
 
 
 
