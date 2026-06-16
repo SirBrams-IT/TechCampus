@@ -31,7 +31,7 @@ GETOTP_API_KEY = config("GETOTP_API_KEY")
 GETOTP_AUTH_TOKEN = config("GETOTP_AUTH_TOKEN")
 
 # 🚨 Security
-DEBUG = True
+DEBUG = False
 AUTH_USER_MODEL = "TechApp.User"
 
 # Allow trusted hosts
