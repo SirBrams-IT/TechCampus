@@ -220,14 +220,15 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
+# 📧 Email (Resend via SMTP - Fixed Configuration)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "://resend.com"
+EMAIL_HOST = "smtp.resend.com"  # Removed :// and added smtp. prefix
 EMAIL_PORT = 465
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = "resend"  # Leave this exactly as the literal string "resend"
-EMAIL_HOST_PASSWORD = config("RESEND_API_KEY")  # Generate this key on Resend's dashboard
+EMAIL_HOST_USER = "resend"  
 
+EMAIL_HOST_PASSWORD = config("RESEND_API_KEY") 
 DEFAULT_FROM_EMAIL = "SirBrams Support <sirbramstechcampus1@gmail.com>"
 
 
